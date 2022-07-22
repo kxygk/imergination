@@ -12,7 +12,6 @@
     core
     native])
   (:require
-   [svghelpers]
    [svgmaps]
    [geojson2svg]
    [quickthing]
@@ -119,7 +118,7 @@
   "out/south-thailand.svg"
   #_
   "fujian-taiwan.svg"
-  (svghelpers/serialize-with-line-breaks
+  (quickthing/serialize-with-line-breaks
     (plot/shoreline-map
     locations/two-seas-region
     [locations/krabi])))
@@ -148,7 +147,7 @@
   "out/taiwan-rain.svg"
   #_
   "krabi-skinny-rain.svg"
-  (svghelpers/serialize-with-line-breaks
+  (quickthing/serialize-with-line-breaks
     (plot/grid-map
       global-rain-grid-test-file
       locations/taiwan-region
@@ -164,7 +163,7 @@
 #_
 (spit
   "out/krabi-skinny-rain2.svg"
-  (svghelpers/serialize-with-line-breaks
+  (quickthing/serialize-with-line-breaks
     (plot/grid-map
       (geogrid/subregion
         (geogrid4seq/convert-to
@@ -507,7 +506,7 @@
                     ":30"))))))]
     (spit
       "out/first-year.svg"
-      (svghelpers/serialize-with-line-breaks
+      (quickthing/serialize-with-line-breaks
         (quickthing/group-plots-grid
           [(->>
              (range
@@ -533,7 +532,7 @@
              month-maps)])))
     (spit
       "out/first-col.svg"
-      (svghelpers/serialize-with-line-breaks
+      (quickthing/serialize-with-line-breaks
         (plot/grid-map
           first-month-rain
           input-region ;; it'll crop redundantly here..
@@ -541,7 +540,7 @@
           "1日")))
     (spit
       "out/sixth-col.svg"
-      (svghelpers/serialize-with-line-breaks
+      (quickthing/serialize-with-line-breaks
         (plot/grid-map
           sixth-month-rain
           input-region ;; it'll crop redundantly here..
@@ -549,7 +548,7 @@
           "6日")))
     (spit
       "out/first-sv.svg"
-      (svghelpers/serialize-with-line-breaks
+      (quickthing/serialize-with-line-breaks
         (plot/grid-map
           (matrix-col-to-grid
             svs
@@ -559,7 +558,7 @@
           "1st SV")))
     (spit
       "out/second-sv.svg"
-      (svghelpers/serialize-with-line-breaks
+      (quickthing/serialize-with-line-breaks
         (plot/grid-map
           (matrix-col-to-grid
             svs
@@ -569,7 +568,7 @@
           "2nd SV")))
     (spit
       "out/third-sv.svg"
-      (svghelpers/serialize-with-line-breaks
+      (quickthing/serialize-with-line-breaks
         (plot/grid-map
           (matrix-col-to-grid
             svs
@@ -579,7 +578,7 @@
           "3rd SV")))
     (spit
       "out/fourth-sv.svg"
-      (svghelpers/serialize-with-line-breaks
+      (quickthing/serialize-with-line-breaks
         (plot/grid-map
           (matrix-col-to-grid
             svs
@@ -589,14 +588,14 @@
           "4th SV")))
     (spit
       "out/sv-projections.svg"
-      (svghelpers/serialize-with-line-breaks
+      (quickthing/serialize-with-line-breaks
         (plot/two-d-plot
           projections
           1000
           1000)))
     (spit
       "out/summer.svg"
-      (svghelpers/serialize-with-line-breaks
+      (quickthing/serialize-with-line-breaks
         (plot/grid-map
           (col-to-grid
             summer-month
@@ -606,7 +605,7 @@
           "夏天")))
     (spit
       "out/winter.svg"
-      (svghelpers/serialize-with-line-breaks
+      (quickthing/serialize-with-line-breaks
         (plot/grid-map
           (col-to-grid
             winter-month
