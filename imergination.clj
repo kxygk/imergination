@@ -1,44 +1,27 @@
 (ns
     imergination
   "Core playground"
-  (:use
-   geoprim
-   geogrid
-   geogrid2svg
-   geogrid4image
-   geogrid4seq
-   svgmaps
-   [uncomplicate.neanderthal
-    core
-    native])
-  (:require
-   [svgmaps]
-   [geojson2svg]
-   [quickthing]
-   (thi.ng.geom
-     [core
-      :as
-      geom]
-     [matrix
-      :as
-      matrix])
-   #_'[thi.ng.color.core]
-   [clj-curl.easy
-    :as
-    curl-easy]
-   [clj-curl.opts
-    :as
-    curl-opts]
-   [uncomplicate.neanderthal.linalg
-    :as
-    linalg]
-   [thi.ng.geom.viz.core
-    :as
-    viz]
-   [thi.ng.geom.svg.core
-    :as
-    svg]))
-
+  (:use geoprim
+        geogrid
+        geogrid2svg
+        geogrid4image
+        geogrid4seq
+        svgmaps
+        [uncomplicate.neanderthal
+         core
+         native])
+  (:require [svgmaps]
+            [geojson2svg]
+            [quickthing]
+            (thi.ng.geom
+              [core                          :as geom]
+              [matrix                        :as matrix])
+            #_'[thi.ng.color.core]
+            [clj-curl.easy                   :as curl-easy]
+            [clj-curl.opts                   :as curl-opts]
+            [uncomplicate.neanderthal.linalg :as linalg]
+            [thi.ng.geom.viz.core            :as viz]
+            [thi.ng.geom.svg.core            :as svg]))
 ;; jackson is a dependency that gets pulled in at the wrong version for unclear reasons..
 #_
 (add-libs

@@ -1,8 +1,7 @@
 (ns
     locations
   "Different commonly used locations as `def`s"
-  (:use
-   geoprim))
+  (:use geoprim))
 
 ;; = `Regions-of-Interest`
 ;;

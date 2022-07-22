@@ -1,14 +1,9 @@
 (ns
     plot
-  (:use
-   geoprim)
-  (:require
-   [thi.ng.geom.viz.core
-    :as
-    viz]
-   [thi.ng.geom.svg.core
-    :as
-    svg]))
+  "Some project-specific plotting fuctions"
+  (:use geoprim)
+  (:require [thi.ng.geom.viz.core :as viz]
+            [thi.ng.geom.svg.core :as svg]))
 
 (def
   shoreline-filestr
