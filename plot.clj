@@ -2,7 +2,12 @@
     plot
   "Some project-specific plotting fuctions"
   (:use geoprim)
-  (:require [thi.ng.geom.viz.core :as viz]
+  (:require [geogrid]
+            [geogrid2svg]
+            [geojson2svg]
+            [quickthing]
+            [svgmaps]
+            [thi.ng.geom.viz.core :as viz]
             [thi.ng.geom.svg.core :as svg]))
 
 (def
