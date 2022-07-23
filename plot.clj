@@ -27,11 +27,11 @@
       (svgmaps/points-of-interest
         pois
         region))
-    (svghelpers/set-display-width
+    (quickthing/set-display-width
       1000
       (dimension
         region))
-    #_svghelpers/serialize-with-line-breaks))
+    #_quickthing/serialize-with-line-breaks))
 
 (defn
   map-label
@@ -111,11 +111,11 @@
          (map-label
            region
            text))
-       (svghelpers/set-display-width
+       (quickthing/set-display-width
          1000
          (dimension
            region))
-       #_svghelpers/serialize-with-line-breaks))))
+       #_quickthing/serialize-with-line-breaks))))
 
 (defn
   two-d-plot
