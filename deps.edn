@@ -1,53 +1,47 @@
-{:deps
- {;; mine
-  kxygk/geoprimfsdfsdfsd       {:local/root
-                       "../geoprim"}
-  kxygk/geogrid       {:local/root
-                       "../geogrid"}
-  kxygk/geogrid2svg   {:local/root
-                       "../geogrid2svg"}
-  kxygk/geogrid4image {:local/root
-                       "../geogrid4image"}
-  kxygk/geogrid4seq   {:local/root
-                       "../geogrid4seq"}
-  kxygk/quickthing    {:local/root
-                       "../quickthing"}
-  kxygk/svghelpers    {:local/root
-                       "../svghelpers"}
-  kxygk/geojson2svg   {:local/root
-                       "../geojson2svg"}
-  kxygk/svgmaps       {:local/root
-                       "../svgmaps"}
-  ;; extern
-  clj-curl/clj-curl {:mvn/version
-                     "1.1.2"}
-  #_#_
-  thi.ng/color      {:mvn/version
-                     "1.4.0"}
-  thi.ng/geom       {:mvn/version
-                     "1.0.0-RC4"}
-
-  ;; with native parts..
-  uncomplicate/neanderthal        {:mvn/version
-                                   "0.43.3"}
-  ;; Note this generates a SLF4J Warning
-  ;; https://github.com/uncomplicate/neanderthal/issues/54
-  ;;
-  org.clojars.haifengl/smile      {:mvn/version
-                                   "2.6.0"}
-  ;; the `bytedeco` ones are necessary for `smile` internals
-  org.bytedeco/openblas-platform  {:mvn/version
-                                   "0.3.10-1.5.4"}
-  #_#_
-  org.bytedeco/arpack-ng          {:mvn/version
-                                   "3.7.0-1.5.4"}
-  #_#_
-  org.bytedeco/arpack-ng-platform {:mvn/version
-                                   "3.7.0-1.5.4"}
-  org.bytedeco/openblas           {:mvn/version
-                                   "0.3.10-1.5.4"}
-  org.bytedeco/javacpp            {:mvn/version
-                                   "1.5.4"}}
- :paths
- ["."]
- }
+{:deps  {;; mine
+         kxygk/geoprim                   {:local/root
+                                          "../geoprim"}
+         kxygk/geogrid                   {:local/root
+                                          "../geogrid"}
+         kxygk/geogrid2svg               {:local/root
+                                          "../geogrid2svg"}
+         kxygk/geogrid4image             {:local/root
+                                          "../geogrid4image"}
+         kxygk/geogrid4seq               {:local/root
+                                          "../geogrid4seq"}
+         kxygk/quickthing                {:local/root
+                                          "../quickthing"}
+         kxygk/geojson2svg               {:local/root
+                                          "../geojson2svg"}
+         kxygk/svgmaps                   {:local/root
+                                          "../svgmaps"}
+         ;; extern
+         clj-curl/clj-curl               {:mvn/version
+                                          "1.1.2"}
+         #_#_
+         thi.ng/color                    {:mvn/version
+                                          "1.4.0"}
+         thi.ng/geom                     {:mvn/version
+                                          "1.0.0-RC4"}
+         ;; with native parts..
+         uncomplicate/neanderthal        {:mvn/version
+                                          "0.43.3"}
+         ;; Note this generates a SLF4J Warning
+         ;; https://github.com/uncomplicate/neanderthal/issues/54
+         ;;
+         org.clojars.haifengl/smile      {:mvn/version
+                                          "2.6.0"}
+         ;; the `bytedeco` ones are necessary for `smile` internals
+         org.bytedeco/openblas-platform  {:mvn/version
+                                          "0.3.10-1.5.4"}
+         #_#_
+         org.bytedeco/arpack-ng          {:mvn/version
+                                          "3.7.0-1.5.4"}
+         #_#_
+         org.bytedeco/arpack-ng-platform {:mvn/version
+                                          "3.7.0-1.5.4"}
+         org.bytedeco/openblas           {:mvn/version
+                                          "0.3.10-1.5.4"}
+         org.bytedeco/javacpp            {:mvn/version
+                                          "1.5.4"}}
+ :paths ["."]}

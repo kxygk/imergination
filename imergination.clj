@@ -103,8 +103,8 @@
   "fujian-taiwan.svg"
   (quickthing/serialize-with-line-breaks
     (plot/shoreline-map
-    locations/two-seas-region
-    [locations/krabi])))
+      locations/two-seas-region
+      [locations/krabi])))
 
 ;; = `Geogrids`
 ;;
@@ -200,22 +200,18 @@
   to-data-matrix
   "Turns a series of `geogrid` of identical size to one matrix"
   [grids]
-  (let[;;
-       [width-pix
-        height-pix]
-       (->
-         grids
-         first
-         geogrid/dimension-pix)
-       ;;
-       all-data
-       (->>
-         grids
-         (map
-           geogrid/data)
-         (reduce
-           into
-           []))]
+  (let[[width-pix
+        height-pix] (->
+                      grids
+                      first
+                      geogrid/dimension-pix)
+       all-data     (->>
+                      grids
+                      (map
+                        geogrid/data)
+                      (reduce
+                        into
+                        []))]
     (dge
       ;; rows
       (* 
@@ -229,37 +225,29 @@
 
 (defn
   region-rain-matrix
-  "Take director of geotiffs `geotiff-dirstr` and cut out a region and turn that into a matrix.
+  "Take directory of geotiffs `geotiff-dirstr` and cut out a region and turn that into a matrix.
   Returns a map with `:matrix` `:position` of the grid and `:resolution`"
   [geotiff-dirstr
    [eas-res
     sou-res]
    local-region]
-  (let [;;
-        local-rain-grids
-        (read-imerg-dir
-          geotiff-dirstr
-          [eas-res
-           sou-res]
-          local-region)
-        ;;
-        local-matrix
-        (to-data-matrix
-          local-rain-grids)]
-    {:matrix
-     local-matrix
-     :dimension
-     (-> local-rain-grids
-         first
-         geogrid/dimension-pix)
-     :position
-     (-> local-rain-grids
-         first
-         geogrid/corner)
-     :resolution
-     (-> local-rain-grids
-         first
-         geogrid/eassou-res)}))
+  (let [local-rain-grids (read-imerg-dir
+                           geotiff-dirstr
+                           [eas-res
+                            sou-res]
+                           local-region)
+        local-matrix     (to-data-matrix
+                           local-rain-grids)]
+    {:matrix     local-matrix
+     :dimension  (-> local-rain-grids
+                     first
+                     geogrid/dimension-pix)
+     :position   (-> local-rain-grids
+                     first
+                     geogrid/corner)
+     :resolution (-> local-rain-grids
+                     first
+                     geogrid/eassou-res)}))
 
 
 (defn
@@ -269,19 +257,14 @@
   `:dimension` `:position` and `:resolution`
   Returns a `geogrid`"
   [column-of-data
-   {:keys
-    [;;matrix
-     dimension
-     position
-     resolution]}]
-  (let [;;
-        [width-pix
-         height-pix]
-        dimension
-        ;;
+   {:keys [;;matrix
+           dimension
+           position
+           resolution]}]
+  (let [[width-pix
+         height-pix] dimension
         [eas-res
-         sou-res]
-        resolution]
+         sou-res]    resolution]
     (geogrid4seq/build-grid
       width-pix
       height-pix
@@ -293,13 +276,11 @@
 (defn
   matrix-col-to-grid
   "Given a matrix"
-  [{:keys
-    [matrix
-     dimension
-     position
-     resolution]
-    :as
-    grid-params}
+  [{:keys [matrix
+           dimension
+           position
+           resolution]
+    :as   grid-params}
    column-index]
   (col-to-grid
     (into
@@ -342,9 +323,6 @@
 ;;                                 [0.1
 ;;                                  0.1]))    
 
-
-
-
 (defn
   print-region-maps
   ([input-region
@@ -359,244 +337,223 @@
     [summer-idx
      winter-idx]
     map-label]
-  (let [;;
-        region-rains-matrix
-        (->>
-          input-region
-          (region-rain-matrix
-            #_"/home/kxygk/Junk/alldata/"
-            rain-dirstr
-            [0.1
-             0.1]))
-        ;;
-        first-month-rain
-        (matrix-col-to-grid
-          region-rains-matrix
-          0)
-        ;;
-        sixth-month-rain
-        (matrix-col-to-grid
-          region-rains-matrix
-          5)
-        ;;
-        svd
-        (linalg/svd
-          (:matrix
-           region-rains-matrix)
-          true
-          true)
-        ;;
-        svs
-        (assoc ;; maintains meta-data to draw the SVs as maps
-          region-rains-matrix
-          :matrix
-          (:u
-           svd))
-        ;;
-        first-sv
-        (data
-          (matrix-col-to-grid
-            svs
-            0))
-        ;;
-        secon-sv
-        (data
-          (matrix-col-to-grid
-            svs
-            1))
-        ;;
-        projections
-        (mapv
-          vector
-          (row ;; data proj on sv1
-            (:vt
-             svd)
-            0)
-          (row ;; data proj on sv1
-            (:vt
-             svd)
-            1))
-        ;;
-        winter-month
-        (let [;;
-              [first-factor
-               secon-factor]
-              (get
-                projections
-                winter-idx
-                ;;58 ;; taiwan winter
-                ;;95 ;; krabi-winter
-                )]
-          (mapv
-            (fn [first-element
-                 secon-element]
-              (+
-                (* first-factor
-                   first-element)
-                (* secon-factor
-                   secon-element)))
-            first-sv
-            secon-sv))
-        ;;
-        summer-month
-        (let [;;
-              [first-factor
-               secon-factor]
-              (get
-                projections
-                summer-idx
-                ;;65 ;; taiwan summer
-                ;;91 ;; krabi summer
-                )]
-          (mapv
-            (fn [first-element
-                 secon-element]
-              (+
-                (* first-factor
-                   first-element)
-                (* secon-factor
-                   secon-element)))
-            first-sv
-            secon-sv))
-        ;;
-        month-maps
-        (fn
-          [months]
-          (->>
-            months
-            (mapv
-              (fn
-                [month]
-                [month
-                 (matrix-col-to-grid
-                   region-rains-matrix
-                   month)]))
-            (mapv
-              (fn
-                [[month
-                  grid]]
-                (plot/grid-map
-                  grid
-                  input-region
-                  []
-                  (str
-                    (long
-                      (+
-                        2.0
-                        (*
-                          3.0
-                          month)))
-                    ":30"))))))]
-    (spit
-      "out/first-year.svg"
-      (quickthing/serialize-with-line-breaks
-        (quickthing/group-plots-grid
-          [(->>
-             (range
-               0
-               4)
-             month-maps)
-           (->>
-             (range
-               7
-               3
-               -1)
-             month-maps)
-           (->>
-             (range
-               8
-               12)
-             month-maps)
-           (->>
-             (range
-               15
-               11
-               -1)
-             month-maps)])))
-    (spit
-      "out/first-col.svg"
-      (quickthing/serialize-with-line-breaks
-        (plot/grid-map
-          first-month-rain
-          input-region ;; it'll crop redundantly here..
-          []
-          "1日")))
-    (spit
-      "out/sixth-col.svg"
-      (quickthing/serialize-with-line-breaks
-        (plot/grid-map
-          sixth-month-rain
-          input-region ;; it'll crop redundantly here..
-          []
-          "6日")))
-    (spit
-      "out/first-sv.svg"
-      (quickthing/serialize-with-line-breaks
-        (plot/grid-map
-          (matrix-col-to-grid
-            svs
-            0)
-          input-region ;; it'll crop redundantly here..
-          []
-          "1st SV")))
-    (spit
-      "out/second-sv.svg"
-      (quickthing/serialize-with-line-breaks
-        (plot/grid-map
-          (matrix-col-to-grid
-            svs
-            1)
-          input-region ;; it'll crop redundantly here..
-          []
-          "2nd SV")))
-    (spit
-      "out/third-sv.svg"
-      (quickthing/serialize-with-line-breaks
-        (plot/grid-map
-          (matrix-col-to-grid
-            svs
-            2)
-          input-region ;; it'll crop redundantly here..
-          []
-          "3rd SV")))
-    (spit
-      "out/fourth-sv.svg"
-      (quickthing/serialize-with-line-breaks
-        (plot/grid-map
-          (matrix-col-to-grid
-            svs
-            3)
-          input-region ;; it'll crop redundantly here..
-          []
-          "4th SV")))
-    (spit
-      "out/sv-projections.svg"
-      (quickthing/serialize-with-line-breaks
-        (plot/two-d-plot
-          projections
-          1000
-          1000)))
-    (spit
-      "out/summer.svg"
-      (quickthing/serialize-with-line-breaks
-        (plot/grid-map
-          (col-to-grid
-            summer-month
-            region-rains-matrix)
-          input-region ;; it'll crop redundantly here..
-          []
-          "夏天")))
-    (spit
-      "out/winter.svg"
-      (quickthing/serialize-with-line-breaks
-        (plot/grid-map
-          (col-to-grid
-            winter-month
-            region-rains-matrix)
-          input-region ;; it'll crop redundantly here..
-          []
-          "冬天")))
-    projections)))
+   (let [region-rains-matrix (->>
+                               input-region
+                               (region-rain-matrix
+                                 #_"/home/kxygk/Junk/alldata/"
+                                 rain-dirstr
+                                 [0.1
+                                  0.1]))
+         first-month-rain    (matrix-col-to-grid
+                               region-rains-matrix
+                               0)
+         sixth-month-rain    (matrix-col-to-grid
+                               region-rains-matrix
+                               5)
+         svd                 (linalg/svd
+                               (:matrix
+                                region-rains-matrix)
+                               true
+                               true)
+         svs                 (assoc ;; maintains meta-data to draw the SVs as maps
+                               region-rains-matrix
+                               :matrix
+                               (:u
+                                svd))
+         first-sv            (data
+                               (matrix-col-to-grid
+                                 svs
+                                 0))
+         secon-sv            (data
+                               (matrix-col-to-grid
+                                 svs
+                                 1))
+         projections         (mapv
+                               vector
+                               (row ;; data proj on sv1
+                                 (:vt
+                                  svd)
+                                 0)
+                               (row ;; data proj on sv1
+                                 (:vt
+                                  svd)
+                                 1))
+         winter-month        (let [[first-factor
+                                    secon-factor] (get
+                                                    projections
+                                                    winter-idx
+                                                    ;;58 ;; taiwan winter
+                                                    ;;95 ;; krabi-winter
+                                                    )]
+                               (mapv
+                                 (fn [first-element
+                                      secon-element]
+                                   (+
+                                     (*
+                                       first-factor
+                                       first-element)
+                                     (*
+                                       secon-factor
+                                       secon-element)))
+                                 first-sv
+                                 secon-sv))
+         summer-month        (let [[first-factor
+                                    secon-factor]
+                                   (get
+                                     projections
+                                     summer-idx
+                                     ;;65 ;; taiwan summer
+                                     ;;91 ;; krabi summer
+                                     )]
+                               (mapv
+                                 (fn [first-element
+                                      secon-element]
+                                   (+
+                                     (*
+                                       first-factor
+                                       first-element)
+                                     (*
+                                       secon-factor
+                                       secon-element)))
+                                 first-sv
+                                 secon-sv))
+         month-maps          (fn
+                               [months]
+                               (->>
+                                 months
+                                 (mapv
+                                   (fn
+                                     [month]
+                                     [month
+                                      (matrix-col-to-grid
+                                        region-rains-matrix
+                                        month)]))
+                                 (mapv
+                                   (fn
+                                     [[month
+                                       grid]]
+                                     (plot/grid-map
+                                       grid
+                                       input-region
+                                       []
+                                       (str
+                                         (long
+                                           (+
+                                             2.0
+                                             (*
+                                               3.0
+                                               month)))
+                                         ":30"))))))]
+     (spit
+       "out/first-year.svg"
+       (quickthing/serialize-with-line-breaks
+         (quickthing/group-plots-grid
+           [(->>
+              (range
+                0
+                4)
+              month-maps)
+            (->>
+              (range
+                7
+                3
+                -1)
+              month-maps)
+            (->>
+              (range
+                8
+                12)
+              month-maps)
+            (->>
+              (range
+                15
+                11
+                -1)
+              month-maps)])))
+     (spit
+       "out/first-col.svg"
+       (quickthing/serialize-with-line-breaks
+         (plot/grid-map
+           first-month-rain
+           input-region ;; it'll crop redundantly here..
+           []
+           "1日")))
+     (spit
+       "out/sixth-col.svg"
+       (quickthing/serialize-with-line-breaks
+         (plot/grid-map
+           sixth-month-rain
+           input-region ;; it'll crop redundantly here..
+           []
+           "6日")))
+     (spit
+       "out/first-sv.svg"
+       (quickthing/serialize-with-line-breaks
+         (plot/grid-map
+           (matrix-col-to-grid
+             svs
+             0)
+           input-region ;; it'll crop redundantly here..
+           []
+           "1st SV")))
+     (spit
+       "out/second-sv.svg"
+       (quickthing/serialize-with-line-breaks
+         (plot/grid-map
+           (matrix-col-to-grid
+             svs
+             1)
+           input-region ;; it'll crop redundantly here..
+           []
+           "2nd SV")))
+     (spit
+       "out/third-sv.svg"
+       (quickthing/serialize-with-line-breaks
+         (plot/grid-map
+           (matrix-col-to-grid
+             svs
+             2)
+           input-region ;; it'll crop redundantly here..
+           []
+           "3rd SV")))
+     (spit
+       "out/fourth-sv.svg"
+       (quickthing/serialize-with-line-breaks
+         (plot/grid-map
+           (matrix-col-to-grid
+             svs
+             3)
+           input-region ;; it'll crop redundantly here..
+           []
+           "4th SV")))
+     (spit
+       "out/sv-projections.svg"
+       (quickthing/serialize-with-line-breaks
+         (plot/two-d-plot
+           projections
+           1000
+           1000)))
+     (spit
+       "out/summer.svg"
+       (quickthing/serialize-with-line-breaks
+         (plot/grid-map
+           (col-to-grid
+             summer-month
+             region-rains-matrix)
+           input-region ;; it'll crop redundantly here..
+           []
+           "夏天")))
+     (spit
+       "out/winter.svg"
+       (quickthing/serialize-with-line-breaks
+         (plot/grid-map
+           (col-to-grid
+             winter-month
+             region-rains-matrix)
+           input-region ;; it'll crop redundantly here..
+           []
+           "冬天")))
+     projections)))
 
 #_
 (matrix-col-to-grid
@@ -651,61 +608,61 @@
     [0.1
      0.1]
     locations/krabi-skinny-region))
- 
+
 #_#_
-    (println
-      projections)
-    (->>
-      (->
-        ;; create the axis
-        (quickthing/standard-axis
-          projections
-          1000
-          1000)
-        ;; add data to the plot
-        (assoc
-          :data
-          [(quickthing/dashed-line
-             projections)
-           (quickthing/adjustable-circles
-             (map-indexed
-               (fn [index
-                    data-point]
-                 (conj
-                   data-point
-                   nil ;; default radius
-                   {:fill
-                    ;;(apply
-                    ;;  thi.ng.color.core/rgba
-                      (quickthing/color-cycle
-                        (rem
-                          (+
-                            index
-                            6.0)
-                          12.0));;)
-                    ;;
-                    :stroke
-                    "#777"}))
-               projections))
-           (quickthing/index-text
-             projections)])
-        (assoc ;; turn off grid
-          :grid
-          nil))
-      ;; turns the plot specification to svg hiccup
-      (viz/svg-plot2d-cartesian)
-      ;; wraps in an `<svg>` element
-      (svg/svg
-        {:width
-         width
-         ;;
-         :height
-         height})
-      ;; turns it to XML
-      (svg/serialize)
-      ;; writes to file
-      (spit
-        "sv-projections.svg"))
+(println
+  projections)
+(->>
+  (->
+    ;; create the axis
+    (quickthing/standard-axis
+      projections
+      1000
+      1000)
+    ;; add data to the plot
+    (assoc
+      :data
+      [(quickthing/dashed-line
+         projections)
+       (quickthing/adjustable-circles
+         (map-indexed
+           (fn [index
+                data-point]
+             (conj
+               data-point
+               nil ;; default radius
+               {:fill
+                ;;(apply
+                ;;  thi.ng.color.core/rgba
+                (quickthing/color-cycle
+                  (rem
+                    (+
+                      index
+                      6.0)
+                    12.0)) ;;)
+                ;;
+                :stroke
+                "#777"}))
+           projections))
+       (quickthing/index-text
+         projections)])
+    (assoc ;; turn off grid
+      :grid
+      nil))
+  ;; turns the plot specification to svg hiccup
+  (viz/svg-plot2d-cartesian)
+  ;; wraps in an `<svg>` element
+  (svg/svg
+    {:width
+     width
+     ;;
+     :height
+     height})
+  ;; turns it to XML
+  (svg/serialize)
+  ;; writes to file
+  (spit
+    "sv-projections.svg"))
 
 #_
 (two-sv-projection

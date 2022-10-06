@@ -1,7 +1,7 @@
 (ns
     plot
   "Some project-specific plotting fuctions"
-  (:use geoprim)
+  (:use     geoprim)
   (:require [geogrid]
             [geogrid2svg]
             [geojson2svg]
@@ -43,19 +43,14 @@
   "Label to add to the top right of maps"
   [region
    text]
-  (let [;;
-        [width
-         height]
-        (dimension
-          region)
-        ;;
-        spacing
-        (/
-          (min
-            width
-            height)
-          10.0)
-        ]
+  (let [[width
+         height] (dimension
+                   region)
+        spacing  (/
+                   (min
+                     width
+                     height)
+                   10.0)]
     (svg/text
       [(-
          width
@@ -71,7 +66,7 @@
        :stroke            "black"
        :stroke-width      (/ spacing
                              50)
-       :fill             "white"
+       :fill              "white"
        :dominant-baseline "hanging"})))
 
 (defn
@@ -89,16 +84,12 @@
     region
     pois
     text]
-   (let [;;
-         local-rain-grid
-         (geogrid/subregion 
-           input-grid
-           region)
-         ;;
-         {:keys [overruns]}
-         (geogrid/adjusted-crop-region-to-grid
-           region
-           local-rain-grid)]
+   (let [local-rain-grid    (geogrid/subregion
+                              input-grid
+                              region)
+         {:keys [overruns]} (geogrid/adjusted-crop-region-to-grid
+                              region
+                              local-rain-grid)]
      (->
        (svg/group
          {}
@@ -160,17 +151,17 @@
            data)
          ;;ICA vectors as Points
          #_(quickthing/adjustable-circles
-           (mapv
-             #(conj
-                %
-                100
-                {:fill "black"})
              (mapv
-               #(mapv
-                  double
-                  %)
-               (ica-vectors
-                 data))))])
+               #(conj
+                  %
+                  100
+                  {:fill "black"})
+               (mapv
+                 #(mapv
+                    double
+                    %)
+                 (ica-vectors
+                   data))))])
       (assoc ;; turn off grid
         :grid
         nil))
