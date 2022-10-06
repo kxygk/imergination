@@ -1,7 +1,9 @@
 (ns
     imergination
   "Core playground"
-  (:use geoprim
+  (:use plot
+        locations
+        geoprim
         geogrid
         geogrid2svg
         geogrid4image
