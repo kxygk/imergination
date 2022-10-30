@@ -1,6 +1,6 @@
-(ns curling)
-
-
+(ns curling
+  (:require [clj-curl.easy :as curl-easy]
+            [clj-curl.opts :as curl-opts]))
 
 ;; = `Rain`
 ;; == `IMERG`
