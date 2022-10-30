@@ -70,6 +70,20 @@
        :dominant-baseline "hanging"})))
 
 (defn
+  empty-map
+  "Just a blank of the right size
+  Needed as a spacer in the grid of maps
+  The REGION determines the dimension of the spacer"
+  [input-region]
+  (->
+    (svg/group
+         {})
+    (quickthing/set-display-width
+      1000
+      (dimension
+        input-region))))
+
+(defn
   grid-map
   "Draw a contour map with a grid overlay"
   ([input-grid

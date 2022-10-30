@@ -21,6 +21,7 @@
             #_'[thi.ng.color.core]
             [clj-curl.easy                   :as curl-easy]
             [clj-curl.opts                   :as curl-opts]
+            [uncomplicate.neanderthal.core   :as neand]
             [uncomplicate.neanderthal.linalg :as linalg]
             [thi.ng.geom.viz.core            :as viz]
             [thi.ng.geom.svg.core            :as svg]))
@@ -323,7 +324,129 @@
 ;;                               (region-rain-matrix
 ;;                                 imerg-data-dir
 ;;                                 [0.1
-;;                                  0.1]))    
+;;                                  0.1]))
+
+(defn
+  maps-builder
+  "Given a vector of indeces and a rain matrix,
+  Returns a vector of maps for those indeces"
+  [rains-matrix
+   input-region
+   indeces
+   labels]
+  (->>
+    indeces
+    (mapv
+      #(matrix-col-to-grid
+         rains-matrix
+         %))
+    (mapv
+      (fn
+        [label
+         grid]
+        (plot/grid-map
+          grid
+          input-region
+          []
+          label))
+      labels)))
+
+(defn
+  plot-first-24-hours
+  "Get the first 16 columns and plots them
+  TODO:Figure out time increments here.."
+  [rains-matrix
+   input-region]
+  (let [vec-of-maps   (maps-builder
+                        rains-matrix
+                        input-region
+                        (->>
+                          (range
+                            0
+                            15))
+                        nil)]
+    (quickthing/group-plots-grid
+      [(->
+         vec-of-maps
+         (subvec
+           0
+           4))
+       (->
+         vec-of-maps
+         (subvec
+           3
+           7)
+         reverse)
+       (->
+         vec-of-maps
+         (subvec
+           8
+           12))
+       (->
+         vec-of-maps
+         (subvec
+           11
+           15)
+         reverse)])))
+
+(defn
+  plot-first-year
+  "Get the first 12 columns/years and plots them in a circle"
+  [rains-matrix
+   input-region]
+  (let [years (->>
+                (range
+                  0
+                  12))
+        labels (map
+                 #(str
+                    (inc
+                      %)
+                    "月")
+                 years)
+        vec-of-maps   (maps-builder
+                        rains-matrix
+                        input-region
+                        years ;; 12 months of the year
+                        labels)]
+    (quickthing/group-plots-grid
+      [(->                 ;  first row
+         vec-of-maps
+         (subvec
+           4
+           8))
+       [(get               ;  second row
+          vec-of-maps
+          3)
+        (plot/empty-map
+          input-region)
+        (plot/empty-map
+          input-region)
+        (get
+          vec-of-maps
+          8)]
+       [(get               ;  third row
+          vec-of-maps
+          2)
+        (plot/empty-map
+          input-region)
+        (plot/empty-map
+          input-region)
+        (get
+          vec-of-maps
+          9)]
+       [(get               ;  fourth row
+          vec-of-maps
+          1)
+        (get
+          vec-of-maps
+          0)
+        (get
+          vec-of-maps
+          11)
+        (get
+          vec-of-maps
+          10)]])))
 
 (defn
   print-region-maps
@@ -418,60 +541,26 @@
                                        secon-factor
                                        secon-element)))
                                  first-sv
-                                 secon-sv))
-         month-maps          (fn
-                               [months]
-                               (->>
-                                 months
-                                 (mapv
-                                   (fn
-                                     [month]
-                                     [month
-                                      (matrix-col-to-grid
-                                        region-rains-matrix
-                                        month)]))
-                                 (mapv
-                                   (fn
-                                     [[month
-                                       grid]]
-                                     (plot/grid-map
-                                       grid
-                                       input-region
-                                       []
-                                       (str
-                                         (long
-                                           (+
-                                             2.0
-                                             (*
-                                               3.0
-                                               month)))
-                                         ":30"))))))]
+                                 secon-sv))]
+     (println
+       "total sum is "
+       (neand/sum
+         (:matrix region-rains-matrix))
+       " dimension is "
+       (dim
+         (:matrix region-rains-matrix))
+       " Average rain is "
+       (/
+         (neand/sum
+           (:matrix region-rains-matrix))
+         (dim
+           (:matrix region-rains-matrix))))
      (spit
        "out/first-year.svg"
        (quickthing/serialize-with-line-breaks
-         (quickthing/group-plots-grid
-           [(->>
-              (range
-                0
-                4)
-              month-maps)
-            (->>
-              (range
-                7
-                3
-                -1)
-              month-maps)
-            (->>
-              (range
-                8
-                12)
-              month-maps)
-            (->>
-              (range
-                15
-                11
-                -1)
-              month-maps)])))
+         (plot-first-year
+           region-rains-matrix
+           input-region)))
      (spit
        "out/first-col.svg"
        (quickthing/serialize-with-line-breaks
