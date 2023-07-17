@@ -1,7 +1,7 @@
 (ns
     imergination
   "Core playground"
-  (:use plot
+  (:use matrix
         locations
         geoprim
         geogrid
@@ -12,17 +12,21 @@
         [uncomplicate.neanderthal
          core
          native])
-  (:require [svgmaps]
-            [geojson2svg]
-            [quickthing]
-            (thi.ng.geom
+  (:require state
+            plot
+            svgmaps
+            geojson2svg
+            quickthing
+            #_(thi.ng.geom
               [core                          :as geom]
               [matrix                        :as matrix])
             #_'[thi.ng.color.core]
+            [cljfx.api       :as fx]
             [clj-curl.easy                   :as curl-easy]
             [clj-curl.opts                   :as curl-opts]
             [uncomplicate.neanderthal.core   :as neand]
             [uncomplicate.neanderthal.linalg :as linalg]
+            [uncomplicate.neanderthal.vect-math :as vect-math]
             [thi.ng.geom.viz.core            :as viz]
             [thi.ng.geom.svg.core            :as svg]))
 ;; jackson is a dependency that gets pulled in at the wrong version for unclear reasons..
@@ -48,7 +52,6 @@
   "/home/kxygk/Data/imerg/monthly/late/"
   #_
   "/home/kxygk/Data/imerg/monthly/final/")
-
 #_
 (def
   shoreline-filestr
@@ -72,15 +75,14 @@
 ;; The `geo` maintainer explains in this talk how shapefiles are difficult to read: https://www.youtube.com/watch?v=d628Oggm-nU
 ;;
 ;; Maybe they can be read in through some secondary library? .. For the moment we don't have a burning need to process shapefiles
-
+;;
 ;; == `World-Shorelines`
 ;; For a base layer on which to build/draw, it'd be useful to simply display the world map. To do that we display the global shorlines. Shorelines of the world can be downloaded from https://www.ngdc.noaa.gov/mgg/shorelines/ Or also from https://www.soest.hawaii.edu/pwessel/gshhg/ (I think these two are actually the same)
 ;;
 ;; You should get the ESRI shapefile version. The other formats (like NetCDF) seem to be even more complex.
 ;;
 ;; The shorelines come at multiple resolutions and are split into different groupings. The README explains what the different files contain.
-
-
+;;
 ;; == `Conversion`
 ;; Now we need to convert the shapefile to a GeoJSON. Unfortunately I'm not sure this can be done within the JVM. However there is a command line tool called `ogr2org` that will do this automatically for you. It's part of GDAL
 ;;
@@ -108,7 +110,15 @@
     (plot/shoreline-map
       locations/two-seas-region
       [locations/krabi])))
-
+;;
+#_
+(spit
+  "out/world-shorelines.svg"
+  (quickthing/serialize-with-line-breaks
+    (plot/shoreline-map
+      locations/world-region
+      [locations/krabi])))
+;;
 ;; = `Geogrids`
 ;;
 ;; Come in different forms
@@ -126,7 +136,6 @@
     rain-filestr
     0.1
     0.1))
-
 
 #_
 (spit
@@ -162,7 +171,7 @@
 
 ;; == `Bulk`
 ;; We read in all the files in a given directory and read them in according to the Unicode value of each character. See Java Strings for details https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html#compareTo(java.lang.String)
-
+#_
 (defn
   read-imerg-dir
   "Read in a directory of IMERG files.
@@ -198,7 +207,7 @@
   [0.1
    0.1]
   locations/two-seas-region)
-
+#_
 (defn
   to-data-matrix
   "Turns a series of `geogrid` of identical size to one matrix"
@@ -226,6 +235,7 @@
       ;; data
       all-data)))
 
+#_
 (defn
   region-rain-matrix
   "Take directory of geotiffs `geotiff-dirstr` and cut out a region and turn that into a matrix.
@@ -252,7 +262,7 @@
                      first
                      geogrid/eassou-res)}))
 
-
+#_
 (defn
   col-to-grid
   "Given a COLUMN-OF-DATA
@@ -276,6 +286,7 @@
       position
       column-of-data)))
 
+#_
 (defn
   matrix-col-to-grid
   "Given a matrix"
@@ -337,7 +348,7 @@
   (->>
     indeces
     (mapv
-      #(matrix-col-to-grid
+      #(matrix/extract-grid ;;matrix-col-to-grid
          rains-matrix
          %))
     (mapv
@@ -448,6 +459,7 @@
           vec-of-maps
           10)]])))
 
+
 (defn
   print-region-maps
   ([input-region
@@ -462,17 +474,28 @@
     [summer-idx
      winter-idx]
     map-label]
-   (let [region-rains-matrix (->>
-                               input-region
-                               (region-rain-matrix
-                                 #_"/home/kxygk/Junk/alldata/"
-                                 rain-dirstr
-                                 [0.1
-                                  0.1]))
-         first-month-rain    (matrix-col-to-grid
+   (let [region-rains-matrix (matrix/from-geogrids
+                               (fx/sub
+                                 @state/*selections
+                                 state/region-images)
+                               #_
+                                (read-imerg-dir
+                                  rain-dirstr
+                                  [0.1
+                                   0.1]
+                                  input-region))
+         #_
+         (->>
+           input-region
+           (region-rain-matrix
+             #_"/home/kxygk/Junk/alldata/"
+             rain-dirstr
+             [0.1
+              0.1]))
+         first-month-rain    (matrix/extract-grid ;;matrix-col-to-grid
                                region-rains-matrix
                                0)
-         sixth-month-rain    (matrix-col-to-grid
+         sixth-month-rain    (matrix/extract-grid ;;matrix-col-to-grid
                                region-rains-matrix
                                5)
          svd                 (linalg/svd
@@ -486,11 +509,11 @@
                                (:u
                                 svd))
          first-sv            (data
-                               (matrix-col-to-grid
+                               (matrix/extract-grid ;;matrix-col-to-grid
                                  svs
                                  0))
          secon-sv            (data
-                               (matrix-col-to-grid
+                               (matrix/extract-grid ;;matrix-col-to-grid
                                  svs
                                  1))
          projections         (mapv
@@ -556,11 +579,18 @@
          (dim
            (:matrix region-rains-matrix))))
      (spit
+       "out/rain-matrix.txt"
+       (into
+         []
+         (:matrix region-rains-matrix)))
+     #_
+     (spit
        "out/first-year.svg"
        (quickthing/serialize-with-line-breaks
          (plot-first-year
            region-rains-matrix
            input-region)))
+
      (spit
        "out/first-col.svg"
        (quickthing/serialize-with-line-breaks
@@ -581,7 +611,7 @@
        "out/first-sv.svg"
        (quickthing/serialize-with-line-breaks
          (plot/grid-map
-           (matrix-col-to-grid
+           (matrix/extract-grid ;;matrix-col-to-grid
              svs
              0)
            input-region ;; it'll crop redundantly here..
@@ -591,7 +621,7 @@
        "out/second-sv.svg"
        (quickthing/serialize-with-line-breaks
          (plot/grid-map
-           (matrix-col-to-grid
+           (matrix/extract-grid ;;matrix-col-to-grid
              svs
              1)
            input-region ;; it'll crop redundantly here..
@@ -601,7 +631,7 @@
        "out/third-sv.svg"
        (quickthing/serialize-with-line-breaks
          (plot/grid-map
-           (matrix-col-to-grid
+           (matrix/extract-grid ;;matrix-col-to-grid
              svs
              2)
            input-region ;; it'll crop redundantly here..
@@ -611,7 +641,7 @@
        "out/fourth-sv.svg"
        (quickthing/serialize-with-line-breaks
          (plot/grid-map
-           (matrix-col-to-grid
+           (matrix/extract-grid ;;matrix-col-to-grid
              svs
              3)
            input-region ;; it'll crop redundantly here..
@@ -625,10 +655,13 @@
            1000
            1000)))
      (spit
+       "out/projections.txt"
+       projections)
+     (spit
        "out/summer.svg"
        (quickthing/serialize-with-line-breaks
          (plot/grid-map
-           (col-to-grid
+           (matrix/col-to-grid
              summer-month
              region-rains-matrix)
            input-region ;; it'll crop redundantly here..
@@ -638,7 +671,7 @@
        "out/winter.svg"
        (quickthing/serialize-with-line-breaks
          (plot/grid-map
-           (col-to-grid
+           (matrix/col-to-grid
              winter-month
              region-rains-matrix)
            input-region ;; it'll crop redundantly here..
@@ -660,9 +693,12 @@
 (print-region-maps
   locations/two-seas-region)
 
-#_
+
 (print-region-maps
-  locations/krabi-region)
+  locations/krabi-region
+    [91
+     95])
+
 
 (def month-projections
   (print-region-maps
