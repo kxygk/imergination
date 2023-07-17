@@ -20,6 +20,7 @@
   "Given a region and vector of geopoints(POIS)
   Draw a simple shoreline map"
   [region
+   shoreline-filestr
    pois]
   (->
     (svg/group
@@ -32,8 +33,7 @@
       (svgmaps/points-of-interest
         pois
         region))
-    (quickthing/set-display-width
-      1000
+    (quickthing/svg-wrap
       (dimension
         region))
     #_quickthing/serialize-with-line-breaks))
@@ -77,24 +77,26 @@
   [input-region]
   (->
     (svg/group
-         {})
-    (quickthing/set-display-width
-      1000
+      {})
+    (quickthing/svg-wrap
       (dimension
-        input-region))))
+        region))))
 
 (defn
   grid-map
   "Draw a contour map with a grid overlay"
   ([input-grid
+    contour-svg
     region
     pois]
    (grid-map
      input-grid
+     contour-svg
      region
      pois
      ""))
   ([input-grid
+    contour-svg
     region
     pois
     text]
@@ -112,17 +114,14 @@
            overruns)
          (svgmaps/latlon-axis ;; draws lat/lon axis
            region)
-         (geojson2svg/read-file
-           shoreline-filestr
-           region)
+         contour-svg
          (svgmaps/points-of-interest
            pois
            region)
          (map-label
            region
            text))
-       (quickthing/set-display-width
-         1000
+       (quickthing/svg-wrap
          (dimension
            region))
        #_quickthing/serialize-with-line-breaks))))
