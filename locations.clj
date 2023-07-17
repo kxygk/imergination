@@ -5,6 +5,17 @@
 
 ;; = `Regions-of-Interest`
 ;;
+;; == `WORLD`
+(def
+  world-region
+  (region
+    (point
+      90
+      -180)
+    (point
+      -90
+      180)))
+;;
 ;; == `Thailand`
 (def
   two-seas-region
