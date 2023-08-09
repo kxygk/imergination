@@ -18,12 +18,21 @@
 
 (defn
   svg
-  "The actual workmap svg (as a JFX component"
+  "The actual workmap svg (as a JFX Group)
+  This is addition Group that functions as a wrapper post-scaling
+  This wrapped group is essential! Prevents spill out after scaling"
   [{:keys [fx/context
-           svg-group]}]
-  {:fx/type fx/ext-instance-factory
-   :create  (fn []
-              svg-group)})
+           svg-str
+           scale-x
+           scale-y]}]
+  {:fx/type  :group
+   :children [{:fx/type fx/ext-instance-factory
+               :create  (fn []
+                          (-> svg-str
+                              svg2jfx/batik-load
+                              (svg2jfx/batik-scale
+                                scale-x
+                                scale-y)))}]})
 
 (defn
   worldmap
@@ -63,9 +72,16 @@
                  :alignment   :center
                  :v-box/vgrow :always
                  :children    [{:fx/type   svg
-                                :svg-group (fx/sub-ctx
-                                             context
-                                             state/world-batik-fullwidth)}
+                                :svg-str (fx/sub-ctx context
+                                                     state/world-svg)
+                                :scale-x (-> context
+                                             (fx/sub-ctx state/window-width)
+                                             (/ 360.0))
+                                :scale-y  (-> context
+                                              (fx/sub-ctx state/window-width)
+                                              (/ 360.0))
+                                :svg-group (fx/sub-ctx context
+                                                       state/world-batik-fullwidth)}
                                #_
                                {:fx/type svg2jfx/xml ;;2img
                                 :scale-x (/
@@ -228,14 +244,15 @@
                                             (state/world-shoreline-filestr
                                               context))}
                             {:fx/type :button
-                             :text    "Select"}]}       
-               {:fx/type     :stack-pane
-                :alignment   :center
-                :v-box/vgrow :always
-                :children    [{:fx/type   svg
-                               :svg-group (fx/sub-ctx
-                                            context
-                                            state/datapreview-batik-halfwidth)}]}
+                             :text    "Select"}]}
+               {:fx/type svg
+                :v-box/hgrow :always
+                :svg-str (fx/sub-ctx context
+                                     state/region-svg)
+                :scale-x (fx/sub-ctx context
+                                     state/region-to-display-scale-x)
+                :scale-y (fx/sub-ctx context
+                                     state/region-to-display-scale-y)}
                {:fx/type     :label
                 :v-box/vgrow :always
                 :text        "Preview Map!!"}]})
