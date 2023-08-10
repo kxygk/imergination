@@ -192,6 +192,48 @@
                 :text        "Preview Map!!"}]})
 
 (defn
+  main-vertical-display
+  "Tha main vertical window"
+  [{:keys [fx/context]}]
+  {:fx/type  :v-box
+   :children [{:fx/type               worldmap
+               #_#_#_#_#_#_           :grid-pane/row 0
+               :grid-pane/column      0
+               :grid-pane/column-span 2}
+              {:fx/type            :grid-pane
+               :column-constraints [{:fx/type       :column-constraints
+                                     :percent-width 100/2}
+                                    {:fx/type       :column-constraints
+                                     :percent-width 100/2}]
+               :row-constraints    (repeat
+                                     2 ;; number of rows.. hardcoded :(
+                                     {:fx/type    :row-constraints
+                                      :max-height (fx/sub-ctx
+                                                    context
+                                                    state/row-height)})
+               :children [{:fx/type          datadir
+                           :grid-pane/row    1
+                           :grid-pane/column 0}
+                          {:fx/type          datapreview
+                           :grid-pane/row    1
+                           :grid-pane/column 1}
+                          {:fx/type               datapreview
+                           :grid-pane/row         2
+                           :grid-pane/column      0
+                           :grid-pane/column-span 2}]}]})
+
+
+(defn
+  effect-window-width
+  "Effect that updates the current window width state"
+  [snapshot
+   event]
+  (-> snapshot
+      (fx/swap-context assoc
+                       :window-width
+                       (:fx/event event))))
+
+(defn
   root
   "The start of the GUI tree
   (using the `cljfx` naming convention)"
@@ -200,44 +242,10 @@
    :showing true
    :title   "Imergination"
    :scene   {:fx/type          :scene
-             :on-width-changed {:effect (fn [snapshot
-                                             event]
-                                          (-> snapshot
-                                              (fx/swap-context assoc
-                                                               :window-width
-                                                               (:fx/event event))))}
-             :root             #_ {:fx/type :label
-                                   :text    "Hello World?"}
-             
-             {:fx/type      :scroll-pane
-              :fit-to-width true
-              :content      {:fx/type  :v-box
-                             :children [{:fx/type               worldmap
-                                         #_#_#_#_#_#_           :grid-pane/row 0
-                                         :grid-pane/column      0
-                                         :grid-pane/column-span 2}
-                                        {:fx/type            :grid-pane
-                                         :column-constraints [{:fx/type       :column-constraints
-                                                               :percent-width 100/2}
-                                                              {:fx/type       :column-constraints
-                                                               :percent-width 100/2}]
-                                         :row-constraints    (repeat
-                                                               2 ;; number of rows of stuff going on.. hardcoded :(
-                                                               {:fx/type    :row-constraints
-                                                                :max-height (fx/sub-ctx
-                                                                              context
-                                                                              state/row-height)})
-                                         
-                                         :children [{:fx/type          datadir
-                                                     :grid-pane/row    1
-                                                     :grid-pane/column 0}
-                                                    {:fx/type          datapreview
-                                                     :grid-pane/row    1
-                                                     :grid-pane/column 1}
-                                                    {:fx/type          datapreview
-                                                     :grid-pane/row    2
-                                                     :grid-pane/column 0
-                                                     :grid-pane/column-span 2}]}]}}}})
+             :on-width-changed {:effect effect-window-width}
+             :root             {:fx/type      :scroll-pane
+                    :fit-to-width true ;; otherwise you get horizontal scrollbars
+                    :content      {:fx/type  main-vertical-display}}}})
 
 #_
 (core/renderer)
