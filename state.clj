@@ -33,79 +33,62 @@
 (defn
   row-height
   [context]
-  (fx/sub-val
-    context
-    :row-height))
+  (fx/sub-val context
+              :row-height))
 
 (defn
   world-shoreline-filestr
   [context]
-  (fx/sub-val
-    context
-    :shoreline-filestr))
+  (fx/sub-val context
+              :shoreline-filestr))
 
 (defn
   region
   [context]
-  (fx/sub-val
-    context
-    :region))
+  (fx/sub-val context
+              :region))
 
 (defn
   window-width
   [context]
-  (fx/sub-val
-    context
-    :window-width))
+  (fx/sub-val context
+              :window-width))
 
 (defn
   region-xy-ratio
   [context]
   (let [[lat
-         lon] (geoprim/dimension
-                (fx/sub-ctx
-                  context
-                  region))]
-    (/
-      lat
-      lon)))
+         lon] (-> context
+                  (fx/sub-ctx region)
+                  geoprim/dimension)]
+    (/ lat
+       lon)))
 
 (defn
   region-display-width
   [context]
-  (let [half-window        (/
-                             (fx/sub-ctx
-                               context
-                               window-width)
+  (let [half-window        (/ (fx/sub-ctx context
+                                          window-width)
                              2.0)
-        max-image-height   (*
-                             (fx/sub-ctx
-                               context
-                               row-height)
-                             0.75)
-        drawing-area-ratio (/
-                             half-window
-                             max-image-height)
-        image-ratio        (fx/sub-ctx
-                             context
-                             region-xy-ratio)]
-    (if (>
-          image-ratio
-          drawing-area-ratio)
+        max-image-height   (* (fx/sub-ctx context
+                                          row-height)
+                              0.75)
+        drawing-area-ratio (/ half-window
+                              max-image-height)
+        image-ratio        (fx/sub-ctx context
+                                       region-xy-ratio)]
+    (if (> image-ratio
+           drawing-area-ratio)
       half-window
-      (*
-        image-ratio
-        max-image-height))))
+      (* image-ratio
+         max-image-height))))
 
 (defn region-display-height
   [context]
-  (/
-    (fx/sub-ctx
-      context
-      region-display-width)
-    (fx/sub-ctx
-      context
-      region-xy-ratio)))
+  (/ (fx/sub-ctx context
+                 region-display-width)
+     (fx/sub-ctx context
+                 region-xy-ratio)))
 
 (defn
   region-to-display-scale-x
@@ -113,15 +96,12 @@
   needs to be scaled to match the display width"
   [context]
   (let [[lat
-         _] (geoprim/dimension
-              (fx/sub-ctx
-                context
-                region))]
-    (/
-      (fx/sub-ctx
-        context
-        region-display-width)
-      lat)))
+         _] (-> context
+                (fx/sub-ctx region)
+                geoprim/dimension)]
+    (/ (fx/sub-ctx context
+                   region-display-width)
+       lat)))
 
 (defn
   region-to-display-scale-y
@@ -129,92 +109,69 @@
   needs to be scaled to match the display width"
   [context]
   (let [[_
-         lon] (geoprim/dimension
-                (fx/sub-ctx
-                  context
-                  region))]
-    (/
-      (fx/sub-ctx
-        context
-        region-display-height)
-      lon)))
+         lon] (-> context
+                  (fx/sub-ctx region)
+                  geoprim/dimension)]
+    (/ (fx/sub-ctx context
+                   region-display-height)
+       lon)))
 
 (defn
   eas-res
   [context]
-  (fx/sub-val
-    context
-    :eas-res))
+  (fx/sub-val  context
+               :eas-res))
 
 (defn
   sou-res
   [context]
-  (fx/sub-val
-    context
-    :sou-res))
+  (fx/sub-val context
+              :sou-res))
 
 (defn-
   world-svg-hiccup
   [context]
-  (->
-    locations/world-region
-    (plot/shoreline-map
-      (fx/sub-ctx
-        context
-        world-shoreline-filestr)
-      []))) ;; no POI
+  (plot/shoreline-map locations/world-region
+                      (fx/sub-ctx context
+                                  world-shoreline-filestr)
+                      [])) ;; no POI
   
 (defn
   world-svg
   "Get a shoreline map of the whole world
   TODO: Maybe bake this in to the program?"
   [context]
-  (quickthing/serialize
-    (fx/sub-ctx
-      context
-      world-svg-hiccup))
-  
-  #_
-  (plot/shoreline-map
-    [locations/world-region
-     nil] ;; no POIs
-    (fx/sub-ctx
-      context
-      world-shoreline-filestr)))
+  (-> context
+      (fx/sub-ctx world-svg-hiccup)
+      quickthing/serialize))
 
 (defn
   world-batik
   "Get the shoreline as a JFX group
   Not scaled in any way"
   [context]
-  (let [shoreline-svg (fx/sub-ctx
-                        context
-                        world-svg)]
-    (svg2jfx/batik-load
-      shoreline-svg)))
+  (let [shoreline-svg (fx/sub-ctx context
+                                  world-svg)]
+    (-> shoreline-svg
+        svg2jfx/batik-load)))
 
 (defn
   world-batik-fullwidth
   "Get the world shoreline as a JFX group
   Scaled to take the width of the window"
   [context]
-  (let [batik-group (fx/sub-ctx
-                      context
-                      world-batik)
-        scale-x     (/
-                      (fx/sub-ctx
-                        context
-                        state/window-width)
-                      360.0)
+  (let [batik-group (fx/sub-ctx context
+                                world-batik)
+        scale-x     (/ (fx/sub-ctx context
+                                   state/window-width)
+                       360.0)
         scale-y     (/
-                      (fx/sub-ctx
-                        context
-                        state/window-width)
+                      (fx/sub-ctx context
+                                  state/window-width)
                       360.0)]
-    (svg2jfx/batik-scale
-      batik-group
-      scale-x
-      scale-y)))
+    (svg2jfx/batik-scale  batik-group
+                          scale-x
+                          scale-y)))
 
 #_        
 (defn
@@ -240,60 +197,49 @@
   TODO: This could be a higher resolution than the world map"
   [context]
   (->
-    (fx/sub-ctx
-      context
-      region)
-    (plot/shoreline-map
-      (fx/sub-ctx
-        context
-        world-shoreline-filestr)
-      []))) ;; no POI
+    (fx/sub-ctx context
+                region)
+    (plot/shoreline-map (fx/sub-ctx context
+                                    world-shoreline-filestr)
+                        []))) ;; no POI
 
 (defn
-  region-svg
+region-svg
   "Get a shoreline map of the region of interest
   TODO: This could be a higher resolution than the world map"
   [context]
-  (->
-    (fx/sub-ctx
-      context
-      region-svg-hiccup)
-    quickthing/serialize))
+  (-> context
+      (fx/sub-ctx region-svg-hiccup)
+      quickthing/serialize))
 
 (defn
   region-batik
   [context]
-  (let [shoreline-svg (fx/sub-ctx
-                        context
-                        region-svg)]
-    (svg2jfx/batik-load
-      shoreline-svg)))
+  (let [shoreline-svg (fx/sub-ctx context
+                                  region-svg)]
+    (-> shoreline-svg
+        svg2jfx/batik-load)))
 
 (defn
   region-batik-halfwidth
   "This is scaled to fit the half area box"
   [context]
-  (let [batik-group (fx/sub-ctx
-                      context
-                      region-batik)
-        scale-x     (fx/sub-ctx
-                      context
-                      state/region-to-display-scale-x)
-        scale-y     (fx/sub-ctx
-                      context
-                      state/region-to-display-scale-y)]
-    (svg2jfx/batik-scale
-      batik-group
-      scale-x
-      scale-y)))
+  (let [batik-group (fx/sub-ctx context
+                                region-batik)
+        scale-x     (fx/sub-ctx context
+                                state/region-to-display-scale-x)
+        scale-y     (fx/sub-ctx context
+                                state/region-to-display-scale-y)]
+    (svg2jfx/batik-scale batik-group
+                         scale-x
+                         scale-y)))
 
 (defn
   data-dirstr
   "The string for the path to the directory with all the data"
   [context]
-  (fx/sub-val
-    context
-    :rain-dirstr))
+  (fx/sub-val context
+              :rain-dirstr))
 
 
 (defn
@@ -302,14 +248,13 @@
   NOTE: This does not automatically detect if
   the directory contents have been changed"
   [context]
-  (->
-    ^String
-    (fx/sub-ctx
-      context
-      data-dirstr)
-    java.io.File.
-    .list
-    sort))
+  (-> ^String ;; I forget why I type hint..
+      (fx/sub-ctx
+        context
+        data-dirstr)
+      java.io.File.
+      .list
+      sort))
 
 ;; TODO Test out with caching the whole dataset..
 ;; see if the computer catches fire
@@ -341,125 +286,92 @@
   in the same order as the file listing.
   Reading and cropping all the images take a min or two "
   [context]
-  (->>
-    (fx/sub-ctx
-      context
-      datafile-strs)
-    (mapv
-      #(str
-         (fx/sub-ctx
-           context
-           data-dirstr)
-         %))
-    (mapv
-      #(geogrid4image/read-file
-         %
-         (fx/sub-ctx
-           context
-           eas-res)
-         (fx/sub-ctx
-           context
-           sou-res)))
-    (mapv
-      #(geogrid/subregion
-         %
-         (fx/sub-ctx
-           context
-           region)))
-    #_vec))
+  (->> (fx/sub-ctx context
+                   datafile-strs)
+       (mapv #(str (fx/sub-ctx context
+                               data-dirstr)
+                   %))
+       (mapv #(geogrid4image/read-file %
+                                       (fx/sub-ctx context
+                                                   eas-res)
+                                       (fx/sub-ctx context
+                                                   sou-res)))
+       (mapv #(geogrid/subregion %
+                                 (fx/sub-ctx context
+                                             region)))
+       #_vec))
 
 
 (defn
   datafile-idxs
   "Indeces of the data that's been selected" 
   [context]
-  (fx/sub-val
-    context
-    :datafile-idxs))
+  (fx/sub-val context
+              :datafile-idxs))
 
 (defn
   first-datafile-idx
   "Get the first selected data index
   Otherwise returns `0`"
   [context]
-  (get
-        (fx/sub-ctx
-          context
-          datafile-idxs)
-        0))
+  (get (fx/sub-ctx context
+                   datafile-idxs)
+       0))
 
 (defn
   first-datafile-geogrid
   [context]
-  (get
-    (fx/sub-ctx
-      context
-      region-images)
-    (fx/sub-ctx
-      context
-      first-datafile-idx)))
+  (get (fx/sub-ctx context
+                   region-images)
+       (fx/sub-ctx context
+                   first-datafile-idx)))
   
 (defn
   first-datafile-svg
   "Get a shoreline map of the region of interest
   TODO: This could be a higher resolution than the world map"
   [context]
-  (->
-    (fx/sub-ctx
-      context
-      first-datafile-geogrid)
-    (plot/grid-map
-      (fx/sub-ctx
-        context
-        region-svg-hiccup)
-      (fx/sub-ctx
-        context
-        region)
-      []) ;; no POI
-    quickthing/serialize))
+  (-> (fx/sub-ctx context
+                  first-datafile-geogrid)
+      (plot/grid-map (fx/sub-ctx context
+                                 region-svg-hiccup)
+                     (fx/sub-ctx context
+                                 region)
+                     []) ;; no POI
+      quickthing/serialize))
 
 (defn
   first-datafile-batik
   [context]
-  (let [svg (fx/sub-ctx
-              context
-              first-datafile-svg)]
-    (svg2jfx/batik-load
-      svg)))
+  (let [svg (fx/sub-ctx context
+                        first-datafile-svg)]
+    (-> svg
+        svg2jfx/batik-load)))
 
 (defn
   first-datafile-batik-halfwidth
   "If nothing is selected, this blows up"
   [context]
-  (let [batik-group (fx/sub-ctx
-                      context
-                      first-datafile-batik)
-        scale-x     (fx/sub-ctx
-                      context
-                      state/region-to-display-scale-x)
-        scale-y     (fx/sub-ctx
-                      context
-                      state/region-to-display-scale-y)]
-    (svg2jfx/batik-scale
-      batik-group
-      scale-x
-      scale-y)))
+  (let [batik-group (fx/sub-ctx  context
+                                 first-datafile-batik)
+        scale-x     (fx/sub-ctx context
+                                state/region-to-display-scale-x)
+        scale-y     (fx/sub-ctx  context
+                                 state/region-to-display-scale-y)]
+    (svg2jfx/batik-scale batik-group
+                         scale-x
+                         scale-y)))
 
 (defn
   datapreview-batik-halfwidth
   [context]
-  (if (nil?
-        (fx/sub-ctx
-          context
-          first-datafile-idx))
-    (fx/sub-ctx
-      context
-      region-batik-halfwidth)
-    (fx/sub-ctx
-      context
-      first-datafile-batik-halfwidth)))
-
-    #_#_
+  (if (nil? (fx/sub-ctx context
+                        first-datafile-idx))
+    (fx/sub-ctx context
+                region-batik-halfwidth)
+    (fx/sub-ctx  context
+                 first-datafile-batik-halfwidth)))
+#_#_
 (defn
   region-batik
   [context]

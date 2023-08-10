@@ -55,8 +55,8 @@
                               (fx/sub-ctx state/window-width)
                               (/ 360.0))}]})
 
-  (defn
-    region
+(defn
+  region
   "Where we select the region we will be looking at
   As well as the contour file to use"
   [{:keys [fx/context]}]
@@ -130,7 +130,7 @@
     {:fx/type fx.ext.list-view/with-selection-props
      :style   {:-fx-background-color :red}
      :props   {:selection-mode              :multiple
-               :on-selected-indices-changed select-file-effect }
+               :on-selected-indices-changed select-file-effect}
      :desc    {:fx/type      :list-view
                #_#_
                :cell-factory {:fx/cell-type :list-cell
