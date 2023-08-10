@@ -42,88 +42,21 @@
   - region limits"
   [{:keys [fx/context]}]
   {:fx/type    :v-box
-   :max-height (/
-                 (fx/sub-ctx
-                   context
-                   state/window-width)
-                 2.0)
-   ;;   :alignment :top-center
-   ;;   :style {:-fx-background-color :red}
-   :children   [#_{:fx/type   :h-box
-                   :alignment :center
-                   :children  [{:fx/type :label
-                                :text    " Contour File: "}
-                               {:fx/type     :text-field
-                                :disable     true
-                                :h-box/hgrow :always
-                                ;;:pref-width Double/MAX_VALUE
-                                :text        (str
-                                               " "
-                                               (state/world-shoreline-filestr
-                                                 context))}
-                               {:fx/type :button
-                                :text    "Select"}]}       
-                {:fx/type     :stack-pane
-                 :pref-height (/
-                                (fx/sub-ctx
-                                  context
-                                  state/window-width)
-                                2.0)
-                 :alignment   :center
-                 :v-box/vgrow :always
-                 :children    [{:fx/type   svg
-                                :svg-str (fx/sub-ctx context
-                                                     state/world-svg)
-                                :scale-x (-> context
-                                             (fx/sub-ctx state/window-width)
-                                             (/ 360.0))
-                                :scale-y  (-> context
-                                              (fx/sub-ctx state/window-width)
-                                              (/ 360.0))
-                                :svg-group (fx/sub-ctx context
-                                                       state/world-batik-fullwidth)}
-                               #_
-                               {:fx/type svg2jfx/xml ;;2img
-                                :scale-x (/
-                                           (fx/sub-ctx
-                                             context
-                                             state/window-width)
-                                           360.0)
-                                :scale-y (/
-                                           (fx/sub-ctx
-                                             context
-                                             state/window-width)
-                                           360.0)
-                                :svg
-                                #_       (slurp "out-backup/summer.svg")
-                                #_       (slurp "summer-notext.svg")
-                                (->
-                                  locations/world-region
-                                  (plot/shoreline-map
-                                    [#_locations/krabi])
-                                  quickthing/serialize)}]}
-                #_{:fx/type :label
-                   :text    "World Map!"}]})
+   :max-height (/ (fx/sub-ctx context
+                              state/window-width)
+                  2.0)
+   :children   [{:fx/type svg
+                 :svg-str (fx/sub-ctx context
+                                      state/world-svg)
+                 :scale-x (-> context
+                              (fx/sub-ctx state/window-width)
+                              (/ 360.0))
+                 :scale-y (-> context
+                              (fx/sub-ctx state/window-width)
+                              (/ 360.0))}]})
 
-#_#_world-map-fn (svg2jfx/xml2img
-                   (quickthing/serialize-with-line-breaks
-                     (plot/shoreline-map
-                       locations/world-region
-                       [locations/krabi])))
-#_       (slurp "first-year.svg")
-#_       (slurp "out/summer.svg")
-#_       (slurp "summer-notext.svg")
-#_       (slurp "world-shorelines.svg")
-
-#_
-{:fx/type     fx/ext-instance-factory
- :style       {:-fx-background-color :red}
- :v-box/vgrow :always
- :create      world-map-fn}
-
-
-(defn
-  region
+  (defn
+    region
   "Where we select the region we will be looking at
   As well as the contour file to use"
   [{:keys [fx/context]}]
@@ -223,6 +156,7 @@
                            state/data-dirstr)}
                {:fx/type     datadir-list
                 :v-box/vgrow :always}]})
+
 (defn
   datapreview
   "Where we select the data to read in..
@@ -269,11 +203,9 @@
              :on-width-changed {:effect (fn [snapshot
                                              event]
                                           (-> snapshot
-                                              (fx/swap-context
-                                                assoc
-                                                :window-width
-                                                (:fx/event
-                                                 event))))}
+                                              (fx/swap-context assoc
+                                                               :window-width
+                                                               (:fx/event event))))}
              :root             #_ {:fx/type :label
                                    :text    "Hello World?"}
              
@@ -302,19 +234,10 @@
                                                     {:fx/type          datapreview
                                                      :grid-pane/row    1
                                                      :grid-pane/column 1}
-                                                    #_#_#_#_
                                                     {:fx/type          datapreview
                                                      :grid-pane/row    2
-                                                     :grid-pane/column 0}
-                                                    {:fx/type          datapreview
-                                                     :grid-pane/row    2
-                                                     :grid-pane/column 1}
-                                                    {:fx/type          datapreview
-                                                     :grid-pane/row    3
-                                                     :grid-pane/column 0}
-                                                    {:fx/type          datapreview
-                                                     :grid-pane/row    3
-                                                     :grid-pane/column 1}]}]}}}})
+                                                     :grid-pane/column 0
+                                                     :grid-pane/column-span 2}]}]}}}})
 
 #_
 (core/renderer)
