@@ -335,14 +335,18 @@ region-svg
   "Get a shoreline map of the region of interest
   TODO: This could be a higher resolution than the world map"
   [context]
-  (-> (fx/sub-ctx context
-                  first-datafile-geogrid)
-      (plot/grid-map (fx/sub-ctx context
-                                 region-svg-hiccup)
-                     (fx/sub-ctx context
-                                 region)
-                     []) ;; no POI
-      quickthing/serialize))
+  (if (nil? (fx/sub-ctx context
+                        first-datafile-idx))
+    (fx/sub-ctx context
+                region-svg)
+    (-> (fx/sub-ctx context
+                    first-datafile-geogrid)
+        (plot/grid-map (fx/sub-ctx context
+                                   region-svg-hiccup)
+                       (fx/sub-ctx context
+                                   region)
+                       []) ;; no POI
+        quickthing/serialize)))
 
 #_#_#_
 (defn

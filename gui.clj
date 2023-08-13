@@ -180,7 +180,7 @@
                {:fx/type svg
                 :v-box/hgrow :always
                 :svg-str (fx/sub-ctx context
-                                     state/region-svg)
+                                     state/first-datafile-svg)
                 :scale-x (fx/sub-ctx context
                                      state/region-to-display-scale-x)
                 :scale-y (fx/sub-ctx context
