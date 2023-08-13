@@ -72,10 +72,9 @@
                              :disable     true
                              :h-box/hgrow :always
                              ;;:pref-width Double/MAX_VALUE
-                             :text        (str
-                                            " "
-                                            (state/world-shoreline-filestr
-                                              context))}
+                             :text        (->> context
+                                               state/shoreline-filestr
+                                               (str " "))} ;;..spacer
                             {:fx/type :button
                              :text    "Select"}]}       
                {:fx/type     :stack-pane
@@ -173,10 +172,9 @@
                              :disable     true
                              :h-box/hgrow :always
                              ;;:pref-width Double/MAX_VALUE
-                             :text        (str
-                                            " "
-                                            (state/world-shoreline-filestr
-                                              context))}
+                             :text        (->> context
+                                               state/shoreline-filestr
+                                               (str " "))} ;;..spacer
                             {:fx/type :button
                              :text    "Select"}]}
                {:fx/type svg

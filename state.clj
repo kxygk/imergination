@@ -37,7 +37,7 @@
               :row-height))
 
 (defn
-  world-shoreline-filestr
+  shoreline-filestr
   [context]
   (fx/sub-val context
               :shoreline-filestr))
@@ -133,7 +133,7 @@
   [context]
   (plot/shoreline-map locations/world-region
                       (fx/sub-ctx context
-                                  world-shoreline-filestr)
+                                  shoreline-filestr)
                       [])) ;; no POI
   
 (defn
@@ -145,6 +145,7 @@
       (fx/sub-ctx world-svg-hiccup)
       quickthing/serialize))
 
+#_#_
 (defn
   world-batik
   "Get the shoreline as a JFX group
@@ -200,7 +201,7 @@
     (fx/sub-ctx context
                 region)
     (plot/shoreline-map (fx/sub-ctx context
-                                    world-shoreline-filestr)
+                                    shoreline-filestr)
                         []))) ;; no POI
 
 (defn
@@ -212,6 +213,7 @@ region-svg
       (fx/sub-ctx region-svg-hiccup)
       quickthing/serialize))
 
+#_#_
 (defn
   region-batik
   [context]
@@ -312,13 +314,15 @@ region-svg
 (defn
   first-datafile-idx
   "Get the first selected data index
-  Otherwise returns `0`"
+  Which in effect meaning the ~earliest~ in the list
+  Or the lowest value
+  If nothing has been selected then it returns `0`"
   [context]
   (get (fx/sub-ctx context
                    datafile-idxs)
        0))
 
-(defn
+(defn-
   first-datafile-geogrid
   [context]
   (get (fx/sub-ctx context
@@ -340,6 +344,7 @@ region-svg
                      []) ;; no POI
       quickthing/serialize))
 
+#_#_#_
 (defn
   first-datafile-batik
   [context]
@@ -371,62 +376,32 @@ region-svg
                 region-batik-halfwidth)
     (fx/sub-ctx  context
                  first-datafile-batik-halfwidth)))
-#_#_
-(defn
-  region-batik
-  [context]
-  (let [shoreline-svg (fx/sub-ctx
-                        context
-                        region-svg)]
-    (svg2jfx/batik-load
-      shoreline-svg)))
-
-(defn
-  region-batik-halfwidth
-  "This is scaled to fit the half area box"
-  [context]
-  (let [batik-group (fx/sub-ctx
-                      context
-                      region-batik)
-        scale-x     (fx/sub-ctx
-                      context
-                      state/region-to-display-scale-x)
-        scale-y     (fx/sub-ctx
-                      context
-                      state/region-to-display-scale-y)]
-    (svg2jfx/batik-scale
-      batik-group
-      scale-x
-      scale-y)))
 
 
-#_
+
+
 (defn
   data-geogrid
   "Reads in geogrids from GeoTIFF files
   Cropped to the region of interest"
   [context]
-  (let [dirstr  (fx/sub-ctx
-                  context
-                  data-dirstr)
-        eas-res (fx/sub-ctx
-                  context
-                  eas-res)
-        sou-res (fx/sub-ctx
-                  context
-                  sou-res)]
-    (->>
-      dirstr
-      java.io.File.
-      .list
-      sort
-      (map
-        #(geogrid4image/read-file
-           (str
-             dirstr
-             %)
-           eas-res
-           sou-res)))))
+  (let [dirstr  (fx/sub-ctx context
+                            data-dirstr)
+        eas-res (fx/sub-ctx context
+                            eas-res)
+        sou-res (fx/sub-ctx context
+                            sou-res)]
+    (->> dirstr
+         java.io.File.
+         .list
+         sort
+         (map
+           #(geogrid4image/read-file
+              (str
+                dirstr
+                %)
+              eas-res
+              sou-res)))))
 #_
 (defn
   data-matrix
