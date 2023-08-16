@@ -87,20 +87,18 @@
   "Draw a contour map with a grid overlay"
   ([input-grid
     contour-svg
-    region
     pois]
    (grid-map
      input-grid
      contour-svg
-     region
      pois
      ""))
   ([input-grid
     contour-svg
-    region
     pois
     text]
-   (let [local-rain-grid    (geogrid/subregion
+   (let [region (geogrid/covered-region input-grid)
+         local-rain-grid    (geogrid/subregion
                               input-grid
                               region)
          {:keys [overruns]} (geogrid/adjusted-crop-region-to-grid

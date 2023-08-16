@@ -348,8 +348,6 @@
                     first-datafile-geogrid)
         (plot/grid-map (fx/sub-ctx context
                                    region-svg-hiccup)
-                       (fx/sub-ctx context
-                                   region)
                        []) ;; no POI
         quickthing/serialize)))
 
@@ -442,7 +440,5 @@
                     sv-index)
         (plot/grid-map (fx/sub-ctx context
                                    region-svg-hiccup)
-                       (fx/sub-ctx context
-                                   region)
                        []) ;; no POI
         quickthing/serialize)))
