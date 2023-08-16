@@ -407,18 +407,12 @@
         ;;we use the first data grid to extra grid parameters
         first-data-grid (-> context
                             (fx/sub-ctx region-geogrids)
-                            first)
-        [width-pix
-         height-pix] (geogrid/dimension-pix first-data-grid)
-        [eas-res
-         sou-res] (geogrid/eassou-res first-data-grid)
-        norwes-point (geogrid/corner first-data-grid)]
-    (geogrid4seq/build-grid width-pix
-                            height-pix
-                            eas-res
-                            sou-res
-                            norwes-point
+                            first)]
+    (geogrid4seq/build-grid (-> context
+                                (fx/sub-ctx region-geogrids)
+                                first)
                             sv)))
+#_
 (-> @state/*selections
     (fx/sub-ctx state/singular-vector-geogrid
                 0))
