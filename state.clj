@@ -283,7 +283,7 @@ region-svg
          0.1))))
 
 (defn
-  region-images
+  region-geogrids
   "A vector of all the images of the region of interest
   in the same order as the file listing.
   Reading and cropping all the images take a min or two "
@@ -302,7 +302,10 @@ region-svg
                                  (fx/sub-ctx context
                                              region)))
        #_vec))
-
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/region-geogrids)
+    first)
 
 (defn
   datafile-idxs
@@ -326,7 +329,7 @@ region-svg
   first-datafile-geogrid
   [context]
   (get (fx/sub-ctx context
-                   region-images)
+                   region-geogrids)
        (fx/sub-ctx context
                    first-datafile-idx)))
   
