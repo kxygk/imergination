@@ -190,6 +190,74 @@
                 :text        "Preview Map!!"}]})
 
 (defn
+  sv-one
+  "Where we select the data to read in..
+  We can inspect how it looks in our region"
+  [{:keys [fx/context]}]
+  {:fx/type   :v-box
+   :alignment :top-center
+   ;;   :style     {:-fx-background-color :blue}
+   :children  [{:fx/type   :h-box
+                :alignment :top-left
+                :children  [{:fx/type :label
+                             :text    " Contour File: "}
+                            {:fx/type     :text-field
+                             :disable     true
+                             :h-box/hgrow :always
+                             ;;:pref-width Double/MAX_VALUE
+                             :text        (->> context
+                                               state/shoreline-filestr
+                                               (str " "))} ;;..spacer
+                            {:fx/type :button
+                             :text    "Select"}]}
+               {:fx/type svg
+                :v-box/hgrow :always
+                :svg-str (fx/sub-ctx context
+                                     state/singular-vector-svg
+                                     0)
+                :scale-x (fx/sub-ctx context
+                                     state/region-to-display-scale-x)
+                :scale-y (fx/sub-ctx context
+                                     state/region-to-display-scale-y)}
+               {:fx/type     :label
+                :v-box/vgrow :always
+                :text        "Preview Map!!"}]})
+
+(defn
+  sv-two
+  "Where we select the data to read in..
+  We can inspect how it looks in our region"
+  [{:keys [fx/context]}]
+  {:fx/type   :v-box
+   :alignment :top-center
+   ;;   :style     {:-fx-background-color :blue}
+   :children  [{:fx/type   :h-box
+                :alignment :top-left
+                :children  [{:fx/type :label
+                             :text    " Contour File: "}
+                            {:fx/type     :text-field
+                             :disable     true
+                             :h-box/hgrow :always
+                             ;;:pref-width Double/MAX_VALUE
+                             :text        (->> context
+                                               state/shoreline-filestr
+                                               (str " "))} ;;..spacer
+                            {:fx/type :button
+                             :text    "Select"}]}
+               {:fx/type svg
+                :v-box/hgrow :always
+                :svg-str (fx/sub-ctx context
+                                     state/singular-vector-svg
+                                     1)
+                :scale-x (fx/sub-ctx context
+                                     state/region-to-display-scale-x)
+                :scale-y (fx/sub-ctx context
+                                     state/region-to-display-scale-y)}
+               {:fx/type     :label
+                :v-box/vgrow :always
+                :text        "Preview Map!!"}]})
+
+(defn
   main-vertical-display
   "Tha main vertical window"
   [{:keys [fx/context]}]
@@ -215,7 +283,14 @@
                           {:fx/type          datapreview
                            :grid-pane/row    1
                            :grid-pane/column 1}
-                          {:fx/type               datapreview
+                          {:fx/type          sv-one
+                           :grid-pane/row    2
+                           :grid-pane/column 0}
+                          {:fx/type          sv-two
+                           :grid-pane/row    2
+                           :grid-pane/column 1}
+                          #_
+                          {:fx/type               sv-one
                            :grid-pane/row         2
                            :grid-pane/column      0
                            :grid-pane/column-span 2}]}]})

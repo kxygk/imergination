@@ -353,154 +353,102 @@
                        []) ;; no POI
         quickthing/serialize)))
 
-#_#_#_
 (defn
-  first-datafile-batik
+  region-matrix
+  "Matrix of all the data overa region
+  Implementation is hidden in `matrix.clj`
+  So that the underlying library can be swapped"
   [context]
-  (let [svg (fx/sub-ctx context
-                        first-datafile-svg)]
-    (-> svg
-        svg2jfx/batik-load)))
-
-(defn
-  first-datafile-batik-halfwidth
-  "If nothing is selected, this blows up"
-  [context]
-  (let [batik-group (fx/sub-ctx  context
-                                 first-datafile-batik)
-        scale-x     (fx/sub-ctx context
-                                state/region-to-display-scale-x)
-        scale-y     (fx/sub-ctx  context
-                                 state/region-to-display-scale-y)]
-    (svg2jfx/batik-scale batik-group
-                         scale-x
-                         scale-y)))
-
-(defn
-  datapreview-batik-halfwidth
-  [context]
-  (if (nil? (fx/sub-ctx context
-                        first-datafile-idx))
-    (fx/sub-ctx context
-                region-batik-halfwidth)
-    (fx/sub-ctx  context
-                 first-datafile-batik-halfwidth)))
-
-
-
-
-(defn
-  data-geogrid
-  "Reads in geogrids from GeoTIFF files
-  Cropped to the region of interest"
-  [context]
-  (let [dirstr  (fx/sub-ctx context
-                            data-dirstr)
-        eas-res (fx/sub-ctx context
-                            eas-res)
-        sou-res (fx/sub-ctx context
-                            sou-res)]
-    (->> dirstr
-         java.io.File.
-         .list
-         sort
-         (map
-           #(geogrid4image/read-file
-              (str
-                dirstr
-                %)
-              eas-res
-              sou-res)))))
+  (-> context
+      (fx/sub-ctx state/region-geogrids)
+      matrix/from-geogrids))
 #_
+(-> @state/*selections
+    (fx/sub-ctx state/region-matrix))
+
 (defn
-  data-matrix
+  region-svd
+  "the SVD of the region matrix"
   [context]
-  (matrix/from-geogrids
-    (fx/sub-ctx
-      context
-      data-geogrid)))
+  (-> context
+      (fx/sub-ctx state/region-matrix)
+      matrix/svd))
 #_
-(defn
-  data-grid
-  [context]
-  )
+(-> @state/*selections
+    (fx/sub-ctx state/region-svd))
 #_
-(defn-
-  to-data-matrix
-  "Turns a series of `geogrid` of identical size to one matrix"
-  [grids]
-  (let[[width-pix
-        height-pix] (->
-                      grids
-                      first
-                      geogrid/dimension-pix)
-       all-data     (->>
-                      grids
-                      (map
-                        geogrid/data)
-                      (reduce
-                        into
-                        []))]
-    (dge
-      ;; rows
-      (* 
-        width-pix
-        height-pix)
-      ;; columns
-      (count
-        grids)
-      ;; data
-      all-data)))
+(state/region-svd @state/*selections)
 
-#_#_#_
+
+
 (defn
-  data-matrix
-  "Takes the read in geogrids
-  and returns them packed in a matrix"
-  [context]
-  (to-data-matrix
-    (fx/sub-ctx
-      context
-      data-geogrid)))
+  singular-vector
+  "Get a particular singular vector
+  Based on `index`"
+  [context
+   sv-index]
+  (-> context
+      (fx/sub-ctx region-svd)
+      (matrix/singular-vector sv-index)))
+#_
+(state/singular-vector @state/*selections
+                       0)
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/singular-vector 0))
 
-
-(defn-
-  col-to-grid
-  "Given a COLUMN-OF-DATA
-  as well as map with keys for the grid's
-  `:dimension` `:position` and `:resolution`
-  Returns a `geogrid`"
-  [column-of-data
-   {:keys [;;matrix
-           dimension
-           position
-           resolution]}]
-  (let [[width-pix
-         height-pix] dimension
+(defn
+  singular-vector-geogrid
+  [context
+   sv-index]
+  (let [sv (fx/sub-ctx context
+                       singular-vector
+                       sv-index)
+        ;;we use the first data grid to extra grid parameters
+        first-data-grid (-> context
+                            (fx/sub-ctx region-geogrids)
+                            first)
+        [width-pix
+         height-pix] (geogrid/dimension-pix first-data-grid)
         [eas-res
-         sou-res]    resolution]
-    (geogrid4seq/build-grid
-      width-pix
-      height-pix
-      eas-res
-      sou-res
-      position
-      column-of-data)))
-
-
-(defn-
-  matrix-col-to-grid
-  "Given a matrix"
-  [{:keys [matrix
-           dimension
-           position
-           resolution]
-    :as   grid-params}
-   column-index]
-  (col-to-grid
-    (into
+         sou-res] (geogrid/eassou-res first-data-grid)
+        norwes-point (geogrid/corner first-data-grid)]
+    (geogrid4seq/build-grid width-pix
+                            height-pix
+                            eas-res
+                            sou-res
+                            norwes-point
+                            sv)))
+(-> @state/*selections
+    (fx/sub-ctx state/singular-vector-geogrid
+                0))
+#_
+(spit
+  "out/first-sv.svg"
+  (quickthing/serialize-with-line-breaks
+    (plot/grid-map
+      (-> @state/*selections
+          (fx/sub-ctx state/re))
+      (state/region @state/*selections) ;;input-region ;; it'll crop redundantly here..
       []
-      (col
-        matrix
-        column-index))
-    grid-params))
+      "1st SV")))
+
+(defn
+  singular-vector-svg
+  "Return an SVG of the singular vector INDEX
+  If there are no datafiles and you can't do a SVD then return a region"
+  [context
+   sv-index]
+  (if (empty? (fx/sub-ctx context
+                          region-geogrids))
+    (fx/sub-ctx context
+                region-svg)
+    (-> (fx/sub-ctx context
+                    singular-vector-geogrid
+                    sv-index)
+        (plot/grid-map (fx/sub-ctx context
+                                   region-svg-hiccup)
+                       (fx/sub-ctx context
+                                   region)
+                       []) ;; no POI
+        quickthing/serialize)))

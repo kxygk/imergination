@@ -56,6 +56,38 @@
      :resolution (-> geogrids
                      first
                      geogrid/eassou-res)}))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/region-images)
+    matrix/from-geogrids)
+
+(defn
+  svd
+  "Take a data matrix
+  Returns
+  {:sv matrix
+  :weights vector}"
+  [data-matrix]
+  (linalg/svd (:matrix data-matrix)
+              true
+              true))
+#_
+(linalg/svd (:matrix (-> @state/*selections
+                         (cljfx.api/sub-ctx state/region-matrix)))
+            true
+            true)
+
+(defn
+  singular-vector
+  "Take the result of the SVD
+  and return one singular vector
+  It'll be the size of the original region"
+  [svd
+   sv-index]
+  (into []
+        (ncore/col (:u svd)
+                   sv-index)))
+
 
 
 
