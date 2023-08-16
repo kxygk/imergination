@@ -69,7 +69,7 @@
   [context]
   (let [half-window        (/ (fx/sub-ctx context
                                           window-width)
-                             2.0)
+                              2.0)
         max-image-height   (* (fx/sub-ctx context
                                           row-height)
                               0.75)
@@ -135,7 +135,7 @@
                       (fx/sub-ctx context
                                   shoreline-filestr)
                       [])) ;; no POI
-  
+
 (defn
   world-svg
   "Get a shoreline map of the whole world
@@ -205,7 +205,7 @@
                         []))) ;; no POI
 
 (defn
-region-svg
+  region-svg
   "Get a shoreline map of the region of interest
   TODO: This could be a higher resolution than the world map"
   [context]
@@ -318,8 +318,7 @@ region-svg
   first-datafile-idx
   "Get the first selected data index
   Which in effect meaning the ~earliest~ in the list
-  Or the lowest value
-  If nothing has been selected then it returns `0`"
+  Or the lowest value"
   [context]
   (get (fx/sub-ctx context
                    datafile-idxs)
@@ -332,7 +331,10 @@ region-svg
                    region-geogrids)
        (fx/sub-ctx context
                    first-datafile-idx)))
-  
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/first-datafile-geogrid))
+
 (defn
   first-datafile-svg
   "Get a shoreline map of the region of interest
