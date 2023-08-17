@@ -87,9 +87,39 @@
   (into []
         (ncore/col (:u svd)
                    sv-index)))
-
-
-
+#_
+(let [region      locations/krabi-skinny-region
+      data-dirstr "./data/late/"
+      eas-res     0.1
+      sou-res     0.1
+      sv-index    0]
+  (let [geogrids (->> data-dirstr
+                     java.io.File.
+                     .list
+                     sort
+                     (mapv #(str data-dirstr
+                                 %))
+                     (mapv #(geogrid4image/read-file %
+                                                     eas-res
+                                                     sou-res))
+                     (mapv #(geogrid/subregion %
+                                               region)))]
+    (let [sv            (-> geogrids
+                            matrix/from-geogrids
+                            matrix/svd
+                            (matrix/singular-vector sv-index))
+          first-geogrid (-> geogrids
+                            first)]
+      (let [sv-grid   (geogrid4seq/build-grid first-geogrid
+                                              sv)
+            shoreline (plot/shoreline-map region
+                                          "./data/shoreline-coarse.json"
+                                          [])]
+        (spit "out/test/matrix_singular-vector.svg"
+              (-> sv-grid
+                  (plot/grid-map shoreline
+                                 [])
+                  quickthing/serialize))))))
 
 (defn
   col-to-grid
