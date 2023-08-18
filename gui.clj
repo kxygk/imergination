@@ -258,6 +258,23 @@
                 :text        "Preview Map!!"}]})
 
 (defn
+  sv-projections
+  "Where we select the data to read in..
+  We can inspect how it looks in our region"
+  [{:keys [fx/context]}]
+ {:fx/type   :v-box
+   :alignment :top-center
+   ;;   :style     {:-fx-background-color :blue}
+   :children  [{:fx/type   :h-box
+                :alignment :top-left
+                :children  [{:fx/type     svg
+                             :v-box/hgrow :always
+                             :svg-str     (-> context
+                                              (fx/sub-ctx state/sv-proj-svg))
+                             :scale-x     1.0
+                             :scale-y     1.0}]}]})
+
+(defn
   main-vertical-display
   "Tha main vertical window"
   [{:keys [fx/context]}]
@@ -277,23 +294,23 @@
                                       :max-height (fx/sub-ctx
                                                     context
                                                     state/row-height)})
-               :children [{:fx/type          datadir
-                           :grid-pane/row    1
-                           :grid-pane/column 0}
-                          {:fx/type          datapreview
-                           :grid-pane/row    1
-                           :grid-pane/column 1}
-                          {:fx/type          sv-one
-                           :grid-pane/row    2
-                           :grid-pane/column 0}
-                          {:fx/type          sv-two
-                           :grid-pane/row    2
-                           :grid-pane/column 1}
-                          #_
-                          {:fx/type               sv-one
-                           :grid-pane/row         2
-                           :grid-pane/column      0
-                           :grid-pane/column-span 2}]}]})
+               :children           [{:fx/type          datadir
+                                     :grid-pane/row    1
+                                     :grid-pane/column 0}
+                                    {:fx/type          datapreview
+                                     :grid-pane/row    1
+                                     :grid-pane/column 1}
+                                    {:fx/type          sv-one
+                                     :grid-pane/row    2
+                                     :grid-pane/column 0}
+                                    {:fx/type          sv-two
+                                     :grid-pane/row    2
+                                     :grid-pane/column 1}
+                                    {:fx/type               sv-projections
+                                     :grid-pane/row         3
+                                     :grid-pane/row-span    2
+                                     :grid-pane/column      0
+                                     :grid-pane/column-span 2}]}]})
 
 
 (defn

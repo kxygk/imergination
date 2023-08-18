@@ -442,3 +442,28 @@
                                    region-svg-hiccup)
                        []) ;; no POI
         quickthing/serialize)))
+
+(defn
+  sv-proj
+  [context]
+  (-> context
+      (fx/sub-ctx region-matrix)
+      matrix/svd
+      matrix/svd-to-2d-sv-space))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/sv-projections))
+
+(defn
+  sv-proj-svg
+  [context]
+  (-> context
+      (cljfx.api/sub-ctx sv-proj)
+      (plot/two-d-plot (* 100 (fx/sub-ctx context
+                                          state/window-width))
+                       (* 100 (fx/sub-ctx context
+                                  state/window-width)))
+      quickthing/serialize))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/sv-projections-svg))

@@ -122,6 +122,21 @@
                   quickthing/serialize))))))
 
 (defn
+  svd-to-2d-sv-space
+  [svd]
+  (let [weight-matrix (:vt svd)]
+    (mapv vector
+          (ncore/row weight-matrix;; data proj on sv1
+                     0)
+          (ncore/row weight-matrix;; data proj on sv1
+                     1))))
+#_
+(-> @state/*selections
+    (cljfx.api/sub-ctx state/region-matrix)
+    svd
+    svd-to-2d-sv-space)
+
+(defn
   col-to-grid
   "Given a COLUMN-OF-DATA
   as well as map with keys for the grid's
