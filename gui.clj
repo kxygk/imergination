@@ -275,6 +275,18 @@
                              :scale-y     1.0}]}]})
 
 (defn
+  sv-weights
+  "Where we select the data to read in..
+  We can inspect how it looks in our region"
+  [{:keys [fx/context]}]
+  {:fx/type     svg
+   :v-box/hgrow :always
+   :svg-str     (-> context
+                    (fx/sub-ctx state/sv-weights-svg))
+   :scale-x     1.0
+   :scale-y     1.0})
+
+(defn
   main-vertical-display
   "Tha main vertical window"
   [{:keys [fx/context]}]
@@ -309,6 +321,11 @@
                                     {:fx/type               sv-projections
                                      :grid-pane/row         3
                                      :grid-pane/row-span    2
+                                     :grid-pane/column      0
+                                     :grid-pane/column-span 2}
+                                    {:fx/type               sv-weights
+                                     :grid-pane/row         5
+                                     :grid-pane/row-span    1
                                      :grid-pane/column      0
                                      :grid-pane/column-span 2}]}]})
 

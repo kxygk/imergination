@@ -76,6 +76,37 @@
                          (cljfx.api/sub-ctx state/region-matrix)))
             true
             true)
+#_
+(-> @state/*selections
+    (cljfx.api/sub-ctx state/region-matrix)
+    svd)
+
+(defn
+  singular-values
+  "Given an SVD return the singular-values
+  Returned as pairs:
+  [[sv-num sv]
+   [sv-num sv]
+   ..
+   [sv-num sv]]
+  Index starts at 1
+  B/c this is what is directly plottable
+  and this is the natural way we speak of svs"
+  [svd]
+  (->> svd
+       :sigma
+       ncore/dia
+       (into [])
+       (map-indexed (fn [index
+                         value]
+                      (vector (inc index)
+                              value)))
+       (into [])))
+#_
+  (-> @state/*selections
+    (cljfx.api/sub-ctx state/region-matrix)
+    svd
+    singular-values)
 
 (defn
   singular-vector

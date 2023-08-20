@@ -467,3 +467,29 @@
 #_
 (-> @state/*selections
     (fx/sub-ctx state/sv-projections-svg))
+
+
+(defn
+  sv-weights
+  [context]
+  (-> context
+      (fx/sub-ctx region-matrix)
+      matrix/svd
+      matrix/singular-values))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/sv-weights))
+
+(defn
+  sv-weights-svg
+  [context]
+  (-> context
+      (cljfx.api/sub-ctx sv-weights)
+      (plot/sv-weights (* 100 (fx/sub-ctx context
+                                          state/window-width))
+                       (* 50 (fx/sub-ctx context
+                                         state/window-width)))
+      quickthing/svg2xml))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/sv-weights-svg))

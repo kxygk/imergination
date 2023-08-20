@@ -182,3 +182,24 @@
     (svg/svg
       {:width  width
        :height height})))
+
+(defn
+  sv-weights
+  [weights
+   width
+   height]
+  (-> weights
+      (quickthing/primary-axis {:x-name "YEAR"
+                                :y-name "RAND"
+                                :title  "TEST-PLOT"
+                                :color  "#0008"})
+      #_
+      (assoc-in [:x-axis
+                 :major]
+                (range 2000
+                       2016))
+      (assoc :data
+             (quickthing/hist weights))
+      viz/svg-plot2d-cartesian
+      (quickthing/svg-wrap [width
+                            height])))
