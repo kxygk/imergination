@@ -132,7 +132,7 @@
   (->>
     (->
       ;; create the axis
-      (quickthing/standard-axis
+      (quickthing/zero-axis
         data
         1000
         1000)
