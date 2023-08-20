@@ -350,6 +350,9 @@
                                    region-svg-hiccup)
                        []) ;; no POI
         quickthing/serialize)))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/first-datafile-svg))
 
 (defn
   region-matrix
@@ -399,9 +402,9 @@
   singular-vector-geogrid
   [context
    sv-index]
-  (let [sv (fx/sub-ctx context
-                       singular-vector
-                       sv-index)
+  (let [sv              (fx/sub-ctx context
+                                    singular-vector
+                                    sv-index)
         ;;we use the first data grid to extra grid parameters
         first-data-grid (-> context
                             (fx/sub-ctx region-geogrids)
@@ -462,7 +465,7 @@
       (plot/two-d-plot (* 100 (fx/sub-ctx context
                                           state/window-width))
                        (* 100 (fx/sub-ctx context
-                                  state/window-width)))
+                                          state/window-width)))
       quickthing/serialize))
 #_
 (-> @state/*selections
@@ -493,3 +496,4 @@
 #_
 (-> @state/*selections
     (fx/sub-ctx state/sv-weights-svg))
+

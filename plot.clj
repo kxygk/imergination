@@ -97,7 +97,7 @@
     contour-svg
     pois
     text]
-   (let [region (geogrid/covered-region input-grid)
+   (let [region             (geogrid/covered-region input-grid)
          local-rain-grid    (geogrid/subregion
                               input-grid
                               region)

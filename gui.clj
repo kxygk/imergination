@@ -177,14 +177,14 @@
                                                (str " "))} ;;..spacer
                             {:fx/type :button
                              :text    "Select"}]}
-               {:fx/type svg
+               {:fx/type     svg
                 :v-box/hgrow :always
-                :svg-str (fx/sub-ctx context
-                                     state/first-datafile-svg)
-                :scale-x (fx/sub-ctx context
-                                     state/region-to-display-scale-x)
-                :scale-y (fx/sub-ctx context
-                                     state/region-to-display-scale-y)}
+                :svg-str     (fx/sub-ctx context
+                                         state/first-datafile-svg)
+                :scale-x     (fx/sub-ctx context
+                                         state/region-to-display-scale-x)
+                :scale-y     (fx/sub-ctx context
+                                         state/region-to-display-scale-y)}
                {:fx/type     :label
                 :v-box/vgrow :always
                 :text        "Preview Map!!"}]})
@@ -210,15 +210,15 @@
                                                (str " "))} ;;..spacer
                             {:fx/type :button
                              :text    "Select"}]}
-               {:fx/type svg
+               {:fx/type     svg
                 :v-box/hgrow :always
-                :svg-str (fx/sub-ctx context
-                                     state/singular-vector-svg
-                                     0)
-                :scale-x (fx/sub-ctx context
-                                     state/region-to-display-scale-x)
-                :scale-y (fx/sub-ctx context
-                                     state/region-to-display-scale-y)}
+                :svg-str     (fx/sub-ctx context
+                                         state/singular-vector-svg
+                                         0)
+                :scale-x     (fx/sub-ctx context
+                                         state/region-to-display-scale-x)
+                :scale-y     (fx/sub-ctx context
+                                         state/region-to-display-scale-y)}
                {:fx/type     :label
                 :v-box/vgrow :always
                 :text        "Preview Map!!"}]})
@@ -244,15 +244,15 @@
                                                (str " "))} ;;..spacer
                             {:fx/type :button
                              :text    "Select"}]}
-               {:fx/type svg
+               {:fx/type     svg
                 :v-box/hgrow :always
-                :svg-str (fx/sub-ctx context
-                                     state/singular-vector-svg
-                                     1)
-                :scale-x (fx/sub-ctx context
-                                     state/region-to-display-scale-x)
-                :scale-y (fx/sub-ctx context
-                                     state/region-to-display-scale-y)}
+                :svg-str     (fx/sub-ctx context
+                                         state/singular-vector-svg
+                                         1)
+                :scale-x     (fx/sub-ctx context
+                                         state/region-to-display-scale-x)
+                :scale-y     (fx/sub-ctx context
+                                         state/region-to-display-scale-y)}
                {:fx/type     :label
                 :v-box/vgrow :always
                 :text        "Preview Map!!"}]})
@@ -262,17 +262,13 @@
   "Where we select the data to read in..
   We can inspect how it looks in our region"
   [{:keys [fx/context]}]
- {:fx/type   :v-box
-   :alignment :top-center
-   ;;   :style     {:-fx-background-color :blue}
-   :children  [{:fx/type   :h-box
-                :alignment :top-left
-                :children  [{:fx/type     svg
-                             :v-box/hgrow :always
-                             :svg-str     (-> context
-                                              (fx/sub-ctx state/sv-proj-svg))
-                             :scale-x     1.0
-                             :scale-y     1.0}]}]})
+  {:fx/type     svg
+   :v-box/hgrow :always
+   :svg-str     (-> context
+                    (fx/sub-ctx state/sv-proj-svg))
+   :scale-x     1.0
+   :scale-y     1.0})
+
 
 (defn
   sv-weights
@@ -351,8 +347,8 @@
    :scene   {:fx/type          :scene
              :on-width-changed {:effect effect-window-width}
              :root             {:fx/type      :scroll-pane
-                    :fit-to-width true ;; otherwise you get horizontal scrollbars
-                    :content      {:fx/type  main-vertical-display}}}})
+                                :fit-to-width true ;; otherwise you get horizontal scrollbars
+                                :content      {:fx/type main-vertical-display}}}})
 
 #_
 (core/renderer)
