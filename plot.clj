@@ -186,20 +186,40 @@
 (defn
   sv-weights
   [weights
+   sv-weights-stats
    width
    height]
-  (-> weights
-      (quickthing/primary-axis {:x-name "YEAR"
-                                :y-name "RAND"
-                                :title  "TEST-PLOT"
-                                :color  "#0008"})
-      #_
-      (assoc-in [:x-axis
-                 :major]
-                (range 2000
-                       2016))
-      (assoc :data
-             (quickthing/hist weights))
-      viz/svg-plot2d-cartesian
-      (quickthing/svg-wrap [width
-                            height])))
+  (let [first-two (take 2 weights)
+        the-rest  (drop 2 weights)]
+    (-> weights
+        (quickthing/primary-axis {:width  width
+                                  :height height})
+        (update :data
+                #(into %
+                       (quickthing/hist first-two
+                                        {:attribs {:stroke "red"}})))
+        (update :data
+                #(into %
+                       (quickthing/hist the-rest)))
+        viz/svg-plot2d-cartesian
+        (quickthing/svg-wrap [width
+                              height]))))
+#_
+(let [width   1000
+      height  500
+      weights [[1 5000.0]
+               [2 3000.0]
+               [3 500.00]
+               [4 300.00]
+               [5 200.00]
+               [6 100.00]]
+      stats   (-> weights
+                  matrix/singular-values-stats)]
+  (spit "out/test-weights.svg"
+        (-> (plot/sv-weights weights
+                             stats
+                             width
+                             height)
+            (quickthing/svg-wrap [width
+                                  height])
+            quickthing/svg2xml)))

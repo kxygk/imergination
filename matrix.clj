@@ -109,6 +109,25 @@
     singular-values)
 
 (defn
+  singular-values-stats
+  [singular-values]
+  (let [weights (->> singular-values
+                     (map second))]
+    (let [signal (->> weights
+                      (take 2))
+          noise  (->> weights
+                      (drop 2))
+          total  (apply +
+                        weights)]
+      {:total  total
+       :signal (/ (apply +
+                         signal)
+                  total)
+       :noise  (/ (apply +
+                         noise)
+                  total)})))
+
+(defn
   singular-vector
   "Take the result of the SVD
   and return one singular vector

@@ -484,16 +484,30 @@
     (fx/sub-ctx state/sv-weights))
 
 (defn
-  sv-weights-svg
+  sv-weights-stats
   [context]
   (-> context
-      (cljfx.api/sub-ctx sv-weights)
-      (plot/sv-weights (* 100 (fx/sub-ctx context
-                                          state/window-width))
-                       (* 50 (fx/sub-ctx context
-                                         state/window-width)))
-      quickthing/svg2xml))
+      (fx/sub-ctx sv-weights)
+      matrix/singular-values-stats))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/sv-weights-svg))
+    (fx/sub-ctx state/sv-weights-stats))
 
+
+(defn
+  sv-weights-svg
+  [context]
+  (-> (plot/sv-weights (take 10
+                             (fx/sub-ctx context
+                                         sv-weights))
+                       (fx/sub-ctx context
+                                   sv-weights-stats)
+                       (fx/sub-ctx context
+                                   state/window-width)
+                       (fx/sub-ctx context
+                                   state/row-height))
+      quickthing/svg2xml))
+#_
+(spit "out/test-weights-actual.svg"
+      (-> @state/*selections
+          (fx/sub-ctx state/sv-weights-svg)))
