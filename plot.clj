@@ -129,59 +129,33 @@
   [data
    width
    height]
-  (->>
-    (->
-      ;; create the axis
-      (quickthing/zero-axis
-        data
-        1000
-        1000)
-      ;; add data to the plot
-      (assoc
-        :data
-        [#_(quickthing/dashed-line
-             data)
-         (quickthing/adjustable-circles
-           (map-indexed
-             (fn [index
-                  data-point]
-               (conj
-                 data-point
-                 nil ;; default radius
-                 {:stroke "#777"
-                  :fill   (quickthing/color-cycle
-                            (-
-                              12.0
-                              (/
-                                (+
-                                  index
-                                  3.0) ;; so it starts in blue
-                                12.0)))}))
-             data))
-         (quickthing/index-text
-           data)
-         ;;ICA vectors as Points
-         #_(quickthing/adjustable-circles
-             (mapv
-               #(conj
-                  %
-                  100
-                  {:fill "black"})
-               (mapv
-                 #(mapv
-                    double
-                    %)
-                 (ica-vectors
-                   data))))])
-      (assoc ;; turn off grid
-        :grid
-        nil))
+  (->> (-> ;; create the axis
+         (quickthing/zero-axis data
+                               {:width width
+                                :height height
+                                :margin-frac 0.0})
+         ;; add data to the plot
+         (assoc :data
+                [(quickthing/adjustable-circles (->> data
+                                                     (map-indexed (fn [index
+                                                                       data-point]
+                                                                    (conj data-point
+                                                                          nil ;; default radius
+                                                                          {:stroke "#777"
+                                                                           :fill   (quickthing/color-cycle
+                                                                                     (- 12.0
+                                                                                        (/ (+ index
+                                                                                              3.0) ;; so it starts in blue
+                                                                                           12.0)))})))))
+                 (quickthing/index-text
+                   data)])
+         (assoc :grid ;; turn off grid
+                nil))
     ;; turns the plot specification to svg hiccup
     (viz/svg-plot2d-cartesian)
     ;; wraps in an `<svg>` element
-    (svg/svg
-      {:width  width
-       :height height})))
+    (svg/svg {:width  width
+              :height height})))
 
 (defn
   sv-weights
@@ -193,7 +167,8 @@
         the-rest  (drop 2 weights)]
     (-> weights
         (quickthing/primary-axis {:width  width
-                                  :height height})
+                                  :height height
+                                  :margin-frac 0.00})
         (update :data
                 #(into %
                        (quickthing/hist first-two

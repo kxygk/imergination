@@ -462,14 +462,15 @@
   [context]
   (-> context
       (cljfx.api/sub-ctx sv-proj)
-      (plot/two-d-plot (* 100 (fx/sub-ctx context
-                                          state/window-width))
-                       (* 100 (fx/sub-ctx context
-                                          state/window-width)))
+      (plot/two-d-plot (fx/sub-ctx context
+                                   state/window-width)
+                       (* 2.0
+                          (fx/sub-ctx context
+                                      state/row-height)))
       quickthing/serialize))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/sv-projections-svg))
+    (fx/sub-ctx state/sv-proj-svg))
 
 
 (defn
