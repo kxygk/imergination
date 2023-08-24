@@ -35,6 +35,86 @@
                                 scale-y)))}]})
 
 (defn
+  click-to-soueas
+  [click-event
+   display-width]
+  (let [click-x (.getX click-event)
+        click-y (.getY click-event)]
+    (let [scaling (/ 360.0
+                     display-width)]
+      (geoprim/point-eassou (* click-x
+                               scaling)
+                            (* click-y
+                               scaling)))))
+
+
+;; {:effect (fn [snapshot
+;;                                          event]
+;;                                       (-> snapshot
+;;                                           (fx/swap-context
+;;                                             assoc
+;;                                             :datafile-idxs
+;;                                             (:fx/event
+;;                                              event))))}]
+
+
+(defn
+  calc-new-region
+  [click-point
+   mouse-release-point]
+  (let [[onn-x
+         onn-y] (geoprim/as-eassou click-point)
+        [off-x
+         off-y] (geoprim/as-eassou mouse-release-point)]
+    (geoprim/region (geoprim/point-eassou (min onn-x
+                                               off-x)
+                                          (min onn-y
+                                               off-y))
+                    (geoprim/point-eassou (max onn-x
+                                               off-x)
+                                          (max onn-y
+                                               off-y)))))
+
+(defn
+  event-worldmap-mouse-press
+  "When the mouse is pressed on the worldmap
+  Record the position"
+  [snapshot
+   {:keys [fx/event]}]
+  (let [click-coord (click-to-soueas event
+                                     (fx/sub-ctx snapshot
+                                                 state/display-width))]
+    (print "Wow you clicked.."
+           click-coord)
+    (-> snapshot
+        (fx/swap-context assoc
+                         :mouse-click
+                         click-coord))))
+
+(defn
+  event-worldmap-mouse-release
+  "When the mouse is released on the worldmap
+  Calculate the selected region and update the state
+  Also reset the mousepress to `nil`"
+  [snapshot
+   {:keys [fx/event]}]
+  (println "you released the mouse button..."
+           "\n"
+           "The new region: "
+           (calc-new-region (fx/sub-val snapshot
+                                        :mouse-click)
+                            (click-to-soueas event
+                                             (fx/sub-ctx snapshot
+                                                         state/display-width))))
+  (-> snapshot
+      (fx/swap-context assoc
+                       :region
+                       (calc-new-region (fx/sub-val snapshot
+                                                    :mouse-click)
+                                        (click-to-soueas event
+                                                         (fx/sub-ctx snapshot
+                                                                     state/display-width))))))
+(defn
   worldmap
   "A map of the world
   - filepath to shoreline file
@@ -43,17 +123,19 @@
   [{:keys [fx/context]}]
   {:fx/type           :v-box
    :max-height        (/ (fx/sub-ctx context
-                              state/display-width)
-                  2.0)
-   :children [{:fx/type svg
-               :svg-str (fx/sub-ctx context
-                                    state/world-svg)
-               :scale-x (-> context
-                            (fx/sub-ctx state/display-width)
-                            (/ 360.0))
-               :scale-y (-> context
-                            (fx/sub-ctx state/display-width)
-                            (/ 360.0))}]})
+                                     state/display-width)
+                         2.0)
+   :on-mouse-pressed  {:effect event-worldmap-mouse-press}
+   :on-mouse-released {:effect event-worldmap-mouse-release}
+   :children          [{:fx/type svg
+                        :svg-str (fx/sub-ctx context
+                                             state/world-svg)
+                        :scale-x (-> context
+                                     (fx/sub-ctx state/display-width)
+                                     (/ 360.0))
+                        :scale-y (-> context
+                                     (fx/sub-ctx state/display-width)
+                                     (/ 360.0))}]})
 
 (defn
   region

@@ -23,6 +23,7 @@
        :eas-res           0.1
        :sou-res           0.1
        :region            locations/krabi-skinny-region
+       :mouse-click       nil
        :datafile-idxs     []}
       #(cache/lru-cache-factory % :threshold 1000))))
 
@@ -47,6 +48,11 @@
   [context]
   (fx/sub-val context
               :region))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/region)
+    geoprim/dimension)
+
 
 (defn
   window-width
@@ -138,10 +144,15 @@
 (defn-
   world-svg-hiccup
   [context]
-  (plot/shoreline-map locations/world-region
-                      (fx/sub-ctx context
-                                  shoreline-filestr)
-                      [])) ;; no POI
+  (plot/worldmap-region (plot/shoreline-map locations/world-region
+                                            (fx/sub-ctx context
+                                                        shoreline-filestr)
+                                            [])
+                        (-> context
+                            (fx/sub-ctx region))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/world-svg-hiccup))
 
 (defn
   world-svg
@@ -151,6 +162,13 @@
   (-> context
       (fx/sub-ctx world-svg-hiccup)
       quickthing/serialize))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/world-svg))
+#_
+(spit "out/test-world.svg"
+      (-> @state/*selections
+          (fx/sub-ctx state/world-svg)))
 
 #_#_
 (defn

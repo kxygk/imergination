@@ -39,6 +39,32 @@
     #_quickthing/serialize-with-line-breaks))
 
 (defn
+  worldmap-region
+  "Adds a region to the world map
+  The world map goes EAS 0-360 and SOU 0-180
+  TODO: Make something a bit more generic.."
+  [world-map
+   region]
+  (let [{:keys [norwes
+                soueas]} region
+        x-start          (:eas norwes)
+        y-start          (:sou norwes)]
+    ;;{:norwes {:eas 278.0, :sou 81.5}, :soueas {:eas 279.0, :sou 82.5}}
+    (quickthing/svg-wrap
+        (svg/group {}
+                   world-map
+                   (svg/rect [x-start
+                              y-start]
+                             (- (:eas soueas)
+                                x-start)
+                             (- (:sou soueas)
+                                y-start)
+                             {:fill "red"
+                              :fill-opacity "0.25"}))
+        [360.0
+         180.0])))
+
+(defn
   map-label
   "Label to add to the top right of maps"
   [region
