@@ -55,6 +55,13 @@
               :window-width))
 
 (defn
+  display-width
+  [context]
+  (* 0.9
+     (fx/sub-ctx context
+                 window-width)))
+
+(defn
   region-xy-ratio
   [context]
   (let [[lat

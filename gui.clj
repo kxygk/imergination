@@ -41,19 +41,19 @@
   - filepath to contour file
   - region limits"
   [{:keys [fx/context]}]
-  {:fx/type    :v-box
-   :max-height (/ (fx/sub-ctx context
-                              state/window-width)
+  {:fx/type           :v-box
+   :max-height        (/ (fx/sub-ctx context
+                              state/display-width)
                   2.0)
-   :children   [{:fx/type svg
-                 :svg-str (fx/sub-ctx context
-                                      state/world-svg)
-                 :scale-x (-> context
-                              (fx/sub-ctx state/window-width)
-                              (/ 360.0))
-                 :scale-y (-> context
-                              (fx/sub-ctx state/window-width)
-                              (/ 360.0))}]})
+   :children [{:fx/type svg
+               :svg-str (fx/sub-ctx context
+                                    state/world-svg)
+               :scale-x (-> context
+                            (fx/sub-ctx state/display-width)
+                            (/ 360.0))
+               :scale-y (-> context
+                            (fx/sub-ctx state/display-width)
+                            (/ 360.0))}]})
 
 (defn
   region
