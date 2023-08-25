@@ -1,0 +1,15 @@
+:imagesdir: fig/photo/eastern-caves/
+:!webfonts:
+:stylesheet: ../web/adoc.css
+:table-caption!:
+:reproducible:
+:nofooter:
+
+
+= Imergination
+
+== Intro
+
+A GUI for interactively extracting climate patterns from IMERG precipitation data
+
+This is a work in progress..
