@@ -23,7 +23,9 @@
              #_#_
              thi.ng/color                         {:mvn/version "1.4.0"}
              thi.ng/geom                          {:mvn/version "1.0.0-RC4"}
+             org.ojalgo/ojalgo                    {:mvn/version "53.0.0"}
              ;; with native parts..
+             ;;#_#_
              uncomplicate/neanderthal             {:mvn/version "0.43.3"}}
  ;; Note this generates a SLF4J Warning
  ;; https://github.com/uncomplicate/neanderthal/issues/54
