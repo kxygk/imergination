@@ -47,7 +47,7 @@
 ;; => {:radius-sqrd -2.0, :angle 0.7853981633974483}
 
 (defn
-  dichotomies
+  angle-dichotomies
   "Takes a list of POINTS
   Which is a vector of 2D coordinates
   [[x0 y0
@@ -59,10 +59,15 @@
   (->> points
        (map to-polar)
        (map to-halfplane)
-       (sort-by :angle)))
+       (sort-by :angle)
+       (map :angle)
+       (partition 2 1)
+       (map #(/ (apply +
+                       %)
+                2.0))))
 #_
-(-> [[1
-      1]
-     [1
-      -2]]
-    dichotomies)
+(-> [[1,  1]
+     [1, -2]
+     [-1, 1]
+     [-1, -2]]
+    angle-dichotomies)
