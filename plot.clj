@@ -155,33 +155,30 @@
   [data
    width
    height]
-  (->> (-> ;; create the axis
-         (quickthing/zero-axis data
-                               {:width width
-                                :height height
-                                :margin-frac 0.0})
-         ;; add data to the plot
-         (assoc :data
-                [(quickthing/adjustable-circles (->> data
-                                                     (map-indexed (fn [index
-                                                                       data-point]
-                                                                    (conj data-point
-                                                                          nil ;; default radius
-                                                                          {:stroke "#777"
-                                                                           :fill   (quickthing/color-cycle
-                                                                                     (- 12.0
-                                                                                        (/ (+ index
-                                                                                              3.0) ;; so it starts in blue
-                                                                                           12.0)))})))))
-                 (quickthing/index-text
-                   data)])
-         (assoc :grid ;; turn off grid
-                nil))
-    ;; turns the plot specification to svg hiccup
-    (viz/svg-plot2d-cartesian)
-    ;; wraps in an `<svg>` element
-    (svg/svg {:width  width
-              :height height})))
+  (->> (-> (quickthing/zero-axis data
+                                 {:width       width
+                                  :height      height
+                                  :margin-frac 0.0})
+           ;; add data to the plot
+           (assoc :data
+                  [(quickthing/adjustable-circles (->> data
+                                                       (map-indexed (fn [index
+                                                                         data-point]
+                                                                      (conj data-point
+                                                                            nil ;; default radius
+                                                                            {:stroke "#777"
+                                                                             :fill   (quickthing/color-cycle
+                                                                                       (- 12.0
+                                                                                          (/ (+ index
+                                                                                                3.0) ;; so it starts in blue
+                                                                                             12.0)))})))))
+                   (quickthing/index-text
+                     data)])
+           (assoc :grid ;; turn off grid
+                  nil))
+       (viz/svg-plot2d-cartesian)
+       (svg/svg {:width  width
+                 :height height})))
 
 (defn
   sv-weights
