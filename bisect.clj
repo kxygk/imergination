@@ -71,3 +71,50 @@
      [-1, 1]
      [-1, -2]]
     angle-dichotomies)
+
+
+(defn-
+  angle-to-unitvector
+  "Given an angle in radians
+  Return a 2D vector of length 1"
+  [angle]
+  [(cos angle)
+   (sin angle)])
+#_
+(-> [[1,  1]
+     [1, -2]
+     [-1, 1]
+     [-1, -2.5]]
+    angle-dichotomies
+    first                   ; => 0.9462734405957693
+    angle-to-unitvector)    ; => [0.584710284663765 0.8112421851755608]
+
+#_
+(let [data             [[2,  1.5]
+                        [1, -2]
+                        [-1.2, 1]
+                        [-0.5, -2.5]]
+      dichotomy-points (->> data
+                            angle-dichotomies
+                            (map angle-to-unitvector))
+      data-lines       (->> data
+                            (map #(quickthing/line-through-point data
+                                                                 %))
+                            (reduce into))
+      dichotomy-lines  (->> dichotomy-points
+                            (map #(quickthing/line-through-point data
+                                                                 %
+                                                                 {:attribs {:stroke-dasharray (str 10.0
+                                                                                                   " "
+                                                                                                   10.0)}}))
+                            (reduce into))]
+  (->> (-> (quickthing/zero-axis data)
+           (assoc :data
+                  (into [(quickthing/adjustable-circles data)]
+                        cat
+                        [data-lines
+                         dichotomy-lines]))
+           thi.ng.geom.viz.core/svg-plot2d-cartesian
+           quickthing/svg-wrap
+           quickthing/serialize)
+       (spit "out/test-dots.svg")))
