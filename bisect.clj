@@ -26,6 +26,27 @@
     to-polar)
 ;; => {:radius-sqrd 2.0, :angle 0.7853981633974483}
 
+(defn-
+  to-cartesian
+  "Take an [X Y] pair and return its polar coordinates"
+  [{:keys [radius-sqrd
+           angle]
+    :as   polar-coord}]
+  [(* (sin angle)
+      (sqrt radius-sqrd))
+   (* (cos angle)
+      (sqrt radius-sqrd))])
+#_
+(to-cartesian
+  (to-polar 1 1))
+;; => [1.0 1.0000000000000002]
+#_
+(-> [1
+     1]
+    to-polar
+    to-cartesian)
+;; => [1.0 1.0000000000000002]
+
 (defn
   to-halfplane
   "Remap the points to the 0-180 range
