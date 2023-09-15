@@ -67,6 +67,23 @@
     to-halfplane)
 ;; => {:radius-sqrd -2.0, :angle 0.7853981633974483}
 
+
+(defn
+abs-polar
+  "Do `abs` on the radius"
+  [{:keys [radius
+           angle]
+    :as   polar-coord}]
+  (update polar-coord
+          :radius
+          abs))
+#_
+(->> [1 -1]
+     to-polar
+     to-halfplane
+     abs-polar
+     to-cartesian)
+
 (defn
   angle-dichotomies
   "Takes a list of POINTS
