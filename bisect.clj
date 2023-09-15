@@ -12,14 +12,16 @@
    (to-polar [x y]))
   ([[x
      y]]
-   {:radius-sqrd (+ (pow x
-                         2)
-                    (pow y
-                         2))
-    :angle       (atan2 y ;;/docs/api/java/lang/Math.html#atan2-double-double-
-                        x)})) ;; Yes the order is weird `y` then `x`
+   {:radius (sqrt (+ (pow x
+                          2)
+                     (pow y
+                          2)))
+    :angle      (+ PI
+                   (atan2 y ;;/docs/api/java/lang/Math.html#atan2-double-double-
+                          x))})) ;; Yes the order is weird `y` then `x`
 #_
-(to-polar 1 1)
+(to-polar 1 -1)
+;; => {:radius 1.4142135623730951, :angle -0.7853981633974483}
 #_
 (-> [1
      1]
@@ -29,17 +31,20 @@
 (defn-
   to-cartesian
   "Take an [X Y] pair and return its polar coordinates"
-  [{:keys [radius-sqrd
+  [{:keys [radius
            angle]
     :as   polar-coord}]
-  [(* (sin angle)
-      (sqrt radius-sqrd))
-   (* (cos angle)
-      (sqrt radius-sqrd))])
+  [(* (cos angle)
+      radius)
+   (* (sin angle)
+      radius)])
 #_
-(to-cartesian
-  (to-polar 1 1))
+(to-cartesian (to-polar 1 2))
 ;; => [1.0 1.0000000000000002]
+#_
+(to-cartesian {:radius 1.0
+               :angle (/ PI
+                         4.0)})
 #_
 (-> [1
      1]
@@ -50,20 +55,22 @@
 (defn
   to-halfplane
   "Remap the points to the 0-180 range
-  But now the `radius-sqrd` can be negative"
-  [{:keys [radius-sqrd
+  But now the `radius` can be negative"
+  [{:keys [radius
            angle]
     :as   polar-coord}]
-  (let [PI-over-2 (/ PI
-                     2.0)]
-    (if (pos? angle)
-      polar-coord
-      {:radius-sqrd (- radius-sqrd)
-       :angle       (- angle)})))
+  (if (< (mod angle
+              (* 2.0
+                 PI))
+         PI)
+    polar-coord
+    {:radius (- radius)
+     :angle  (- angle
+                PI)}))
 #_
-(-> [1
+(-> [-1
      -1]
-    to-polar
+    to-polar)
     to-halfplane)
 ;; => {:radius-sqrd -2.0, :angle 0.7853981633974483}
 
@@ -109,7 +116,17 @@ abs-polar
      [-1, 1]
      [-1, -2]]
     angle-dichotomies)
-
+;; => (0.9462734405957693 1.5707963267948966 2.1953192129940238)
+#_
+(->> [[1,  1]
+     [1, -2]
+     [-1, 1]
+     [-1, -2]]
+    (map to-polar)
+    (map to-halfplane)
+    (map abs-polar)
+    (map to-cartesian)
+    angle-dichotomies)
 
 (defn-
   angle-to-unitvector
@@ -128,10 +145,14 @@ abs-polar
     angle-to-unitvector)    ; => [0.584710284663765 0.8112421851755608]
 
 #_
-(let [data             [[2,  1.5]
-                        [1, -2]
-                        [-1.2, 1]
-                        [-0.5, -2.5]]
+(let [data             (->> [[2,  1.5]
+                             [1, -2]
+                             [-1.2, 1]
+                             [-0.5, -2.5]] #_#_#_#_
+                            (map to-polar)
+                            (map to-halfplane)
+                            (map abs-polar)
+                            (map to-cartesian))
       dichotomy-points (->> data
                             angle-dichotomies
                             (map angle-to-unitvector))
@@ -146,7 +167,9 @@ abs-polar
                                                                                                    " "
                                                                                                    10.0)}}))
                             (reduce into))]
-  (->> (-> (quickthing/zero-axis data)
+  (->> (-> (quickthing/zero-axis data
+                                 {:width 500
+                                  :height 500})
            (assoc :data
                   (into [(quickthing/adjustable-circles data)]
                         cat
@@ -156,3 +179,9 @@ abs-polar
            quickthing/svg-wrap
            quickthing/serialize)
        (spit "out/test-dots.svg")))
+
+
+(->> [[2,  1.5]]
+     (map to-polar)
+     (map to-halfplane)
+     (map to-cartesian))
