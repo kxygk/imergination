@@ -230,3 +230,38 @@
            quickthing/serialize)
        (spit "out/test-dots.svg")))
 
+(defn above-angle?-
+  [point
+   angle]
+  (let [point-angle (-> point
+                        to-polar
+                        :angle)]
+    ;;    point-angle #_
+    (and (> point-angle
+            (mod angle
+                 (* 2.0
+                    PI)))
+         (< point-angle
+            (mod (+ angle
+                    PI)
+                 (* 2.0
+                    PI))))))
+(above-angle? [-1.2,  1.6]
+              0)
+
+(defn
+  points-along-angle
+  [points
+   angle]
+  (let [{above true
+         below false } (->> points
+                            (group-by #(above-angle? %
+                                                     angle)))]
+    [above
+     below]))
+#_
+(-> [[2.2,  1.5]
+     [1.1, -2.4]
+     [-1.2, 1.6]
+     [-0.5, -2.7]]
+    (points-along-angle 0.0))
