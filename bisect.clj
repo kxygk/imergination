@@ -92,6 +92,32 @@ abs-polar
      to-cartesian)
 
 (defn
+  angular-distance-to-x-axis
+  [point]
+  (let [angle-mod (-> point
+                      to-polar
+                      :angle
+                      (mod PI))]
+    angle-mod
+    #_
+        (if (> angle-mod
+               (/ PI
+                  2.0))
+          (- PI
+             angle-mod)
+          angle-mod)))
+#_
+(->> [[2.2,  1.5]
+      [1.1, -2.4]
+      [-1.2, 1.6]
+      [-0.5, -2.7]]
+     (sort #(< (angular-distance-to-x-axis %1)
+               (angular-distance-to-x-axis %2))))
+;; => (0.598418893478537
+;;     2.0005586058915847
+;;     2.214297435588181
+;;     1.3876855095324123)
+(defn
   angle-dichotomies
   "Takes a list of POINTS
   Which is a vector of 2D coordinates
@@ -99,17 +125,32 @@ abs-polar
   x1 y1
   ..
   xn yn]]
-  And returns a vector of vectors that split the group"
-  [points]
-  (->> points
-       (map to-polar)
-       (map to-halfplane)
-       (sort-by :angle)
-       (map :angle)
-       (partition 2 1)
-       (map #(/ (apply +
-                       %)
-                2.0))))
+  And returns a vector of angles that split the group"
+[points]
+(let [main-dichotomies (->> points
+                            (map to-polar)
+                            (map to-halfplane)
+                            (sort-by :angle)
+                            (map :angle)
+                            (partition 2 1)
+                            (map #(/ (apply +
+                                            %)
+                                     2.0)))
+      angles-to-x-axis (->> points
+                            (map angular-distance-to-x-axis)
+                            sort
+                            #_#_#_
+                            (sort #(< (angular-distance-to-x-axis %1)
+                                      (angular-distance-to-x-axis %2)))
+                            (map to-polar)
+                            (map :angle))
+      top-line (first angles-to-x-axis)
+      bottom-line (last angles-to-x-axis)]
+  (conj main-dichotomies
+        (/ (+ top-line
+              PI
+              bottom-line)
+           2.0))))
 #_
 (-> [[1,  1]
      [1, -2]
