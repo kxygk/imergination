@@ -16,12 +16,14 @@
                           2)
                      (pow y
                           2)))
-    :angle  (+ PI
-               (atan2 y ;;/docs/api/java/lang/Math.html#atan2-double-double-
-                      x))})) ;; Yes the order is weird `y` then `x`
+    :angle  (mod (atan2 y ;;/docs/api/java/lang/Math.html#atan2-double-double-
+                        x)
+                 (* 2.0
+                    PI))})) ;; Yes the order is weird `y` then `x`
 #_
 (to-polar 1 -1)
-;; => {:radius 1.4142135623730951, :angle -0.7853981633974483}
+#_
+(to-polar [2.2,  1.5])
 #_
 (-> [1
      1]
