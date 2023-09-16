@@ -16,9 +16,9 @@
                           2)
                      (pow y
                           2)))
-    :angle      (+ PI
-                   (atan2 y ;;/docs/api/java/lang/Math.html#atan2-double-double-
-                          x))})) ;; Yes the order is weird `y` then `x`
+    :angle  (+ PI
+               (atan2 y ;;/docs/api/java/lang/Math.html#atan2-double-double-
+                      x))})) ;; Yes the order is weird `y` then `x`
 #_
 (to-polar 1 -1)
 ;; => {:radius 1.4142135623730951, :angle -0.7853981633974483}
@@ -43,8 +43,8 @@
 ;; => [1.0 1.0000000000000002]
 #_
 (to-cartesian {:radius 1.0
-               :angle (/ PI
-                         4.0)})
+               :angle  (/ PI
+                          4.0)})
 #_
 (-> [1
      1]
@@ -70,13 +70,13 @@
 #_
 (-> [-1
      -1]
-    to-polar)
+    to-polar
     to-halfplane)
 ;; => {:radius-sqrd -2.0, :angle 0.7853981633974483}
 
 
 (defn
-abs-polar
+  abs-polar
   "Do `abs` on the radius"
   [{:keys [radius
            angle]
@@ -100,12 +100,12 @@ abs-polar
                       (mod PI))]
     angle-mod
     #_
-        (if (> angle-mod
-               (/ PI
-                  2.0))
-          (- PI
-             angle-mod)
-          angle-mod)))
+    (if (> angle-mod
+           (/ PI
+              2.0))
+      (- PI
+         angle-mod)
+      angle-mod)))
 #_
 (->> [[2.2,  1.5]
       [1.1, -2.4]
@@ -126,48 +126,55 @@ abs-polar
   ..
   xn yn]]
   And returns a vector of angles that split the group"
-[points]
-(let [main-dichotomies (->> points
-                            (map to-polar)
-                            (map to-halfplane)
-                            (sort-by :angle)
-                            (map :angle)
-                            (partition 2 1)
-                            (map #(/ (apply +
-                                            %)
-                                     2.0)))
-      angles-to-x-axis (->> points
-                            (map angular-distance-to-x-axis)
-                            sort
-                            #_#_#_
-                            (sort #(< (angular-distance-to-x-axis %1)
-                                      (angular-distance-to-x-axis %2)))
-                            (map to-polar)
-                            (map :angle))
-      top-line (first angles-to-x-axis)
-      bottom-line (last angles-to-x-axis)]
-  (conj main-dichotomies
-        (/ (+ top-line
-              PI
-              bottom-line)
-           2.0))))
+  [points]
+  (let [main-dichotomies (->> points
+                              (map to-polar)
+                              (map to-halfplane)
+                              (sort-by :angle)
+                              (map :angle)
+                              (partition 2 1)
+                              (map #(/ (apply +
+                                              %)
+                                       2.0)))
+        angles-to-x-axis (->> points
+                              (map angular-distance-to-x-axis)
+                              sort
+                              #_#_#_
+                              (sort #(< (angular-distance-to-x-axis %1)
+                                        (angular-distance-to-x-axis %2)))
+                              (map to-polar)
+                              (map :angle))
+        top-line         (first angles-to-x-axis)
+        bottom-line      (last angles-to-x-axis)]
+    (conj main-dichotomies
+          (/ (+ top-line
+                PI
+                bottom-line)
+             2.0))))
 #_
 (-> [[1,  1]
      [1, -2]
      [-1, 1]
      [-1, -2]]
     angle-dichotomies)
-;; => (0.9462734405957693 1.5707963267948966 2.1953192129940238)
+;; => (3.141592653589793
+;;     0.9462734405957693
+;;     1.5707963267948966
+;;     2.1953192129940238)
 #_
 (->> [[1,  1]
-     [1, -2]
-     [-1, 1]
-     [-1, -2]]
-    (map to-polar)
-    (map to-halfplane)
-    (map abs-polar)
-    (map to-cartesian)
-    angle-dichotomies)
+      [1, -2]
+      [-1, 1]
+      [-1, -2]]
+     (map to-polar)
+     (map to-halfplane)
+     (map abs-polar)
+     (map to-cartesian)
+     angle-dichotomies)
+;; => (3.141592653589793
+;;     0.9462734405957693
+;;     1.5707963267948966
+;;     2.1953192129940238)
 
 (defn-
   angle-to-unitvector
@@ -186,10 +193,10 @@ abs-polar
     angle-to-unitvector)    ; => [0.584710284663765 0.8112421851755608]
 
 #_
-(let [data             (->> [[2,  1.5]
-                             [1, -2]
-                             [-1.2, 1]
-                             [-0.5, -2.5]] #_#_#_#_
+(let [data             (->> [[2.2,  1.5]
+                             [1.1, -2.4]
+                             [-1.2, 1.6]
+                             [-0.5, -2.7]]  #_#_#_#_
                             (map to-polar)
                             (map to-halfplane)
                             (map abs-polar)
@@ -209,7 +216,7 @@ abs-polar
                                                                                                    10.0)}}))
                             (reduce into))]
   (->> (-> (quickthing/zero-axis data
-                                 {:width 500
+                                 {:width  500
                                   :height 500})
            (assoc :data
                   (into [(quickthing/adjustable-circles data)]
@@ -221,8 +228,3 @@ abs-polar
            quickthing/serialize)
        (spit "out/test-dots.svg")))
 
-
-(->> [[2,  1.5]]
-     (map to-polar)
-     (map to-halfplane)
-     (map to-cartesian))
