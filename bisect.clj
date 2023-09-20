@@ -230,7 +230,7 @@
            quickthing/serialize)
        (spit "out/test-dots.svg")))
 
-(defn above-angle?-
+(defn above-angle?
   [point
    angle]
   (let [point-angle (-> point
