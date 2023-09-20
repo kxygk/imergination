@@ -265,3 +265,56 @@
      [-1.2, 1.6]
      [-0.5, -2.7]]
     (points-along-angle 0.0))
+#_
+(let [angle 0.0
+      data             (->> [[2.2,  1.5]
+                             [1.1, -2.4]
+                             [-1.2, 1.6]
+                             [-0.5, -2.7]]  #_#_#_#_
+                            (map to-polar)
+                            (map to-halfplane)
+                            (map abs-polar)
+                            (map to-cartesian))
+      dichotomy-points (->> data
+                            angle-dichotomies
+                            (map angle-to-unitvector))
+      data-lines       (->> data
+                            (map #(quickthing/line-through-point data
+                                                                 %))
+                            (reduce into))
+      dichotomy-lines  (->> dichotomy-points
+                            (map #(quickthing/line-through-point data
+                                                                 %
+                                                                 {:attribs {:stroke-dasharray (str 10.0
+                                                                                                   " "
+                                                                                                   10.0)}}))
+                            (reduce into))
+      dividing-line (quickthing/line-through-point data
+                                                   [1.0
+                                                    angle]
+                                                   {:attribs {:stroke "purple"}})
+      [top-points
+       bottom-points] (-> data
+                          (points-along-angle angle))]
+  (println top-points
+           "\n"
+           bottom-points)
+  (->> (-> (quickthing/zero-axis data
+                                 {:width  500
+                                  :height 500})
+           (assoc :data
+                  (into [(quickthing/adjustable-circles data)
+                         (quickthing/adjustable-circles (->> top-points
+                                                             (mapv #(conj (conj % 7.0)
+                                                                          {:fill "red"}))))
+                         (quickthing/adjustable-circles  (->> bottom-points
+                                                             (mapv #(conj (conj % 7.0)
+                                                                          {:fill "green"}))))]
+                        cat
+                        [data-lines
+                         dividing-line
+                         dichotomy-lines]))
+           thi.ng.geom.viz.core/svg-plot2d-cartesian
+           quickthing/svg-wrap
+           quickthing/serialize)
+       (spit "out/test-dots.svg")))
