@@ -194,42 +194,6 @@
     first                   ; => 0.9462734405957693
     angle-to-unitvector)    ; => [0.584710284663765 0.8112421851755608]
 
-#_
-(let [data             (->> [[2.2,  1.5]
-                             [1.1, -2.4]
-                             [-1.2, 1.6]
-                             [-0.5, -2.7]]  #_#_#_#_
-                            (map to-polar)
-                            (map to-halfplane)
-                            (map abs-polar)
-                            (map to-cartesian))
-      dichotomy-points (->> data
-                            angle-dichotomies
-                            (map angle-to-unitvector))
-      data-lines       (->> data
-                            (map #(quickthing/line-through-point data
-                                                                 %))
-                            (reduce into))
-      dichotomy-lines  (->> dichotomy-points
-                            (map #(quickthing/line-through-point data
-                                                                 %
-                                                                 {:attribs {:stroke-dasharray (str 10.0
-                                                                                                   " "
-                                                                                                   10.0)}}))
-                            (reduce into))]
-  (->> (-> (quickthing/zero-axis data
-                                 {:width  500
-                                  :height 500})
-           (assoc :data
-                  (into [(quickthing/adjustable-circles data)]
-                        cat
-                        [data-lines
-                         dichotomy-lines]))
-           thi.ng.geom.viz.core/svg-plot2d-cartesian
-           quickthing/svg-wrap
-           quickthing/serialize)
-       (spit "out/test-dots.svg")))
-
 (defn above-angle?
   [point
    angle]
