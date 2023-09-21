@@ -254,6 +254,65 @@
      centroid)
 
 
+(defn
+  vec-length
+  [[x y]]
+  (sqrt (+ (pow x
+                2.0)
+           (pow y
+                2.0))))
+#_
+(vec-length [2 2])
+
+(defn
+  normalize-vector
+  [point]
+  (let  [length (vec-length point)]
+    (mapv #(/ %
+              length)
+          point)))
+#_
+(normalize-vector [2 5])
+
+(defn
+  distance-to-axis
+  "Get the average distance from the points to the given axis"
+  [point
+   axis]
+  (let [axis-norm (normalize-vector axis)
+        inner-p (reduce +
+                        (map *
+                             point ;; MAYBE ALSO NORMALIZE???
+                             axis-norm))
+        projection (->> axis-norm
+                        (mapv #(* %
+                                  inner-p)))
+        orthogonal-comp (map -
+                                    point
+                                    projection)]
+    (vec-length orthogonal-comp)))
+#_
+(distance-to-axis [2.2,  1.5]
+                  [1.1, -2.4])
+
+(defn
+  variance
+  [points
+   axis]
+  (/ (->> points
+          (map (fn [point]
+                 (distance-to-axis point
+                                   axis)))
+          (reduce +))
+     (count points)))
+#_
+(-> [[2.2,  1.5]
+     [1.1, -2.4]
+     [-1.2, 1.6]
+     [-0.5, -2.7]]
+    (variance [1 0]))
+
+
 #_
 (let [angle 0.0
       data             (->> [[2.2,  1.5]
