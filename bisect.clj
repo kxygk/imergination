@@ -229,6 +229,31 @@
      [-1.2, 1.6]
      [-0.5, -2.7]]
     (points-along-angle 0.0))
+
+(defn
+  centroid
+  "Calculate the centroid of a bunch of points
+  In this case I'll be wanting the centroid of the top and bottom halves"
+  [points]
+  (->> points
+       (reduce (fn [[total-x
+                     total-y]
+                    [point-x
+                     point-y]]
+                 [(+ total-x
+                     point-x)
+                  (+ total-y
+                     point-y)]))
+       (mapv #(/ %
+                 (count points)))))
+#_
+(->> [[2.2,  1.5]
+      [1.1, -2.4]
+      [-1.2, 1.6]
+      [-0.5, -2.7]]
+     centroid)
+
+
 #_
 (let [angle 0.0
       data             (->> [[2.2,  1.5]
