@@ -30,6 +30,17 @@
     to-polar)
 ;; => {:radius-sqrd 2.0, :angle 0.7853981633974483}
 
+(defn
+  rad2deg
+  [angle-rad]
+  (* (/ angle-rad
+        (* 2.0
+           PI))
+     360))
+#_
+(rad2deg PI)
+;; => 180.0
+
 (defn-
   to-cartesian
   "Take an [X Y] pair and return its polar coordinates"
@@ -197,16 +208,19 @@
 (defn above-angle?
   [point
    angle]
-  (let [point-angle (-> point
+  (let [line-angle (mod angle
+                        (* 1.0
+                           PI))
+        point-angle (-> point
                         to-polar
                         :angle)]
     ;;    point-angle #_
     (and (> point-angle
-            (mod angle
+            (mod line-angle
                  (* 2.0
                     PI)))
          (< point-angle
-            (mod (+ angle
+            (mod (+ line-angle
                     PI)
                  (* 2.0
                     PI))))))
