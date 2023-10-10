@@ -145,7 +145,8 @@
                               (map to-halfplane)
                               (sort-by :angle)
                               (map :angle)
-                              (partition 2 1)
+                              (partition 2
+                                         1)
                               (map #(/ (apply +
                                               %)
                                        2.0)))
@@ -231,7 +232,6 @@
         point-angle (-> point
                         to-polar
                         :angle)]
-    ;;    point-angle #_
     (and (> point-angle
             (mod line-angle
                  (* 2.0
@@ -241,8 +241,9 @@
                     PI)
                  (* 2.0
                     PI))))))
-(above-angle? [-1.2,  1.6]
-              0)
+#_
+(above-angle? [1.2, 1.6]
+              3.2)
 
 (defn
   points-along-angle
@@ -267,10 +268,8 @@
   In this case I'll be wanting the centroid of the top and bottom halves"
   [points]
   (->> points
-       (reduce (fn [[total-x
-                     total-y]
-                    [point-x
-                     point-y]]
+       (reduce (fn [[total-x, total-y]
+                    [point-x, point-y]]
                  [(+ total-x
                      point-x)
                   (+ total-y
@@ -307,7 +306,7 @@
 
 (defn
   distance-to-axis
-  "Get the average distance from the points to the given axis"
+  "Get the distance from a point to a given axis"
   [point
    axis]
   (let [axis-norm (normalize-vector axis)
@@ -319,8 +318,8 @@
                         (mapv #(* %
                                   inner-p)))
         orthogonal-comp (map -
-                                    point
-                                    projection)]
+                             point
+                             projection)]
     (vec-length orthogonal-comp)))
 #_
 (distance-to-axis [2.2,  1.5]
