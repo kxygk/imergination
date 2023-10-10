@@ -162,10 +162,25 @@
         extra-dichotomy (/ (+ top-line ;; angle btwn first/last line
                               PI
                               bottom-line)
-                           2.0)]
-    (into []
-          (conj main-dichotomies
-                extra-dichotomy))))
+                           2.0)
+        all-dichotomies (into []
+                              (conj main-dichotomies
+                                    ;;#_
+                                    extra-dichotomy))]
+    (->> all-dichotomies
+         (filterv (fn degenerate-dichotomy? ;; sometimes an extra dichotomy is generated
+                    [dichotomy-angle]
+                    (let [[top-points
+                           bot-points] (points-along-angle points
+                                                           dichotomy-angle)]
+                      (if (or (zero? (count top-points))
+                              (zero? (count bot-points)))
+                        false
+                        true)))))))
+#_
+(-> [[-1,  +1]
+     [-1, -2]]
+    angle-dichotomies)
 #_
 (-> [[1,  1]
      [1, -2]
