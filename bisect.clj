@@ -158,12 +158,14 @@
                               (map to-polar)
                               (map :angle))
         top-line         (first angles-to-x-axis)
-        bottom-line      (last angles-to-x-axis)]
-    (conj main-dichotomies
-          (/ (+ top-line
-                PI
-                bottom-line)
-             2.0))))
+        bottom-line      (last angles-to-x-axis)
+        extra-dichotomy (/ (+ top-line ;; angle btwn first/last line
+                              PI
+                              bottom-line)
+                           2.0)]
+    (into []
+          (conj main-dichotomies
+                extra-dichotomy))))
 #_
 (-> [[1,  1]
      [1, -2]
