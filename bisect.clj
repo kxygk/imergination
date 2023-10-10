@@ -343,20 +343,60 @@
      [-0.5, -2.7]]
     (variance [1 0]))
 
-
+(defn
+  two-plane-variance
+  [points
+   dichotomy-angle]
+  (let [[top-points
+         bot-points] (points-along-angle points
+                                         dichotomy-angle)]
+    (println "top: "
+             (count top-points))
+    (println "bot: "
+             (count bot-points))
+    (let [num-top      (count top-points)
+          num-bot      (count bot-points)
+          top-centroid (centroid top-points)
+          bot-centroid (centroid bot-points)
+          top-variance (variance top-points
+                                 top-centroid)
+          bot-variance (variance bot-points
+                                 bot-centroid)]
+      (/ (+ (* top-variance
+               num-top)
+            (* bot-variance
+               num-bot))
+         (+ num-top
+            num-bot)))))
 #_
-(let [angle 0.0
-      data             (->> [[2.2,  1.5]
-                             [1.1, -2.4]
-                             [-1.2, 1.6]
-                             [-0.5, -2.7]]  #_#_#_#_
-                            (map to-polar)
-                            (map to-halfplane)
-                            (map abs-polar)
-                            (map to-cartesian))
-      dichotomy-points (->> data
-                            angle-dichotomies
-                            (map angle-to-unitvector))
+(let [data  [[2.2,  1.5]
+            [1.1, -0.4]
+            [-1.2, 1.6]
+            [-0.7, -2.7]]
+      angle 3.3]
+  (two-plane-variance data
+                      angle))
+
+(defn
+  best-dichotomy-angle
+  "return the angle that best splits the points
+  (ie. minimizes the variance)"
+  [points]
+  (let [dichotomy-angles (->> points
+                              angle-dichotomies)]
+    (->> dichotomy-angles
+         (map #(two-plane-variance points
+                                   %))
+         (map-indexed vector)
+         (apply min-key
+                second)
+         first
+         (get dichotomy-angles))))
+#_
+(best-dichotomy [[2.2,  1.5]
+                 [1.1, -0.4]
+                 [-1.2, 1.6]
+                 [-0.7, -2.7]])
       data-lines       (->> data
                             (map #(quickthing/line-through-point data
                                                                  %))
