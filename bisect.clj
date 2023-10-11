@@ -30,7 +30,7 @@
     to-polar)
 ;; => {:radius-sqrd 2.0, :angle 0.7853981633974483}
 
-(defn
+(defn-
   rad2deg
   [angle-rad]
   (* (/ angle-rad
@@ -65,7 +65,7 @@
     to-cartesian)
 ;; => [1.0 1.0000000000000002]
 
-(defn
+(defn-
   to-halfplane
   "Remap the points to the 0-180 range
   But now the `radius` can be negative"
@@ -88,7 +88,7 @@
 ;; => {:radius-sqrd -2.0, :angle 0.7853981633974483}
 
 
-(defn
+(defn-
   abs-polar
   "Do `abs` on the radius"
   [{:keys [radius
@@ -104,7 +104,7 @@
      abs-polar
      to-cartesian)
 
-(defn
+(defn-
   angular-distance-to-x-axis
   [point]
   (let [angle-mod (-> point
@@ -130,7 +130,7 @@
 ;;     2.0005586058915847
 ;;     2.214297435588181
 ;;     1.3876855095324123)
-(defn
+(defn-
   angle-dichotomies
   "Takes a list of POINTS
   Which is a vector of 2D coordinates
@@ -223,7 +223,8 @@
     first                   ; => 0.9462734405957693
     angle-to-unitvector)    ; => [0.584710284663765 0.8112421851755608]
 
-(defn above-angle?
+(defn-
+  above-angle?
   [point
    angle]
   (let [line-angle (mod angle
@@ -245,7 +246,7 @@
 (above-angle? [1.2, 1.6]
               3.2)
 
-(defn
+(defn-
   points-along-angle
   [points
    angle]
@@ -262,7 +263,7 @@
      [-0.5, -2.7]]
     (points-along-angle 0.0))
 
-(defn
+(defn-
   centroid
   "Calculate the centroid of a bunch of points
   In this case I'll be wanting the centroid of the top and bottom halves"
@@ -294,7 +295,7 @@
 #_
 (vec-length [2 2])
 
-(defn
+(defn-
   normalize-vector
   [point]
   (let  [length (vec-length point)]
@@ -304,7 +305,7 @@
 #_
 (normalize-vector [2 5])
 
-(defn
+(defn-
   distance-to-axis
   "Get the distance from a point to a given axis"
   [point
@@ -325,7 +326,7 @@
 (distance-to-axis [2.2,  1.5]
                   [1.1, -2.4])
 
-(defn
+(defn-
   variance
   [points
    axis]
@@ -342,7 +343,7 @@
      [-0.5, -2.7]]
     (variance [1 0]))
 
-(defn
+(defn-
   two-plane-variance
   [points
    dichotomy-angle]
@@ -377,9 +378,9 @@
                       angle))
 
 (defn
-  best-dichotomy-angle
+  min-var-angle
   "return the angle that best splits the points
-  (ie. minimizes the variance)"
+  in a way that minimizes the variance"
   [points]
   (let [dichotomy-angles (->> points
                               angle-dichotomies)]
@@ -392,11 +393,82 @@
          first
          (get dichotomy-angles))))
 #_
-(best-dichotomy [[2.2,  1.5]
+(min-var-angle [[2.2,  1.5]
                  [1.1, -0.4]
                  [-1.2, 1.6]
                  [-0.7, -2.7]])
 
+(defn
+  min-var
+  "return a map with
+  {:angle      that-splits-the-plane-to-minimize-variance
+   :points-a   vector-of-points-in-one-half
+   :points-b   vector-of-points-in-other-half
+   :centroid-a centroid-of-one-half
+   :centroid-b centroid-of-the-other-half}"
+  [points]
+  (let [angle (min-var-angle points)
+        [points-a ;; we're recomputing this.. :/
+         points-b] (points-along-angle points
+                                       angle)]
+    (let [centroid-a (centroid points-a)
+          centroid-b (centroid points-b)]
+      {:angle angle
+       :points-a points-a
+       :points-b points-b
+       :centroid-a centroid-a
+       :centroid-b centroid-b})))
+#_
+(let [data                 [[-2.45, 1.55] ;;first group
+                            [-2.33, 1.25]
+                            [-2.05, 1.63]
+                            [-2.88, 1.32]
+                            [-2.22, -1.52] ;;second geroup
+                            [-2.14, -1.24]
+                            [-2.06, -1.66]
+                            [-2.79, -1.39]]
+      {:keys [angle
+              points-a
+              points-b
+              centroid-a
+              centroid-b]} (min-var data)]
+  (let [data-lines     (->> data
+                            (map #(quickthing/line-through-point data
+                                                                 %))
+                            (reduce into))
+        angle-line     (quickthing/line-through-point data
+                                                      (->> angle
+                                                           angle-to-unitvector)
+                                                      {:attribs {:stroke           "blue"
+                                                                 :stroke-dasharray (str 2.0
+                                                                                        " "
+                                                                                        2.0)}})
+        red-points     (quickthing/adjustable-circles (->> points-a
+                                                           (mapv #(conj (conj %
+                                                                              7.0)
+                                                                        {:fill "red"}))))
+        green-points   (quickthing/adjustable-circles (->> points-b
+                                                           (mapv #(conj (conj %
+                                                                              7.0)
+                                                                        {:fill "green"}))))
+        red-centroid   (quickthing/vector2d centroid-a
+                                            {:attribs {:stroke "red"}})
+        green-centroid (quickthing/vector2d centroid-b
+                                            {:attribs {:stroke "green"}})]
+    (->> (-> (quickthing/zero-axis data
+                                   {:width  500
+                                    :height 500})
+             (assoc :data
+                    (into [red-points
+                           green-points]
+                          cat
+                          [red-centroid
+                           green-centroid
+                           angle-line]))
+             thi.ng.geom.viz.core/svg-plot2d-cartesian
+             quickthing/svg-wrap
+             quickthing/serialize)
+         (spit "out/test-dots.svg"))))
 #_
 (let [simple-data         [[2.2,  1.5]
                            [1.1, -0.4]
