@@ -5,8 +5,8 @@
   Will rewrite into something that can be more easily packaged.."
   (:require geogrid
             geogrid4seq
-            [uncomplicate.neanderthal.core   :as ncore]
-            [uncomplicate.neanderthal.native   :as neand]
+            [uncomplicate.neanderthal.core :as ncore]
+            [uncomplicate.neanderthal.native :as neand]
             [uncomplicate.neanderthal.linalg :as linalg]
             [uncomplicate.neanderthal.vect-math :as vect-math]))
 
@@ -16,29 +16,18 @@
   pull out the data,
   slap them all together column by column"
   [geogrids]
-  (let[[width-pix
-        height-pix] (->
-                      geogrids
-                      first
-                      geogrid/dimension-pix)
-       all-data     (->>
-                      geogrids
-                      (map
-                        geogrid/data)
-                      (reduce
-                        into
-                        []))]
-    (neand/dge
-      ;; rows
-      (*
-        width-pix
-        height-pix)
-      ;; columns
-      (count
-        geogrids)
-      ;; data
-      all-data)))
-
+  (let [[width-pix
+         height-pix] (-> geogrids
+                         first
+                         geogrid/dimension-pix)
+        all-data     (->> geogrids
+                          (map geogrid/data)
+                          (reduce into
+                                  []))]
+    (neand/dge (* width-pix ;;rows
+                  height-pix)
+               (count geogrids) ;;cols
+               all-data)));; data
 
 (defn
   from-geogrids
@@ -103,7 +92,7 @@
                               value)))
        (into [])))
 #_
-  (-> @state/*selections
+(-> @state/*selections
     (cljfx.api/sub-ctx state/region-matrix)
     svd
     singular-values)
@@ -144,16 +133,16 @@
       sou-res     0.1
       sv-index    0]
   (let [geogrids (->> data-dirstr
-                     java.io.File.
-                     .list
-                     sort
-                     (mapv #(str data-dirstr
-                                 %))
-                     (mapv #(geogrid4image/read-file %
-                                                     eas-res
-                                                     sou-res))
-                     (mapv #(geogrid/subregion %
-                                               region)))]
+                      java.io.File.
+                      .list
+                      sort
+                      (mapv #(str data-dirstr
+                                  %))
+                      (mapv #(geogrid4image/read-file %
+                                                      eas-res
+                                                      sou-res))
+                      (mapv #(geogrid/subregion %
+                                                region)))]
     (let [sv            (-> geogrids
                             matrix/from-geogrids
                             matrix/svd
@@ -176,9 +165,9 @@
   [svd]
   (let [weight-matrix (:vt svd)]
     (mapv vector
-          (ncore/row weight-matrix;; data proj on sv1
+          (ncore/row weight-matrix                          ;; data proj on sv1
                      0)
-          (ncore/row weight-matrix;; data proj on sv1
+          (ncore/row weight-matrix                          ;; data proj on sv1
                      1))))
 #_
 (-> @state/*selections
