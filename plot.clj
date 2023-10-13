@@ -101,12 +101,8 @@
   Needed as a spacer in the grid of maps
   The REGION determines the dimension of the spacer"
   [input-region]
-  (->
-    (svg/group
-      {})
-    (quickthing/svg-wrap
-      (dimension
-        region))))
+  (-> (svg/group {})
+      (quickthing/svg-wrap (dimension region))))
 
 (defn
   grid-map
@@ -124,44 +120,43 @@
     pois
     text]
    (let [region             (geogrid/covered-region input-grid)
-         local-rain-grid    (geogrid/subregion
-                              input-grid
-                              region)
-         {:keys [overruns]} (geogrid/adjusted-crop-region-to-grid
-                              region
-                              local-rain-grid)]
-     (->
-       (svg/group
-         {}
-         (geogrid2svg/to-heatmap
-           local-rain-grid
-           overruns)
-         (svgmaps/latlon-axis ;; draws lat/lon axis
-           region)
-         contour-svg
-         (svgmaps/points-of-interest
-           pois
-           region)
-         (map-label
-           region
-           text))
-       (quickthing/svg-wrap
-         (dimension
-           region))
-       #_quickthing/serialize-with-line-breaks))))
+         local-rain-grid    (geogrid/subregion input-grid
+                                               region)
+         {:keys [overruns]} (geogrid/adjusted-crop-region-to-grid region
+                                                                  local-rain-grid)]
+     (-> (svg/group {}
+                    (geogrid2svg/to-heatmap local-rain-grid
+                                            overruns)
+                    (svgmaps/latlon-axis region)
+                    contour-svg
+                    (svgmaps/points-of-interest pois
+                                                region)
+                    (map-label region
+                               text))
+         (quickthing/svg-wrap (dimension region))
+         #_quickthing/serialize-with-line-breaks))))
 
 (defn
-  two-d-plot
+  sv-plot
   [data
    width
    height]
+  (let [{:keys [angle
+                points-a
+                points-b
+                centroid-a
+                centroid-b]} (bisect/min-var data)]
+    (println "ANGLE "
+             angle)
   (->> (-> (quickthing/zero-axis data
                                  {:width       width
                                   :height      height
                                   :margin-frac 0.0})
            ;; add data to the plot
            (assoc :data
-                  [(quickthing/adjustable-circles (->> data
+                  (into []
+                        cat
+                    [[(quickthing/adjustable-circles (->> data
                                                        (map-indexed (fn [index
                                                                          data-point]
                                                                       (conj data-point
@@ -171,14 +166,33 @@
                                                                                        (- 12.0
                                                                                           (/ (+ index
                                                                                                 3.0) ;; so it starts in blue
-                                                                                             12.0)))})))))
-                   (quickthing/index-text
-                     data)])
+                                                                                             12.0)))})))))]
+                    [(quickthing/index-text data)]
+                    (quickthing/line-through-point data
+                                                   (->> angle
+                                                        bisect/angle-to-unitvector)
+                                                   {:attribs {:stroke           "red"
+                                                              :stroke-dasharray (str 50.0
+                                                                                     " "
+                                                                                     50.0)}})
+                    (quickthing/line-through-point data
+                                                   centroid-a
+                                                   {:attribs {:stroke           "black"
+                                                              :stroke-dasharray (str 7.0
+                                                                                     " "
+                                                                                     7.0)}})
+                    (quickthing/line-through-point data
+                                                   centroid-b
+                                                   {:attribs {:stroke           "black"
+                                                              :stroke-dasharray (str 7.0
+                                                                                     " "
+                                                                                     7.0)}})]
+                    ))
            (assoc :grid ;; turn off grid
                   nil))
        (viz/svg-plot2d-cartesian)
        (svg/svg {:width  width
-                 :height height})))
+                 :height height}))))
 
 (defn
   sv-weights
