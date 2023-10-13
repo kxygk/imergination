@@ -207,7 +207,7 @@
 ;;     1.5707963267948966
 ;;     2.1953192129940238)
 
-(defn-
+(defn
   angle-to-unitvector
   "Given an angle in radians
   Return a 2D vector of length 1"
