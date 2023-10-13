@@ -472,6 +472,66 @@
         quickthing/serialize)))
 
 (defn
+  singular-vector-mixture
+  "Mixture of the first two singular vectors"
+  [context
+   sv-one
+   sv-two]
+  (let [sv1 (fx/sub-ctx context
+                        singular-vector
+                        0)
+        sv2 (fx/sub-ctx context
+                        singular-vector
+                        1)]
+    (let [mixture (mapv (fn [sv1-point
+                             sv2-point]
+                          (/ (+ (* sv1-point
+                                   sv-one)
+                                (* sv2-point
+                                   sv-two))
+                             2.0))
+                        sv1
+                        sv2)]
+      mixture)))
+
+(defn
+  singular-vector-mixture-geogrid
+  [context
+   sv-one
+   sv-two]
+  (geogrid4seq/build-grid (-> context
+                              (fx/sub-ctx region-geogrids)
+                              first)
+                          (fx/sub-ctx context
+                                      singular-vector-mixture
+                                      sv-one
+                                      sv-two)))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/singular-vector-mixture-geogrid
+                0.5))
+
+(defn
+  singular-vector-mixture-svg
+  [context
+   sv-one
+   sv-two]
+  (-> (fx/sub-ctx context
+                  singular-vector-mixture-geogrid
+                  sv-one
+                  sv-two)
+      (plot/grid-map (fx/sub-ctx context
+                                 region-svg-hiccup)
+                     []) ;; no POI
+      quickthing/serialize))
+#_
+(spit "out/fiftyfifty.svg"
+      (-> @state/*selections
+          (fx/sub-ctx state/singular-vector-mixture-svg
+                      0.5
+                      0.5)))
+
+(defn
   sv-proj
   [context]
   (-> context
@@ -480,23 +540,43 @@
       matrix/svd-to-2d-sv-space))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/sv-projections))
+    (fx/sub-ctx state/sv-proj))
+
+(defn
+  sv-bisection
+  [context]
+  (-> context
+      (fx/sub-ctx sv-proj)
+      bisect/min-var))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/sv-bisection)
+    :centroid-a)
+;; => (:angle :points-a :points-b :centroid-a :centroid-b)
+#_
+(let [{:keys [centroid-b]} (fx/sub-ctx @state/*selections
+                                       state/sv-bisection)]
+  (let [[x-coord
+         y-coord] centroid-b]
+    (/ x-coord
+       (+ x-coord
+          y-coord))))
+
 
 (defn
   sv-proj-svg
   [context]
   (-> context
       (cljfx.api/sub-ctx sv-proj)
-      (plot/two-d-plot (fx/sub-ctx context
-                                   state/window-width)
-                       (* 2.0
-                          (fx/sub-ctx context
-                                      state/row-height)))
+      (plot/sv-plot (fx/sub-ctx context
+                                state/window-width)
+                    (* 2.0
+                       (fx/sub-ctx context
+                                   state/row-height)))
       quickthing/serialize))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/sv-proj-svg))
-
 
 (defn
   sv-weights

@@ -340,6 +340,69 @@
                 :text        "Preview Map!!"}]})
 
 (defn
+  sv-mix
+  "Where we select the data to read in..
+  We can inspect how it looks in our region"
+  [{:keys [fx/context
+           sv-one
+           sv-two]}]
+  {:fx/type   :v-box
+   :alignment :top-center
+   ;;   :style     {:-fx-background-color :blue}
+   :children  [{:fx/type   :h-box
+                :alignment :top-left
+                :children  [{:fx/type :label
+                             :text    " Contour File: "}
+                            {:fx/type     :text-field
+                             :disable     true
+                             :h-box/hgrow :always
+                             ;;:pref-width Double/MAX_VALUE
+                             :text        (->> context
+                                               state/shoreline-filestr
+                                               (str " "))} ;;..spacer
+                            {:fx/type :button
+                             :text    "Select"}]}
+               {:fx/type     svg
+                :v-box/hgrow :always
+                :svg-str     (fx/sub-ctx context
+                                         state/singular-vector-mixture-svg
+                                         sv-one
+                                         sv-two)
+                :scale-x     (fx/sub-ctx context
+                                         state/region-to-display-scale-x)
+                :scale-y     (fx/sub-ctx context
+                                         state/region-to-display-scale-y)}
+               {:fx/type     :label
+                :v-box/vgrow :always
+                :text        "Preview Map!!"}]})
+
+(defn
+  sv-mix-one
+  "Where we select the data to read in..
+  We can inspect how it looks in our region"
+  [{:keys [fx/context]}]
+  (let [{:keys [centroid-a]} (fx/sub-ctx context
+                                         state/sv-bisection)]
+    (let [[x-coord
+           y-coord] centroid-a]
+      {:fx/type  sv-mix
+       :sv-one x-coord
+       :sv-two y-coord})))
+
+(defn
+  sv-mix-two
+  "Where we select the data to read in..
+  We can inspect how it looks in our region"
+  [{:keys [fx/context]}]
+  (let [{:keys [centroid-b]} (fx/sub-ctx context
+                                         state/sv-bisection)]
+    (let [[x-coord
+           y-coord] centroid-b]
+      {:fx/type  sv-mix
+       :sv-one x-coord
+       :sv-two y-coord})))
+
+(defn
   sv-projections
   "Where we select the data to read in..
   We can inspect how it looks in our region"
@@ -405,7 +468,13 @@
                                      :grid-pane/row         5
                                      :grid-pane/row-span    1
                                      :grid-pane/column      0
-                                     :grid-pane/column-span 2}]}]})
+                                     :grid-pane/column-span 2}
+                                    {:fx/type          sv-mix-one
+                                     :grid-pane/row    6
+                                     :grid-pane/column 0}
+                                    {:fx/type          sv-mix-two
+                                     :grid-pane/row    6
+                                     :grid-pane/column 1}]}]})
 
 
 (defn
