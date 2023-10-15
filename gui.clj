@@ -5,6 +5,7 @@
             [cljfx.api       :as fx]
             [cljfx.ext.list-view :as fx.ext.list-view]
             quickthing
+            bisect
             plot
             locations
             svg2jfx
@@ -146,7 +147,7 @@
   {:fx/type   :v-box
    :alignment :top-center
    ;;   :style {:-fx-background-color :purple}
-   :children  [{:fx/type   :h-box
+   :children  [#_{:fx/type   :h-box
                 :alignment :top-left
                 :children  [{:fx/type :label
                              :text    " Contour File: "}
@@ -187,7 +188,7 @@
                                  (plot/shoreline-map
                                    [#_locations/krabi])
                                  quickthing/serialize)}]}
-               {:fx/type     :label
+               #_{:fx/type     :label
                 :v-box/vgrow :always
                 :text        "Region Map!!"}]})
 
@@ -246,7 +247,7 @@
   {:fx/type   :v-box
    :alignment :top-center
    ;;   :style     {:-fx-background-color :blue}
-   :children  [{:fx/type   :h-box
+   :children  [#_{:fx/type   :h-box
                 :alignment :top-left
                 :children  [{:fx/type :label
                              :text    " Contour File: "}
@@ -267,7 +268,42 @@
                                          state/region-to-display-scale-x)
                 :scale-y     (fx/sub-ctx context
                                          state/region-to-display-scale-y)}
-               {:fx/type     :label
+               #_{:fx/type     :label
+                :v-box/vgrow :always
+                :text        "Preview Map!!"}]})
+
+(defn
+  sv
+  "Diplay of the Singular Vector of index `:sv-num`
+  Index is ZERO indexed.. (so PC1 is `{:sv-num 0}`)"
+  [{:keys [fx/context
+           sv-num]}]
+  {:fx/type   :v-box
+   :alignment :top-center
+   ;;   :style     {:-fx-background-color :blue}
+   :children  [#_{:fx/type   :h-box
+                :alignment :top-left
+                :children  [{:fx/type :label
+                             :text    " Contour File: "}
+                            {:fx/type     :text-field
+                             :disable     true
+                             :h-box/hgrow :always
+                             ;;:pref-width Double/MAX_VALUE
+                             :text        (->> context
+                                               state/shoreline-filestr
+                                               (str " "))} ;;..spacer
+                            {:fx/type :button
+                             :text    "Select"}]}
+               {:fx/type     svg
+                :v-box/hgrow :always
+                :svg-str     (fx/sub-ctx context
+                                         state/singular-vector-svg
+                                         sv-num)
+                :scale-x     (fx/sub-ctx context
+                                         state/region-to-display-scale-x)
+                :scale-y     (fx/sub-ctx context
+                                         state/region-to-display-scale-y)}
+               #_{:fx/type     :label
                 :v-box/vgrow :always
                 :text        "Preview Map!!"}]})
 
@@ -279,7 +315,7 @@
   {:fx/type   :v-box
    :alignment :top-center
    ;;   :style     {:-fx-background-color :blue}
-   :children  [{:fx/type   :h-box
+   :children  [#_{:fx/type   :h-box
                 :alignment :top-left
                 :children  [{:fx/type :label
                              :text    " Contour File: "}
@@ -301,7 +337,7 @@
                                          state/region-to-display-scale-x)
                 :scale-y     (fx/sub-ctx context
                                          state/region-to-display-scale-y)}
-               {:fx/type     :label
+               #_{:fx/type     :label
                 :v-box/vgrow :always
                 :text        "Preview Map!!"}]})
 
@@ -313,7 +349,7 @@
   {:fx/type   :v-box
    :alignment :top-center
    ;;   :style     {:-fx-background-color :blue}
-   :children  [{:fx/type   :h-box
+   :children  [#_{:fx/type   :h-box
                 :alignment :top-left
                 :children  [{:fx/type :label
                              :text    " Contour File: "}
@@ -335,7 +371,7 @@
                                          state/region-to-display-scale-x)
                 :scale-y     (fx/sub-ctx context
                                          state/region-to-display-scale-y)}
-               {:fx/type     :label
+               #_{:fx/type     :label
                 :v-box/vgrow :always
                 :text        "Preview Map!!"}]})
 
@@ -349,7 +385,7 @@
   {:fx/type   :v-box
    :alignment :top-center
    ;;   :style     {:-fx-background-color :blue}
-   :children  [{:fx/type   :h-box
+   :children  [#_{:fx/type   :h-box
                 :alignment :top-left
                 :children  [{:fx/type :label
                              :text    " Contour File: "}
@@ -372,7 +408,7 @@
                                          state/region-to-display-scale-x)
                 :scale-y     (fx/sub-ctx context
                                          state/region-to-display-scale-y)}
-               {:fx/type     :label
+               #_{:fx/type     :label
                 :v-box/vgrow :always
                 :text        "Preview Map!!"}]})
 
@@ -453,27 +489,45 @@
                                     {:fx/type          datapreview
                                      :grid-pane/row    1
                                      :grid-pane/column 1}
-                                    {:fx/type          sv-one
+                                    {:fx/type          sv
+                                     :sv-num           0
                                      :grid-pane/row    2
                                      :grid-pane/column 0}
-                                    {:fx/type          sv-two
+                                    {:fx/type          sv
+                                     :sv-num           1
                                      :grid-pane/row    2
                                      :grid-pane/column 1}
+                                    {:fx/type          sv
+                                     :sv-num           2
+                                     :grid-pane/row    3
+                                     :grid-pane/column 0}
+                                    {:fx/type          sv
+                                     :sv-num           3
+                                     :grid-pane/row    3
+                                     :grid-pane/column 1}
+                                    {:fx/type          sv
+                                     :sv-num           4
+                                     :grid-pane/row    4
+                                     :grid-pane/column 0}
+                                    {:fx/type          sv
+                                     :sv-num           5
+                                     :grid-pane/row    4
+                                     :grid-pane/column 1}
                                     {:fx/type               sv-projections
-                                     :grid-pane/row         3
+                                     :grid-pane/row         5
                                      :grid-pane/row-span    2
                                      :grid-pane/column      0
-                                     :grid-pane/column-span 2}
+                                     :grid-pane/column-span 1}
                                     {:fx/type               sv-weights
                                      :grid-pane/row         5
                                      :grid-pane/row-span    1
-                                     :grid-pane/column      0
-                                     :grid-pane/column-span 2}
+                                     :grid-pane/column      1
+                                     :grid-pane/column-span 1}
                                     {:fx/type          sv-mix-one
-                                     :grid-pane/row    6
+                                     :grid-pane/row    7
                                      :grid-pane/column 0}
                                     {:fx/type          sv-mix-two
-                                     :grid-pane/row    6
+                                     :grid-pane/row    7
                                      :grid-pane/column 1}]}]})
 
 

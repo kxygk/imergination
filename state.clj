@@ -5,6 +5,7 @@
             [cljfx.api       :as fx]
             [clojure.core.cache :as cache]
             [injest.path :refer [+> +>> x>> =>>]]
+            bisect
             geogrid4image
             svg2jfx
             matrix
@@ -85,7 +86,7 @@
                               2.0)
         max-image-height   (* (fx/sub-ctx context
                                           row-height)
-                              0.75)
+                              0.95)
         drawing-area-ratio (/ half-window
                               max-image-height)
         image-ratio        (fx/sub-ctx context
@@ -568,9 +569,10 @@
   [context]
   (-> context
       (cljfx.api/sub-ctx sv-proj)
-      (plot/sv-plot (fx/sub-ctx context
-                                state/window-width)
-                    (* 2.0
+      (plot/sv-plot (* 0.5
+                       (fx/sub-ctx context
+                                   state/window-width))
+                    (* 1.0
                        (fx/sub-ctx context
                                    state/row-height)))
       quickthing/serialize))
@@ -608,10 +610,12 @@
                                          sv-weights))
                        (fx/sub-ctx context
                                    sv-weights-stats)
-                       (fx/sub-ctx context
-                                   state/window-width)
-                       (fx/sub-ctx context
-                                   state/row-height))
+                       (* 0.5
+                          (fx/sub-ctx context
+                                      state/window-width))
+                       (* 1.0
+                          (fx/sub-ctx context
+                                      state/row-height)))
       quickthing/svg2xml))
 #_
 (spit "out/test-weights-actual.svg"
