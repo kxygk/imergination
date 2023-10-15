@@ -130,6 +130,47 @@
 ;;     2.0005586058915847
 ;;     2.214297435588181
 ;;     1.3876855095324123)
+
+(defn-
+  above-angle?
+  [point
+   angle]
+  (let [line-angle (mod angle
+                        (* 1.0
+                           PI))
+        point-angle (-> point
+                        to-polar
+                        :angle)]
+    (and (> point-angle
+            (mod line-angle
+                 (* 2.0
+                    PI)))
+         (< point-angle
+            (mod (+ line-angle
+                    PI)
+                 (* 2.0
+                    PI))))))
+#_
+(above-angle? [1.2, 1.6]
+              3.2)
+
+(defn-
+  points-along-angle
+  [points
+   angle]
+  (let [{above true
+         below false } (->> points
+                            (group-by #(above-angle? %
+                                                     angle)))]
+    [above
+     below]))
+#_
+(-> [[2.2,  1.5]
+     [1.1, -2.4]
+     [-1.2, 1.6]
+     [-0.5, -2.7]]
+    (points-along-angle 0.0))
+
 (defn-
   angle-dichotomies
   "Takes a list of POINTS
@@ -222,46 +263,6 @@
     angle-dichotomies
     first                   ; => 0.9462734405957693
     angle-to-unitvector)    ; => [0.584710284663765 0.8112421851755608]
-
-(defn-
-  above-angle?
-  [point
-   angle]
-  (let [line-angle (mod angle
-                        (* 1.0
-                           PI))
-        point-angle (-> point
-                        to-polar
-                        :angle)]
-    (and (> point-angle
-            (mod line-angle
-                 (* 2.0
-                    PI)))
-         (< point-angle
-            (mod (+ line-angle
-                    PI)
-                 (* 2.0
-                    PI))))))
-#_
-(above-angle? [1.2, 1.6]
-              3.2)
-
-(defn-
-  points-along-angle
-  [points
-   angle]
-  (let [{above true
-         below false } (->> points
-                            (group-by #(above-angle? %
-                                                     angle)))]
-    [above
-     below]))
-#_
-(-> [[2.2,  1.5]
-     [1.1, -2.4]
-     [-1.2, 1.6]
-     [-0.5, -2.7]]
-    (points-along-angle 0.0))
 
 (defn-
   centroid
