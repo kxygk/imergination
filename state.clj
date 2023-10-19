@@ -473,6 +473,26 @@
         quickthing/serialize)))
 
 (defn
+  first-sv-svg
+  [context]
+  (fx/sub-ctx context
+              singular-vector-svg
+              0))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/first-sv-svg))
+
+(defn
+  second-sv-svg
+  [context]
+  (fx/sub-ctx context
+              singular-vector-svg
+              1))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/first-sv-svg))
+
+(defn
   singular-vector-mixture
   "Mixture of the first two singular vectors"
   [context
@@ -563,6 +583,31 @@
        (+ x-coord
           y-coord))))
 
+
+(defn
+  first-pattern-svg
+  [context]
+  (let [{:keys [centroid-a]} (fx/sub-ctx context
+                                         state/sv-bisection)]
+    (let [[x-coord
+           y-coord] centroid-a]
+      (fx/sub-ctx context
+                  singular-vector-mixture-svg
+                  x-coord
+                  y-coord))))
+
+
+(defn
+  second-pattern-svg
+  [context]
+  (let [{:keys [centroid-b]} (fx/sub-ctx context
+                                         state/sv-bisection)]
+    (let [[x-coord
+           y-coord] centroid-b]
+      (fx/sub-ctx context
+                  singular-vector-mixture-svg
+                  x-coord
+                  y-coord))))
 
 (defn
   sv-proj-svg

@@ -331,8 +331,7 @@
                {:fx/type     svg
                 :v-box/hgrow :always
                 :svg-str     (fx/sub-ctx context
-                                         state/singular-vector-svg
-                                         0)
+                                         state/first-sv-svg)
                 :scale-x     (fx/sub-ctx context
                                          state/region-to-display-scale-x)
                 :scale-y     (fx/sub-ctx context
@@ -365,50 +364,13 @@
                {:fx/type     svg
                 :v-box/hgrow :always
                 :svg-str     (fx/sub-ctx context
-                                         state/singular-vector-svg
-                                         1)
+                                         state/second-sv-svg)
                 :scale-x     (fx/sub-ctx context
                                          state/region-to-display-scale-x)
                 :scale-y     (fx/sub-ctx context
                                          state/region-to-display-scale-y)}
-               #_{:fx/type     :label
-                :v-box/vgrow :always
-                :text        "Preview Map!!"}]})
-
-(defn
-  sv-mix
-  "Where we select the data to read in..
-  We can inspect how it looks in our region"
-  [{:keys [fx/context
-           sv-one
-           sv-two]}]
-  {:fx/type   :v-box
-   :alignment :top-center
-   ;;   :style     {:-fx-background-color :blue}
-   :children  [#_{:fx/type   :h-box
-                :alignment :top-left
-                :children  [{:fx/type :label
-                             :text    " Contour File: "}
-                            {:fx/type     :text-field
-                             :disable     true
-                             :h-box/hgrow :always
-                             ;;:pref-width Double/MAX_VALUE
-                             :text        (->> context
-                                               state/shoreline-filestr
-                                               (str " "))} ;;..spacer
-                            {:fx/type :button
-                             :text    "Select"}]}
-               {:fx/type     svg
-                :v-box/hgrow :always
-                :svg-str     (fx/sub-ctx context
-                                         state/singular-vector-mixture-svg
-                                         sv-one
-                                         sv-two)
-                :scale-x     (fx/sub-ctx context
-                                         state/region-to-display-scale-x)
-                :scale-y     (fx/sub-ctx context
-                                         state/region-to-display-scale-y)}
-               #_{:fx/type     :label
+               #_
+               {:fx/type     :label
                 :v-box/vgrow :always
                 :text        "Preview Map!!"}]})
 
@@ -417,26 +379,28 @@
   "Where we select the data to read in..
   We can inspect how it looks in our region"
   [{:keys [fx/context]}]
-  (let [{:keys [centroid-a]} (fx/sub-ctx context
-                                         state/sv-bisection)]
-    (let [[x-coord
-           y-coord] centroid-a]
-      {:fx/type  sv-mix
-       :sv-one x-coord
-       :sv-two y-coord})))
+  {:fx/type svg
+   :v-box/hgrow :always
+   :svg-str     (fx/sub-ctx context
+                            state/first-pattern-svg)
+   :scale-x     (fx/sub-ctx context
+                            state/region-to-display-scale-x)
+   :scale-y     (fx/sub-ctx context
+                            state/region-to-display-scale-y)})
 
 (defn
   sv-mix-two
   "Where we select the data to read in..
   We can inspect how it looks in our region"
   [{:keys [fx/context]}]
-  (let [{:keys [centroid-b]} (fx/sub-ctx context
-                                         state/sv-bisection)]
-    (let [[x-coord
-           y-coord] centroid-b]
-      {:fx/type  sv-mix
-       :sv-one x-coord
-       :sv-two y-coord})))
+  {:fx/type svg
+   :v-box/hgrow :always
+   :svg-str     (fx/sub-ctx context
+                            state/second-pattern-svg)
+   :scale-x     (fx/sub-ctx context
+                            state/region-to-display-scale-x)
+   :scale-y     (fx/sub-ctx context
+                            state/region-to-display-scale-y)})
 
 (defn
   sv-projections

@@ -176,6 +176,25 @@
     svd-to-2d-sv-space)
 
 (defn
+  singular-vector-mix
+  "Take SINGULAR-VECTOR-A and SINGULAR-VECTOR-B
+  And mix them according to WEIGHT-A and WEIGHT-B"
+  [singular-vector-a
+   singular-vector-b
+   weight-a
+   weight-b]
+    (let [mixture (mapv (fn [sv1-point
+                             sv2-point]
+                          (/ (+ (* sv1-point
+                                   weight-a)
+                                (* sv2-point
+                                   weight-b))
+                             2.0))
+                        singular-vector-a
+                        singular-vector-b)]
+      mixture))
+
+(defn
   col-to-grid
   "Given a COLUMN-OF-DATA
   as well as map with keys for the grid's
