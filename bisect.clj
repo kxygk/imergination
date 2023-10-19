@@ -460,10 +460,11 @@
                                    {:width  500
                                     :height 500})
              (assoc :data
-                    (into [red-points
-                           green-points]
+                    (into []
                           cat
-                          [red-centroid
+                          [red-points
+                           green-points
+                           red-centroid
                            green-centroid
                            angle-line]))
              thi.ng.geom.viz.core/svg-plot2d-cartesian

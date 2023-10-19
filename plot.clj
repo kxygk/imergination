@@ -156,7 +156,7 @@
            (assoc :data
                   (into []
                         cat
-                    [[(quickthing/adjustable-circles (->> data
+                        [(quickthing/adjustable-circles (->> data
                                                        (map-indexed (fn [index
                                                                          data-point]
                                                                       (conj data-point
@@ -166,28 +166,27 @@
                                                                                        (- 12.0
                                                                                           (/ (+ index
                                                                                                 3.0) ;; so it starts in blue
-                                                                                             12.0)))})))))]
-                    [(quickthing/index-text data)]
-                    (quickthing/line-through-point data
-                                                   (->> angle
-                                                        bisect/angle-to-unitvector)
-                                                   {:attribs {:stroke           "red"
-                                                              :stroke-dasharray (str 50.0
-                                                                                     " "
-                                                                                     50.0)}})
-                    (quickthing/line-through-point data
-                                                   centroid-a
-                                                   {:attribs {:stroke           "black"
-                                                              :stroke-dasharray (str 7.0
-                                                                                     " "
-                                                                                     7.0)}})
-                    (quickthing/line-through-point data
-                                                   centroid-b
-                                                   {:attribs {:stroke           "black"
-                                                              :stroke-dasharray (str 7.0
-                                                                                     " "
-                                                                                     7.0)}})]
-                    ))
+                                                                                             12.0)))})))))
+                         (quickthing/index-text data)
+                         (quickthing/line-through-point data
+                                                        (->> angle
+                                                             bisect/angle-to-unitvector)
+                                                        {:attribs {:stroke           "red"
+                                                                   :stroke-dasharray (str 50.0
+                                                                                          " "
+                                                                                          50.0)}})
+                         (quickthing/line-through-point data
+                                                        centroid-a
+                                                        {:attribs {:stroke           "black"
+                                                                   :stroke-dasharray (str 7.0
+                                                                                          " "
+                                                                                          7.0)}})
+                         (quickthing/line-through-point data
+                                                        centroid-b
+                                                        {:attribs {:stroke           "black"
+                                                                   :stroke-dasharray (str 7.0
+                                                                                          " "
+                                                                                          7.0)}})]))
            (assoc :grid ;; turn off grid
                   nil))
        (viz/svg-plot2d-cartesian)

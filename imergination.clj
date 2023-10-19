@@ -749,31 +749,31 @@
     ;; add data to the plot
     (assoc
       :data
-      [(quickthing/dashed-line
-         projections)
-       (quickthing/adjustable-circles
-         (map-indexed
-           (fn [index
-                data-point]
-             (conj
-               data-point
-               nil ;; default radius
-               {:fill
-                ;;(apply
-                ;;  thi.ng.color.core/rgba
-                (quickthing/color-cycle
-                  (rem
-                    (+
-                      index
-                      6.0)
-                    12.0)) ;;)
-                ;;
-                :stroke
-                "#777"}))
-           projections))
-       (quickthing/index-text
-         projections)])
-    (assoc ;; turn off grid
+      (concat (quickthing/dashed-line
+                projections)
+              (quickthing/adjustable-circles
+                (map-indexed
+                  (fn [index
+                       data-point]
+                    (conj
+                      data-point
+                      nil ;; default radius
+                      {:fill
+                       ;;(apply
+                       ;;  thi.ng.color.core/rgba
+                       (quickthing/color-cycle
+                         (rem
+                           (+
+                             index
+                             6.0)
+                           12.0)) ;;)
+                       ;;
+                       :stroke
+                       "#777"}))
+                  projections))
+              (quickthing/index-text
+                projections)))
+      (assoc ;; turn off grid
       :grid
       nil))
   ;; turns the plot specification to svg hiccup
