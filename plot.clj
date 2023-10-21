@@ -234,3 +234,34 @@
             (quickthing/svg-wrap [width
                                   height])
             quickthing/svg2xml)))
+
+(defn
+  indeces
+  [width
+   height
+   proj-a
+   proj-b]
+  (let [index-a (into [] (map-indexed vector
+                                      proj-a))
+        index-b (map-indexed vector
+                             proj-b)]
+    (println index-a)
+    (let [axis (quickthing/primary-axis (into index-a
+                                              index-b)
+                                        {:width width
+                                         :height height
+                                         :color  "#0008"})]
+      (-> axis
+          (assoc :data
+                 (into []
+                       cat
+                       [(quickthing/hist index-a
+                                         {:attribs {:opacity "0.5"
+                                                    :stroke "red"}})
+                        (quickthing/hist index-b
+                                         {:attribs {:opacity "0.5"
+                                                    :stroke "blue"}})]))
+          viz/svg-plot2d-cartesian
+          (quickthing/svg-wrap [width
+                                height])
+          quickthing/svg2xml))))

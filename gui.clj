@@ -428,6 +428,16 @@
    :scale-y     1.0})
 
 (defn
+  climate-index
+  [{:keys [fx/context]}]
+  {:fx/type     svg
+   :v-box/hgrow :always
+   :svg-str     (-> context
+                    (fx/sub-ctx state/pattern-proj-svg))
+   :scale-x     1.0
+   :scale-y     1.0})
+
+(defn
   main-vertical-display
   "Tha main vertical window"
   [{:keys [fx/context]}]
@@ -492,7 +502,12 @@
                                      :grid-pane/column 0}
                                     {:fx/type          sv-mix-two
                                      :grid-pane/row    7
-                                     :grid-pane/column 1}]}]})
+                                     :grid-pane/column 1}
+                                    {:fx/type               climate-index
+                                     :grid-pane/row         8
+                                     :grid-pane/row-span    1
+                                     :grid-pane/column      0
+                                     :grid-pane/column-span 2}]}]})
 
 
 (defn

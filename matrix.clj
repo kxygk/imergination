@@ -120,7 +120,14 @@
   singular-vector
   "Take the result of the SVD
   and return one singular vector
-  It'll be the size of the original region"
+  It'll be the size of the original region
+  ..
+  NOTE: When num-pixels > num-images
+  the number of singular vectors is limited to
+  the number of images
+  This is different from the Wiki definition of the SVD
+  The U matrix is not square!!
+  aka a `Thin SVD`"
   [svd
    sv-index]
   (into []
@@ -159,6 +166,57 @@
                   (plot/grid-map shoreline
                                  [])
                   quickthing/serialize))))))
+
+
+(defn
+  project-onto-2d-basis
+  "Does an oblique projections of 2D data points
+   on to the two vectors of the new basis
+   Input:
+   DATA vector of pairs [[x1,y1] [x2,y2] .. ]
+   BASIS-A a 2d [x y] vector pair for the basis direction
+   BASIS-B a 2d [x y] vector pair for the basis direction
+   Returns:
+   2xn vector
+   ..
+   We need to generate an inverse of the 2x2 matrix
+   For projecting the data on to the basis vectors
+   ...
+   if basis vectors are A and B
+   Then we arrange them as two cols
+   [u_ax u_bx
+    u_ay u_by]
+   ...
+   a 2x2 matrix can be manually inverted
+   https://en.wikipedia.org/wiki/Invertible_matrix"
+  [basis-a
+   basis-b
+   data]
+  (let [[a c] basis-a ;; names match standard notation
+        [b d] basis-b
+        factor (/ 1.0
+                  (- (* a
+                        d)
+                     (* b
+                        c)))]
+    (let [proj-matrix (linalg/ls (neand/dge 2
+                                            2
+                                            [a b c d])
+                                 (neand/dge 2
+                                            (count data)
+                                            (flatten data)))]
+      [(into []
+             (ncore/row proj-matrix
+                        0))
+       (into []
+             (ncore/row proj-matrix
+                        1))])))
+#_
+(project-onto-2d-basis [1.0 2.0]
+                       [2.0 3.0]
+                       [[6.0 8.0]
+                        [22.0 6.0]])
+;; => [[-1.9999999999999993 6.000000000000008] [4.0 -2.000000000000006]]
 
 (defn
   svd-to-2d-sv-space

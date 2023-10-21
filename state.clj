@@ -596,18 +596,99 @@
                   x-coord
                   y-coord))))
 
+(defn
+  first-pattern-svg
+  [context]
+  (-> (geogrid4seq/build-grid (-> context
+                                  (fx/sub-ctx region-geogrids)
+                                  first)
+                              (-> context
+                                  (fx/sub-ctx first-pattern)))
+      (plot/grid-map (fx/sub-ctx context
+                                 region-svg-hiccup)
+                     []) ;; no POI
+      quickthing/serialize))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/first-pattern-svg))
 
 (defn
-  second-pattern-svg
+  second-pattern
   [context]
   (let [{:keys [centroid-b]} (fx/sub-ctx context
                                          state/sv-bisection)]
     (let [[x-coord
            y-coord] centroid-b]
       (fx/sub-ctx context
-                  singular-vector-mixture-svg
+                  singular-vector-mixture
                   x-coord
                   y-coord))))
+
+(defn
+  second-pattern-svg
+  [context]
+  (-> (geogrid4seq/build-grid (-> context
+                                  (fx/sub-ctx region-geogrids)
+                                  first)
+                              (-> context
+                                  (fx/sub-ctx second-pattern)))
+      (plot/grid-map (fx/sub-ctx context
+                                 region-svg-hiccup)
+                     []) ;; no POI
+      quickthing/serialize))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/second-pattern-svg))
+
+
+(defn
+  pattern-proj
+  "Projections of all the data
+  onto the two extracted patterns
+  Returns:
+  two vectors with the two climate indeces"
+  [context]
+  (let [{:keys [centroid-a
+                centroid-b]} (fx/sub-ctx context
+                                         sv-bisection)]
+    (let [[proj-a
+           proj-b] (matrix/project-onto-2d-basis  centroid-a
+                                                  centroid-b
+                                                  (fx/sub-ctx context
+                                                              state/sv-proj))]
+      [(->> proj-a
+            (mapv (fn [proj]
+                    (if (pos? proj)
+                      proj
+                      0.0))))
+       (->> proj-b
+            (mapv (fn [proj]
+                    (if (pos? proj)
+                      proj
+                      0.0))))])))
+    #_
+(-> @state/*selections
+    (fx/sub-ctx state/pattern-proj))
+
+(defn
+  pattern-proj-svg
+  "Plot of the climate indeces"
+  [context]
+  (let [[proj-a
+         proj-b] (fx/sub-ctx context
+                              pattern-proj)]
+    (plot/indeces (* 1.0
+                     (fx/sub-ctx context
+                                 state/window-width))
+                  (* 1.0
+                     (fx/sub-ctx context
+                                 state/row-height))
+                  proj-a
+                  proj-b)))
+#_
+(spit "out/test-index-plot.svg"
+      (-> @state/*selections
+          (fx/sub-ctx state/pattern-proj-svg)))
 
 (defn
   sv-proj-svg
