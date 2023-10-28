@@ -147,52 +147,17 @@
   {:fx/type   :v-box
    :alignment :top-center
    ;;   :style {:-fx-background-color :purple}
-   :children  [#_{:fx/type   :h-box
-                :alignment :top-left
-                :children  [{:fx/type :label
-                             :text    " Contour File: "}
-                            {:fx/type     :text-field
-                             :disable     true
-                             :h-box/hgrow :always
-                             ;;:pref-width Double/MAX_VALUE
-                             :text        (->> context
-                                               state/shoreline-filestr
-                                               (str " "))} ;;..spacer
-                            {:fx/type :button
-                             :text    "Select"}]}       
-               {:fx/type     :stack-pane
+   :children  [{:fx/type     :stack-pane
                 :alignment   :center
                 :v-box/vgrow :always
-                :children    [{:fx/type svg2jfx/xml
-                               :scale-x (fx/sub-ctx
-                                          context
-                                          state/region-to-display-scale-x)
-                               :scale-y (fx/sub-ctx
-                                          context
-                                          state/region-to-display-scale-y)
-                               :svg
-                               #_
-                               (slurp "summer.svg")
-                               #_
-                               (slurp "small-map-notext.svg")
-                               #_
-                               (slurp "small-map.svg")
-                               #_
-                               (slurp "circle-big.svg")
-                               #_
-                               (slurp "summer-notext.svg")
-                               (->
-                                 (fx/sub-ctx
-                                   context
-                                   state/region)
-                                 (plot/shoreline-map
-                                   [#_locations/krabi])
-                                 quickthing/serialize)}]}
-               #_{:fx/type     :label
-                :v-box/vgrow :always
-                :text        "Region Map!!"}]})
-
-
+                :children    [{:fx/type     svg
+                               :v-box/hgrow :always
+                               :svg-str     (fx/sub-ctx context
+                                                        state/region-svg)
+                               :scale-x     (fx/sub-ctx context
+                                                        state/region-to-display-scale-x)
+                               :scale-y     (fx/sub-ctx context
+                                                        state/region-to-display-scale-y)}]}]})
 
 (defn
   datadir-list
