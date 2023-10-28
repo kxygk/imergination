@@ -263,5 +263,4 @@
                                                     :stroke "blue"}})]))
           viz/svg-plot2d-cartesian
           (quickthing/svg-wrap [width
-                                height])
-          quickthing/svg2xml))))
+                                height])))))
