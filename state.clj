@@ -12,6 +12,27 @@
             plot
             locations))
 
+(def debug?
+  true)
+
+(defn
+  spitstream
+  "Take a string, spit it to FILENAME
+  and return the STR back
+  ..
+  NOTE: Argument order reverse from `spit`
+  b/c the `spit` order is inconvenient for most pipelines"
+  [string
+   filename]
+  (assert (instance? String
+                     string))
+  (if debug?
+    (spit (str "./debug/"
+               filename)
+          string)
+    nil)
+  string)
+
 (def
   *selections
   (atom
@@ -162,7 +183,8 @@
   [context]
   (-> context
       (fx/sub-ctx world-svg-hiccup)
-      quickthing/serialize))
+      quickthing/svg2xml
+      (spitstream "world.svg")))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/world-svg))
@@ -237,7 +259,11 @@
   [context]
   (-> context
       (fx/sub-ctx region-svg-hiccup)
-      quickthing/serialize))
+      quickthing/svg2xml
+      (spitstream "region.svg")))
+#_
+(type (-> @state/*selections
+          (fx/sub-ctx state/region-svg)))
 
 #_#_
 (defn
@@ -375,7 +401,8 @@
         (plot/grid-map (fx/sub-ctx context
                                    region-svg-hiccup)
                        []) ;; no POI
-        quickthing/serialize)))
+        quickthing/svg2xml
+        (spitstream "first-data-file.svg"))))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/first-datafile-svg))
@@ -470,14 +497,18 @@
         (plot/grid-map (fx/sub-ctx context
                                    region-svg-hiccup)
                        []) ;; no POI
-        quickthing/serialize)))
+        quickthing/svg2xml
+        (spitstream (str "sv-"
+                         sv-index
+                         ".svg")))))
 
 (defn
   first-sv-svg
   [context]
-  (fx/sub-ctx context
-              singular-vector-svg
-              0))
+  (-> context
+      (fx/sub-ctx singular-vector-svg
+                  0)
+      (spitstream "first-sv.svg")))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/first-sv-svg))
@@ -485,12 +516,13 @@
 (defn
   second-sv-svg
   [context]
-  (fx/sub-ctx context
-              singular-vector-svg
-              1))
+  (-> context
+      (fx/sub-ctx singular-vector-svg
+                  1)
+      (spitstream "second-sv.svg")))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/first-sv-svg))
+    (fx/sub-ctx state/second-sv-svg))
 
 (defn
   singular-vector-mixture
@@ -585,16 +617,19 @@
 
 
 (defn
-  first-pattern-svg
+  first-pattern
   [context]
   (let [{:keys [centroid-a]} (fx/sub-ctx context
                                          state/sv-bisection)]
     (let [[x-coord
            y-coord] centroid-a]
       (fx/sub-ctx context
-                  singular-vector-mixture-svg
+                  singular-vector-mixture
                   x-coord
                   y-coord))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/first-pattern))
 
 (defn
   first-pattern-svg
@@ -607,7 +642,8 @@
       (plot/grid-map (fx/sub-ctx context
                                  region-svg-hiccup)
                      []) ;; no POI
-      quickthing/serialize))
+      quickthing/svg2xml
+      (spitstream "first-pattern.svg")))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/first-pattern-svg))
@@ -623,6 +659,10 @@
                   singular-vector-mixture
                   x-coord
                   y-coord))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/second-pattern))
+
 
 (defn
   second-pattern-svg
@@ -635,7 +675,8 @@
       (plot/grid-map (fx/sub-ctx context
                                  region-svg-hiccup)
                      []) ;; no POI
-      quickthing/serialize))
+      quickthing/svg2xml
+      (spitstream "second-pattern.svg")))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/second-pattern-svg))
@@ -677,18 +718,19 @@
   (let [[proj-a
          proj-b] (fx/sub-ctx context
                               pattern-proj)]
-    (plot/indeces (* 1.0
-                     (fx/sub-ctx context
+    (-> (plot/indeces (* 1.0
+                         (fx/sub-ctx context
                                  state/window-width))
-                  (* 1.0
-                     (fx/sub-ctx context
-                                 state/row-height))
-                  proj-a
-                  proj-b)))
+                      (* 1.0
+                         (fx/sub-ctx context
+                                     state/row-height))
+                      proj-a
+                      proj-b)
+      quickthing/svg2xml
+      (spitstream "indeces.svg"))))
 #_
-(spit "out/test-index-plot.svg"
-      (-> @state/*selections
-          (fx/sub-ctx state/pattern-proj-svg)))
+(-> @state/*selections
+    (fx/sub-ctx state/pattern-proj-svg))
 
 (defn
   sv-proj-svg
@@ -701,7 +743,8 @@
                     (* 1.0
                        (fx/sub-ctx context
                                    state/row-height)))
-      quickthing/serialize))
+      quickthing/svg2xml
+      (spitstream "sv-projs.svg")))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/sv-proj-svg))
@@ -742,7 +785,8 @@
                        (* 1.0
                           (fx/sub-ctx context
                                       state/row-height)))
-      quickthing/svg2xml))
+      quickthing/svg2xml
+      (spitstream "sv-weights.svg")))
 #_
 (spit "out/test-weights-actual.svg"
       (-> @state/*selections
