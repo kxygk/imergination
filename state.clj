@@ -35,19 +35,18 @@
 
 (def
   *selections
-  (atom
-    (fx/create-context
-      {:window-width      1080.0
-       :row-height        360
-       :shoreline-filestr "./data/shoreline-coarse.json"
-       :contour-filestr   nil
-       :rain-dirstr       "/home/kxygk/Data/imerg/monthly/late/"
-       :eas-res           0.1
-       :sou-res           0.1
-       :region            locations/krabi-skinny-region
-       :mouse-click       nil
-       :datafile-idxs     []}
-      #(cache/lru-cache-factory % :threshold 1000))))
+  (atom (fx/create-context {:window-width      1080.0
+                            :row-height        360
+                            :shoreline-filestr "./data/shoreline-coarse.json"
+                            :contour-filestr   nil
+                            :rain-dirstr       "/home/kxygk/Data/imerg/monthly/late/"
+                            :eas-res           0.1
+                            :sou-res           0.1
+                            :region            locations/krabi-skinny-region
+                            :mouse-click       nil
+                            :datafile-idxs     []
+                            :noise-idxs     []}
+                           #(cache/lru-cache-factory % :threshold 1000))))
 
 ;; (fx/sub-val
 ;;   *selections
@@ -456,6 +455,9 @@
   (get (fx/sub-ctx context
                    datafile-idxs)
        0))
+#_
+(fx/sub-ctx @state/*selections
+            first-datafile-idx)
 
 (defn-
   first-datafile-geogrid
@@ -487,8 +489,6 @@
 #_
 (-> @state/*selections
     (fx/sub-ctx state/first-datafile-svg))
-
-
 
 (defn
   singular-vector

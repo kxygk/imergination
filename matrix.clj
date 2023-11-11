@@ -69,7 +69,8 @@
 #_
 (-> @state/*selections
     (cljfx.api/sub-ctx state/region-matrix)
-    svd)
+    svd
+    keys)
 
 (defn
   singular-values
@@ -268,13 +269,12 @@
          height-pix] dimension
         [eas-res
          sou-res]    resolution]
-    (geogrid4seq/build-grid
-      width-pix
-      height-pix
-      eas-res
-      sou-res
-      position
-      column-of-data)))
+    (geogrid4seq/build-grid width-pix
+                            height-pix
+                            eas-res
+                            sou-res
+                            position
+                            column-of-data)))
 
 (defn
   extract-grid
@@ -285,10 +285,8 @@
            resolution]
     :as   grid-params}
    column-index]
-  (col-to-grid
-    (into
-      []
-      (ncore/col
-        matrix
-        column-index))
-    grid-params))
+  (col-to-grid (into []
+                     (ncore/col matrix
+                                column-index))
+               grid-params))
+
