@@ -459,7 +459,7 @@
                                      :grid-pane/column-span 1}
                                     {:fx/type               sv-weights
                                      :grid-pane/row         5
-                                     :grid-pane/row-span    1
+                                     :grid-pane/row-span    2
                                      :grid-pane/column      1
                                      :grid-pane/column-span 1}
                                     {:fx/type          sv-mix-one
@@ -472,7 +472,29 @@
                                      :grid-pane/row         8
                                      :grid-pane/row-span    1
                                      :grid-pane/column      0
-                                     :grid-pane/column-span 2}]}]})
+                                     :grid-pane/column-span 2}
+                                    {:fx/type svg
+                                     :grid-pane/row    9
+                                     :grid-pane/column 0
+                                     :v-box/hgrow :always
+                                     :svg-str     (fx/sub-ctx context
+                                                              state/noise-svg
+                                                              3)
+                                     :scale-x     (fx/sub-ctx context
+                                                              state/region-to-display-scale-x)
+                                     :scale-y     (fx/sub-ctx context
+                                                              state/region-to-display-scale-y)}
+                                    {:fx/type svg
+                                     :grid-pane/row    9
+                                     :grid-pane/column 1
+                                     :v-box/hgrow :always
+                                     :svg-str     (fx/sub-ctx context
+                                                              state/noise-svg
+                                                              8)
+                                     :scale-x     (fx/sub-ctx context
+                                                              state/region-to-display-scale-x)
+                                     :scale-y     (fx/sub-ctx context
+                                                              state/region-to-display-scale-y)}]}]})
 
 
 (defn

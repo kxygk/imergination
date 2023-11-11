@@ -827,7 +827,7 @@
       (plot/sv-plot (* 0.5
                        (fx/sub-ctx context
                                    state/window-width))
-                    (* 1.0
+                    (* 2.0
                        (fx/sub-ctx context
                                    state/row-height)))
       quickthing/svg2xml
@@ -869,7 +869,7 @@
                        (* 0.5
                           (fx/sub-ctx context
                                       state/window-width))
-                       (* 1.0
+                       (* 2.0
                           (fx/sub-ctx context
                                       state/row-height)))
       quickthing/svg2xml
