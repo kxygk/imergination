@@ -462,10 +462,10 @@
 (defn-
   first-datafile-geogrid
   [context]
-  (get (fx/sub-ctx context
-                   region-geogrids)
-       (fx/sub-ctx context
-                   first-datafile-idx)))
+  (matrix/extract-grid (fx/sub-ctx context
+                                   region-matrix)
+                       (fx/sub-ctx context
+                                   first-datafile-idx)))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/first-datafile-geogrid))
