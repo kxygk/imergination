@@ -440,6 +440,38 @@
 ;;       ┗                                               ┛
 
 (defn
+  noise-matrix
+  [context]
+  (-> context
+      (fx/sub-ctx region-svd)
+      (matrix/minus-2-sv)))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/noise-matrix)
+    keys)
+;; => (:sigma :u :vt :master :matrix :dimension :position :resolution)
+
+(defn
+  noise-svg
+  "Get the noise background of one data point"
+  [context
+   id]
+  (-> (matrix/extract-grid (fx/sub-ctx context
+                                       noise-matrix)
+                           id)
+      (plot/grid-map (fx/sub-ctx context
+                                 region-svg-hiccup)
+                     []) ;; no POI
+      quickthing/svg2xml
+      (spitstream (str "noise-"
+                       id
+                       "file.svg"))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/noise-svg
+                3))
+
+(defn
   datafile-idxs
   "Indeces of the data that's been selected" 
   [context]

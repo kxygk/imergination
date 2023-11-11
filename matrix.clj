@@ -290,3 +290,57 @@
                                 column-index))
                grid-params))
 
+(defn
+  minus-2-sv
+  "Take the SV matrices
+  Zero out the first two components
+  Return the new data matrix of only noise"
+  [svd]
+  (let [truncated-sigma (-> svd
+                            :sigma
+                            (ncore/alter! 0
+                                          0
+                                          (fn ^double   ;; the type annotations are required for some reason
+                                            [^double _] ;; crashed without them..
+                                            0.0))
+                            (ncore/alter! 1
+                                          1
+                                          (fn ^double
+                                            [^double _]
+                                            0.0)))
+        new-data-matrix (ncore/mm (:u svd)
+                                  truncated-sigma
+                                  (:vt svd))]
+  (-> svd
+      (assoc :sigma
+             truncated-sigma)
+      (assoc :matrix
+             new-data-matrix))))
+#_
+(-> [1 2 3]
+    neand/dv
+    (ncore/alter! 0
+                  ;;0
+                  (fn ^double [^double _] 0.0 #_(inc x)) ))
+
+#_
+(defn
+  from-svd
+  [svd
+   geogrid]
+  (let [{:keys [u
+                vt
+                sigma]}  svd]
+    (merge {:matrix (ncore/mm u
+                              sigma
+                              vt)
+            :dimension  (-> geogrids
+                            first
+                            geogrid/dimension-pix)
+            :position   (-> geogrids
+                            first
+                            geogrid/corner)
+            :resolution (-> geogrids
+                            first
+                            geogrid/eassou-res)}
+           grid-params)))
