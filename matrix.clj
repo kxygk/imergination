@@ -57,9 +57,10 @@
   {:sv matrix
   :weights vector}"
   [data-matrix]
-  (linalg/svd (:matrix data-matrix)
-              true
-              true))
+  (merge (linalg/svd (:matrix data-matrix)
+                     true
+                     true)
+         data-matrix))
 #_
 (linalg/svd (:matrix (-> @state/*selections
                          (cljfx.api/sub-ctx state/region-matrix)))

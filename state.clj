@@ -360,6 +360,87 @@
     first)
 
 (defn
+  region-matrix
+  "Matrix of all the data over a region
+  Implementation is hidden in `matrix.clj`
+  So that the underlying library can be swapped"
+  [context]
+  (-> context
+      (fx/sub-ctx state/region-geogrids)
+      matrix/from-geogrids))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/region-matrix))
+;; => {:matrix #RealGEMatrix[double, mxn:2500x119, layout:column, offset:0]
+;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
+;;       →      54.00    2.00    ⁙      74.00   12.00         
+;;       →      47.00    4.00    ⁙      83.00    9.00         
+;;       →       ⁙       ⁙       ⁙       ⁙       ⁙            
+;;       →     179.00   13.00    ⁙     266.00  326.00         
+;;       →     214.00   13.00    ⁙     281.00  292.00         
+;;       ┗                                               ┛    
+;;    ,
+;;     :dimension [50 50],
+;;     :position {:eas 276.5, :sou 79.0},
+;;     :resolution [0.1 0.1]}
+(defn
+  region-svd
+  "the SVD of the region matrix"
+  [context]
+  (-> context
+      (fx/sub-ctx region-matrix)
+      matrix/svd))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/region-svd)
+    keys)
+#_
+(state/region-svd @state/*selections)
+
+
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/region-matrix)
+    :matrix
+    (uncomplicate.neanderthal.linalg/svd  true
+                                          true)
+    (matrix/from-svd))
+;; => #RealGEMatrix[double, mxn:2500x119, layout:column, offset:0]
+;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
+;;       →      54.00    2.00    ⁙      74.00   12.00         
+;;       →      47.00    4.00    ⁙      83.00    9.00         
+;;       →       ⁙       ⁙       ⁙       ⁙       ⁙            
+;;       →     179.00   13.00    ⁙     266.00  326.00         
+;;       →     214.00   13.00    ⁙     281.00  292.00         
+;;       ┗                                               ┛
+
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/region-matrix)
+    (matrix/svd)
+    (matrix/from-svd))
+;; => #RealGEMatrix[double, mxn:2500x119, layout:column, offset:0]
+;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
+;;       →      54.00    2.00    ⁙      74.00   12.00         
+;;       →      47.00    4.00    ⁙      83.00    9.00         
+;;       →       ⁙       ⁙       ⁙       ⁙       ⁙            
+;;       →     179.00   13.00    ⁙     266.00  326.00         
+;;       →     214.00   13.00    ⁙     281.00  292.00         
+;;       ┗                                               ┛    
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/region-svd)
+    (matrix/from-svd))
+;; => #RealGEMatrix[double, mxn:2500x119, layout:column, offset:0]
+;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
+;;       →      19.54  -18.37    ⁙      -5.33    7.28         
+;;       →      14.09  -15.72    ⁙       6.97    6.37         
+;;       →       ⁙       ⁙       ⁙       ⁙       ⁙            
+;;       →      57.02  -22.56    ⁙      21.29   44.10         
+;;       →      80.54  -25.78    ⁙      13.39  -17.36         
+;;       ┗                                               ┛
+
+(defn
   datafile-idxs
   "Indeces of the data that's been selected" 
   [context]
@@ -406,32 +487,6 @@
 #_
 (-> @state/*selections
     (fx/sub-ctx state/first-datafile-svg))
-
-(defn
-  region-matrix
-  "Matrix of all the data overa region
-  Implementation is hidden in `matrix.clj`
-  So that the underlying library can be swapped"
-  [context]
-  (-> context
-      (fx/sub-ctx state/region-geogrids)
-      matrix/from-geogrids))
-#_
-(-> @state/*selections
-    (fx/sub-ctx state/region-matrix))
-
-(defn
-  region-svd
-  "the SVD of the region matrix"
-  [context]
-  (-> context
-      (fx/sub-ctx state/region-matrix)
-      matrix/svd))
-#_
-(-> @state/*selections
-    (fx/sub-ctx state/region-svd))
-#_
-(state/region-svd @state/*selections)
 
 
 
