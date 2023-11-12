@@ -663,7 +663,7 @@
       (plot/grid-map (fx/sub-ctx context
                                  region-svg-hiccup)
                      []) ;; no POI
-      quickthing/serialize))
+      quickthing/svg2xml))
 #_
 (spit "out/fiftyfifty.svg"
       (-> @state/*selections

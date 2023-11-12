@@ -488,5 +488,5 @@
                            angle-line]))
              thi.ng.geom.viz.core/svg-plot2d-cartesian
              quickthing/svg-wrap
-             quickthing/serialize)
+             quickthing/svg2xml)
          (spit "out/test-dots.svg"))))
