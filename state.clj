@@ -691,7 +691,7 @@
 #_
 (-> @state/*selections
     (fx/sub-ctx state/sv-bisection)
-    :centroid-a)
+    keys)
 ;; => (:angle :points-a :points-b :centroid-a :centroid-b)
 #_
 (let [{:keys [centroid-b]} (fx/sub-ctx @state/*selections
@@ -774,7 +774,7 @@
   "Projections of all the data
   onto the two extracted patterns
   Returns:
-  two vectors with the two climate indeces"
+  a list of 2D points in the nonorthogonal coordinate system"
   [context]
   (let [{:keys [centroid-a
                 centroid-b

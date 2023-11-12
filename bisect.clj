@@ -249,11 +249,15 @@
      (map to-halfplane)
      (map abs-polar)
      (map to-cartesian)
+;; => ([1.0000000000000002 1.0]
+;;     [-1.0 2.0]
+;;     [-1.0 1.0000000000000002]
+;;     [1.0000000000000002 2.0])
      angle-dichotomies)
-;; => (3.141592653589793
+;; => [3.141592653589793 ;; THIS ONE IS MISSING NOW.. IS IT A PROBLEM??
 ;;     0.9462734405957693
 ;;     1.5707963267948966
-;;     2.1953192129940238)
+;;     2.1953192129940238]
 
 (defn
   angle-to-unitvector
@@ -287,12 +291,17 @@
        (mapv #(/ %
                  (count points)))))
 #_
-(->> [[2.2,  1.5]
+(->> [[2.2,  1.5, {:above true}]
       [1.1, -2.4]
       [-1.2, 1.6]
       [-0.5, -2.7]]
      centroid)
-
+#_
+(->> [[-0.10779173540213875 -0.15475804884523486]]
+     centroid)
+#_
+(->> [[-0.10779173540213875 -0.15475804884523486 {:above? false}]]
+     centroid)
 
 (defn
   vec-length
@@ -481,80 +490,3 @@
              quickthing/svg-wrap
              quickthing/serialize)
          (spit "out/test-dots.svg"))))
-#_
-(let [simple-data         [[2.2,  1.5]
-                           [1.1, -0.4]
-                           [-1.2, 1.6]
-                           [-0.7, -2.7]]
-      big-data            [[-2.45, 1.55] ;;first group
-                           [-2.33, 1.25]
-                           [-2.05, 1.63]
-                           [-2.88, 1.32]
-                           [-2.22, -1.52] ;;second group
-                           [-2.14, -1.24]
-                           [-2.06, -1.66]
-                           [-2.79, -1.39]]
-      trivial-data        [[1.45, 1.55]
-                           [-2.22, -1.52]]
-      data                big-data
-      dichotomy-angles    (->> data
-                               angle-dichotomies)
-      data-lines          (->> data
-                               (map #(quickthing/line-through-point data
-                                                                    %))
-                               (reduce into))
-      dichotomy-lines     (->> dichotomy-angles
-                               (map angle-to-unitvector)
-                               (map #(quickthing/line-through-point data
-                                                                    %
-                                                                    {:attribs {:stroke-dasharray (str 10.0
-                                                                                                      " "
-                                                                                                      10.0)}}))
-                               (reduce into))
-      best-angle          (->> data
-                               best-dichotomy-angle)
-      best-dichotomy-line (quickthing/line-through-point data
-                                                         (->> data
-                                                              best-dichotomy-angle
-                                                              angle-to-unitvector)
-                                                         {:attribs {:stroke           "blue"
-                                                                    :stroke-dasharray (str 2.0
-                                                                                           " "
-                                                                                           2.0)}})
-      dividing-line       (quickthing/line-through-point data
-                                                         [(cos best-angle)
-                                                          (sin best-angle)]
-                                                         {:attribs {:stroke "purple"}})
-      [top-points
-       bot-points]        (-> data
-                              (points-along-angle best-angle))
-      top-centroid        (->> top-points
-                               centroid)
-      bot-centroid        (->> bot-points
-                               centroid)]
-  (->> (-> (quickthing/zero-axis data
-                                 {:width  500
-                                  :height 500})
-           (assoc :data
-                  (into [(quickthing/adjustable-circles data)
-                         (quickthing/adjustable-circles (->> top-points
-                                                             (mapv #(conj (conj %
-                                                                                7.0)
-                                                                          {:fill "red"}))))
-                         (quickthing/adjustable-circles  (->> bot-points
-                                                              (mapv #(conj (conj %
-                                                                                 7.0)
-                                                                           {:fill "green"}))))]
-                        cat
-                        [#_data-lines
-                         (quickthing/vector2d top-centroid
-                                              {:attribs {:stroke "red"}})
-                         (quickthing/vector2d bot-centroid
-                                              {:attribs {:stroke "green"}})
-                         dividing-line
-                         dichotomy-lines
-                         best-dichotomy-line]))
-           thi.ng.geom.viz.core/svg-plot2d-cartesian
-           quickthing/svg-wrap
-           quickthing/serialize)
-       (spit "out/test-dots.svg")))
