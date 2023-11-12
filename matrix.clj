@@ -193,26 +193,33 @@
    https://en.wikipedia.org/wiki/Invertible_matrix"
   [basis-a
    basis-b
-   data]
+   points]
   (let [[a c] basis-a ;; names match standard notation
-        [b d] basis-b
-        factor (/ 1.0
-                  (- (* a
-                        d)
-                     (* b
-                        c)))]
+        [b d] basis-b]
     (let [proj-matrix (linalg/ls (neand/dge 2
                                             2
                                             [a b c d])
                                  (neand/dge 2
-                                            (count data)
-                                            (flatten data)))]
-      [(into []
-             (ncore/row proj-matrix
-                        0))
-       (into []
-             (ncore/row proj-matrix
-                        1))])))
+                                            (count points)
+                                            (flatten (->> points
+                                                          (mapv #(take 2
+                                                                       %))))))]
+      (mapv (fn stitch
+              [original-point
+               new-x
+               new-y]
+              (-> original-point
+                  (assoc 0
+                         new-x)
+                  (assoc 1
+                         new-y)))
+            points
+            (into []
+                  (ncore/row proj-matrix
+                             0))
+            (into []
+                  (ncore/row proj-matrix
+                             1))))))
 #_
 (project-onto-2d-basis [1.0 2.0]
                        [2.0 3.0]

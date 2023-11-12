@@ -777,23 +777,13 @@
   two vectors with the two climate indeces"
   [context]
   (let [{:keys [centroid-a
-                centroid-b]} (fx/sub-ctx context
-                                         sv-bisection)]
-    (let [[proj-a
-           proj-b] (matrix/project-onto-2d-basis  centroid-a
-                                                  centroid-b
-                                                  (fx/sub-ctx context
-                                                              state/sv-proj))]
-      [(->> proj-a
-            (mapv (fn [proj]
-                    (if (pos? proj)
-                      proj
-                      0.0))))
-       (->> proj-b
-            (mapv (fn [proj]
-                    (if (pos? proj)
-                      proj
-                      0.0))))])))
+                centroid-b
+                points]} (fx/sub-ctx context
+                                     sv-bisection)]
+    (let [projections (matrix/project-onto-2d-basis  centroid-a
+                                                     centroid-b
+                                                     points)]e
+      projections)))
     #_
 (-> @state/*selections
     (fx/sub-ctx state/pattern-proj))
@@ -802,9 +792,31 @@
   pattern-proj-svg
   "Plot of the climate indeces"
   [context]
-  (let [[proj-a
-         proj-b] (fx/sub-ctx context
-                              pattern-proj)]
+  (let [projections (fx/sub-ctx context
+                                pattern-proj)
+        proj-a (->> projections
+                    (mapv (fn [proj]
+                            (if (-> proj
+                                    (get 2)
+                                    :above?)
+                              (first proj)
+                              0)))
+                    (mapv (fn [proj]
+                            (if (pos? proj)
+                              proj
+                              0.0))))
+        proj-b (->> projections
+                    (mapv (fn [proj]
+                            (if (-> proj
+                                    (get 2)
+                                    :above?
+                                    not)
+                              (second proj)
+                              0)))
+                    (mapv (fn [proj]
+                            (if (neg? proj)
+                              (- proj) ;; TODO: WHY!?????????????????
+                              0.0))))]
     (-> (plot/indeces (* 1.0
                          (fx/sub-ctx context
                                  state/window-width))

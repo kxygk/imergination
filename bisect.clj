@@ -158,12 +158,14 @@
   points-along-angle
   [points
    angle]
-  (let [{above true
-         below false } (->> points
-                            (group-by #(above-angle? %
-                                                     angle)))]
-    [above
-     below]))
+  (->> points
+       (mapv (fn update-point
+               [point]
+                (update point
+                        2     ;; typically will be `nil`
+                        #(merge %
+                                {:above? (above-angle? point
+                                                       angle)}))))))
 #_
 (-> [[2.2,  1.5]
      [1.1, -2.4]
@@ -212,11 +214,16 @@
     (->> all-dichotomies
          (filterv (fn degenerate-dichotomy? ;; sometimes an extra dichotomy is generated
                     [dichotomy-angle]
-                    (let [[top-points
-                           bot-points] (points-along-angle points
-                                                           dichotomy-angle)]
-                      (if (or (zero? (count top-points))
-                              (zero? (count bot-points)))
+                    (let [grouped (->> (points-along-angle points
+                                                                dichotomy-angle)
+                                            (group-by (fn above?
+                                                        [point]
+                                                        (-> point
+                                                            (get 2)
+                                                            :above?)))
+                                            vals)]
+                      (if (== 1
+                              (count grouped))
                         false
                         true)))))))
 #_
@@ -276,6 +283,7 @@
                      point-x)
                   (+ total-y
                      point-y)]))
+       (take 2)
        (mapv #(/ %
                  (count points)))))
 #_
@@ -349,12 +357,11 @@
   [points
    dichotomy-angle]
   (let [[top-points
-         bot-points] (points-along-angle points
-                                         dichotomy-angle)]
-    (println "top: "
-             (count top-points))
-    (println "bot: "
-             (count bot-points))
+         bot-points] (vals (group-by #(-> %
+                                          (get 2)
+                                          :above?)
+                                     (points-along-angle points
+                                                         dichotomy-angle)))]
     (let [num-top      (count top-points)
           num-bot      (count bot-points)
           top-centroid (centroid top-points)
@@ -409,14 +416,17 @@
    :centroid-b centroid-of-the-other-half}"
   [points]
   (let [angle (min-var-angle points)
+        classified (points-along-angle points
+                                       angle)
         [points-a ;; we're recomputing this.. :/
-         points-b] (points-along-angle points
-                                       angle)]
+         points-b] (vals (group-by #(-> %
+                                          (get 2)
+                                          :above?)
+                                   classified))]
     (let [centroid-a (centroid points-a)
           centroid-b (centroid points-b)]
       {:angle angle
-       :points-a points-a
-       :points-b points-b
+       :points classified
        :centroid-a centroid-a
        :centroid-b centroid-b})))
 #_
