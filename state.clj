@@ -782,7 +782,7 @@
                                      sv-bisection)]
     (let [projections (matrix/project-onto-2d-basis  centroid-a
                                                      centroid-b
-                                                     points)]e
+                                                     points)]
       projections)))
     #_
 (-> @state/*selections
@@ -798,7 +798,8 @@
                     (mapv (fn [proj]
                             (if (-> proj
                                     (get 2)
-                                    :above?)
+                                    :above?
+                                    not)
                               (first proj)
                               0)))
                     (mapv (fn [proj]
@@ -809,13 +810,12 @@
                     (mapv (fn [proj]
                             (if (-> proj
                                     (get 2)
-                                    :above?
-                                    not)
+                                    :above?)
                               (second proj)
                               0)))
                     (mapv (fn [proj]
-                            (if (neg? proj)
-                              (- proj) ;; TODO: WHY!?????????????????
+                            (if (pos? proj)
+                              proj
                               0.0))))]
     (-> (plot/indeces (* 1.0
                          (fx/sub-ctx context
