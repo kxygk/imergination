@@ -277,31 +277,46 @@
 
 (defn-
   centroid
-  "Calculate the centroid of a bunch of points
-  In this case I'll be wanting the centroid of the top and bottom halves"
+  "Calculate the *angular* centroid of a bunch of points
+  In this case I'll be wanting the centroid of the top and bottom halves
+  NOTE: This is not the cartesian centroid..
+  the resulting vectors have been normalized!
+  So they function directly as basis vectors"
   [points]
-  (->> points
-       (reduce (fn [[total-x, total-y]
-                    [point-x, point-y]]
-                 [(+ total-x
-                     point-x)
-                  (+ total-y
-                     point-y)]))
-       (take 2)
-       (mapv #(/ %
-                 (count points)))))
+  (let [[a b] (->> points
+                   (reduce (fn [[total-x, total-y]
+                                [point-x, point-y]]
+                             [(+ total-x
+                                 point-x)
+                              (+ total-y
+                                 point-y)]))
+                   (take 2)
+                   (mapv #(/ %
+                             (count points))))]
+    (let [length (pow (+ (pow a
+                              2)
+                         (pow b
+                              2))
+                      0.5)]
+      [(/ a
+          length)
+       (/ b
+          length)])))
 #_
 (->> [[2.2,  1.5, {:above true}]
       [1.1, -2.4]
       [-1.2, 1.6]
       [-0.5, -2.7]]
      centroid)
+;; => [0.6246950475544243 -0.7808688094430302]
 #_
 (->> [[-0.10779173540213875 -0.15475804884523486]]
      centroid)
+;; => [-0.5715430565610071 -0.8205720775757005]
 #_
 (->> [[-0.10779173540213875 -0.15475804884523486 {:above? false}]]
      centroid)
+;; => [-0.5715430565610071 -0.8205720775757005]
 
 (defn
   vec-length
