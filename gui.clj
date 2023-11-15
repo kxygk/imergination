@@ -207,35 +207,18 @@
 (defn
   datapreview
   "Where we select the data to read in..
-  We can inspect how it looks in our region"
+  We can inspect how it looks in our region
+  TODO: revisit why I can't do this with `svg` and need to use `svg2jfx/xml`. With the `svg` element it doesn't update properly in the GUI"
   [{:keys [fx/context]}]
   {:fx/type   :v-box
-   :alignment :top-center
-   ;;   :style     {:-fx-background-color :blue}
-   :children  [#_{:fx/type   :h-box
-                :alignment :top-left
-                :children  [{:fx/type :label
-                             :text    " Contour File: "}
-                            {:fx/type     :text-field
-                             :disable     true
-                             :h-box/hgrow :always
-                             ;;:pref-width Double/MAX_VALUE
-                             :text        (->> context
-                                               state/shoreline-filestr
-                                               (str " "))} ;;..spacer
-                            {:fx/type :button
-                             :text    "Select"}]}
-               {:fx/type     svg
-                :v-box/hgrow :always
-                :svg-str     (fx/sub-ctx context
+   :alignment :center
+   :children  [{:fx/type svg2jfx/xml
+                :svg     (fx/sub-ctx context
                                          state/first-datafile-svg)
                 :scale-x     (fx/sub-ctx context
                                          state/region-to-display-scale-x)
                 :scale-y     (fx/sub-ctx context
-                                         state/region-to-display-scale-y)}
-               #_{:fx/type     :label
-                :v-box/vgrow :always
-                :text        "Preview Map!!"}]})
+                                         state/region-to-display-scale-y)}]})
 
 (defn
   sv
