@@ -247,7 +247,6 @@
                                       proj-a))
         index-b (map-indexed vector
                              proj-b)]
-    (println index-a)
     (let [axis (quickthing/primary-axis (into index-a
                                               index-b)
                                         {:width width
