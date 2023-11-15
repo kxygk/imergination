@@ -823,8 +823,8 @@
                       (* 1.0
                          (fx/sub-ctx context
                                      state/row-height))
-                      proj-a
-                      proj-b)
+                      proj-b
+                      proj-a)
       quickthing/svg2xml
       (spitstream "indeces.svg"))))
 #_
