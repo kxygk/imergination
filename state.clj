@@ -482,8 +482,7 @@
                                        noise-matrix)
                            id)
       (plot/grid-map (fx/sub-ctx context
-                                 region-svg-hiccup)
-                     []) ;; no POI
+                                 region-svg-hiccup))
       quickthing/svg2xml
       (spitstream (str "noise-"
                        id
@@ -536,8 +535,7 @@
     (-> (fx/sub-ctx context
                     first-datafile-geogrid)
         (plot/grid-map (fx/sub-ctx context
-                                   region-svg-hiccup)
-                       []) ;; no POI
+                                   region-svg-hiccup))
         quickthing/svg2xml
         (spitstream "first-data-file.svg"))))
 #_
@@ -587,7 +585,6 @@
       (-> @state/*selections
           (fx/sub-ctx state/re))
       (state/region @state/*selections) ;;input-region ;; it'll crop redundantly here..
-      []
       "1st SV")))
 
 (defn
@@ -604,8 +601,7 @@
                     singular-vector-geogrid
                     sv-index)
         (plot/grid-map (fx/sub-ctx context
-                                   region-svg-hiccup)
-                       []) ;; no POI
+                                   region-svg-hiccup))
         quickthing/svg2xml
         (spitstream (str "sv-"
                          sv-index
@@ -683,8 +679,7 @@
                   sv-one
                   sv-two)
       (plot/grid-map (fx/sub-ctx context
-                                 region-svg-hiccup)
-                     []) ;; no POI
+                                 region-svg-hiccup))
       quickthing/svg2xml))
 #_
 (spit "out/fiftyfifty.svg"
@@ -758,8 +753,7 @@
                               (-> context
                                   (fx/sub-ctx first-pattern)))
       (plot/grid-map (fx/sub-ctx context
-                                 region-svg-hiccup)
-                     []) ;; no POI
+                                 region-svg-hiccup))
       quickthing/svg2xml
       (spitstream "first-pattern.svg")))
 #_
@@ -791,8 +785,7 @@
                               (-> context
                                   (fx/sub-ctx second-pattern)))
       (plot/grid-map (fx/sub-ctx context
-                                 region-svg-hiccup)
-                     []) ;; no POI
+                                 region-svg-hiccup))
       quickthing/svg2xml
       (spitstream "second-pattern.svg")))
 #_

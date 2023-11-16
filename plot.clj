@@ -107,34 +107,29 @@
 (defn
   grid-map
   "Draw a contour map with a grid overlay"
-  ([input-grid
-    contour-svg
-    pois]
-   (grid-map
-     input-grid
-     contour-svg
-     pois
-     ""))
-  ([input-grid
-    contour-svg
-    pois
-    text]
-   (let [region             (geogrid/covered-region input-grid)
-         local-rain-grid    (geogrid/subregion input-grid
+  [input-grid
+   contour-svg
+   & [{:keys [pois
+              label-top-right
+              cycle-frac]
+       :or   {pois            []
+              label-top-right ""
+              cycle-frac      nil}}]]
+  (let [region             (geogrid/covered-region input-grid)
+        local-rain-grid    (geogrid/subregion input-grid
+                                              region)
+        {:keys [overruns]} (geogrid/adjusted-crop-region-to-grid region
+                                                                 local-rain-grid)]
+    (-> (svg/group {}
+                   (geogrid2svg/to-heatmap local-rain-grid
+                                           overruns)
+                   (svgmaps/latlon-axis region)
+                   contour-svg
+                   (svgmaps/points-of-interest pois
                                                region)
-         {:keys [overruns]} (geogrid/adjusted-crop-region-to-grid region
-                                                                  local-rain-grid)]
-     (-> (svg/group {}
-                    (geogrid2svg/to-heatmap local-rain-grid
-                                            overruns)
-                    (svgmaps/latlon-axis region)
-                    contour-svg
-                    (svgmaps/points-of-interest pois
-                                                region)
-                    (map-label region
-                               text))
-         (quickthing/svg-wrap (dimension region))
-         #_quickthing/serialize-with-line-breaks))))
+                   (map-label region
+                              label-top-right))
+        (quickthing/svg-wrap (dimension region)))))
 
 (defn
   sv-plot

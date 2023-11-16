@@ -165,8 +165,7 @@
                                           [])]
         (spit "out/test/matrix_singular-vector.svg"
               (-> sv-grid
-                  (plot/grid-map shoreline
-                                 [])
+                  (plot/grid-map shoreline)
                   quickthing/serialize))))))
 
 
