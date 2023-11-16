@@ -138,6 +138,9 @@
 
 (defn
   sv-plot
+  "Data points should be in the form:
+  [x, y, {:cycle-frac 69}]
+  if the `:cycle-frac` is missing, it will be colored black"
   [data
    width
    height]
@@ -152,21 +155,21 @@
                                    {:width       width
                                     :height      height
                                     :margin-frac 0.0})
-             ;; add data to the plot
              (assoc :data
                     (into []
                           cat
                           [(quickthing/adjustable-circles (->> data
                                                                (map-indexed (fn [index
-                                                                                 data-point]
-                                                                              (conj data-point
-                                                                                    nil ;; default radius
-                                                                                    {:stroke "#777"
-                                                                                     :fill   (quickthing/color-cycle
-                                                                                               (- 12.0
-                                                                                                  (/ (+ index
-                                                                                                        3.0) ;; so it starts in blue
-                                                                                                     12.0)))}))))
+                                                                                 [data-x
+                                                                                  data-y
+                                                                                  attribs]]
+                                                                              [data-x
+                                                                               data-y
+                                                                               nil ;; default radius
+                                                                               {:stroke "#777"
+                                                                                :fill   (quickthing/color-cycle
+                                                                                          (-> attribs
+                                                                                              :cycle-frac))}])))
                                                           {:scale 20})
                            (quickthing/index-text data
                                                   {:scale 20})

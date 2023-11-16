@@ -40,6 +40,8 @@
                             :shoreline-filestr "./data/shoreline-coarse.json"
                             :contour-filestr   nil
                             :rain-dirstr       "/home/kxygk/Data/imerg/monthly/late/"
+                            :cycle-length      12
+                            :cycle-phase       0
                             :eas-res           0.1
                             :sou-res           0.1
                             :region            locations/krabi-skinny-region
@@ -74,6 +76,26 @@
     (fx/sub-ctx state/region)
     geoprim/dimension)
 
+(defn
+  cycle-length
+  [context]
+  (fx/sub-val context
+              :cycle-length))
+(defn
+  cycle-phase
+  [context]
+  (fx/sub-val context
+              :cycle-phase))
+
+(defn-
+  cycle-frac
+  [cycle-length
+   cycle-phase
+   idx]
+    (/ (mod (+ idx
+               cycle-phase)
+            cycle-length)
+       cycle-length))
 
 (defn
   window-width
@@ -674,10 +696,19 @@
 (defn
   sv-proj
   [context]
-  (-> context
-      (fx/sub-ctx region-matrix)
-      matrix/svd
-      matrix/svd-to-2d-sv-space))
+  (let [frac-generator (partial cycle-frac
+                                (fx/sub-ctx context
+                                            cycle-length)
+                                (fx/sub-ctx context
+                                            cycle-phase))]
+  (->> (-> context
+           (fx/sub-ctx region-matrix)
+           matrix/svd
+           matrix/svd-to-2d-sv-space)
+       (map-indexed (fn add-cycle-frac
+                      [idx point]
+                      (conj point
+                            {:cycle-frac (frac-generator idx)}))))))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/sv-proj))
@@ -868,7 +899,6 @@
 #_
 (-> @state/*selections
     (fx/sub-ctx state/sv-weights-stats))
-
 
 (defn
   sv-weights-svg
