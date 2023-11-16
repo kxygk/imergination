@@ -210,6 +210,13 @@
         (quickthing/primary-axis {:width  width
                                   :height height
                                   :margin-frac 0.00})
+        #_#_
+        (assoc-in [:x-axis
+                   :major]
+                  nil)
+        (assoc-in [:y-axis
+                   :major]
+                  nil)
         (update :data
                 #(into %
                        (quickthing/hist first-two
@@ -245,16 +252,25 @@
   [width
    height
    proj-a
-   proj-b]
+   proj-b
+   cycle-length ;; Maybe make these optional?
+   cycle-phase]
   (let [index-a (into [] (map-indexed vector
                                       proj-a))
         index-b (map-indexed vector
                              proj-b)]
-    (let [axis (quickthing/primary-axis (into index-a
-                                              index-b)
-                                        {:width width
-                                         :height height
-                                         :color  "#0008"})]
+    (let [axis (-> (quickthing/primary-axis (into index-a
+                                                   index-b)
+                                             {:width width
+                                              :height height
+                                              :x-ticks [1.0]
+                                              :y-ticks [1.0]
+                                              :color  "#0008"})
+                   (assoc-in [:x-axis
+                              :major]
+                             (range cycle-phase
+                                    (count proj-a)
+                                    cycle-length)))]
       (-> axis
           (assoc :data
                  (into []

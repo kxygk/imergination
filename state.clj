@@ -855,7 +855,11 @@
                          (fx/sub-ctx context
                                      state/row-height))
                       proj-b
-                      proj-a)
+                      proj-a
+                      (fx/sub-ctx context
+                                  cycle-length)
+                      (fx/sub-ctx context
+                                  cycle-phase))
       quickthing/svg2xml
       (spitstream "indeces.svg"))))
 #_
@@ -869,10 +873,10 @@
       (cljfx.api/sub-ctx sv-proj)
       (plot/sv-plot (* 0.5
                        (fx/sub-ctx context
-                                   state/window-width))
+                                   window-width))
                     (* 2.0
                        (fx/sub-ctx context
-                                   state/row-height)))
+                                   row-height)))
       quickthing/svg2xml
       (spitstream "sv-projs.svg")))
 #_
