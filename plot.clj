@@ -129,7 +129,8 @@
                                                region)
                    (map-label region
                               label-top-right))
-        (quickthing/svg-wrap (dimension region)))))
+        (quickthing/svg-wrap (dimension region)
+                             360.0))))
 
 (defn
   sv-plot
@@ -279,3 +280,34 @@
           viz/svg-plot2d-cartesian
           (quickthing/svg-wrap [width
                                 height])))))
+
+(defn
+  cyclic
+  [maps
+   cols]
+  (let [two-d (->> maps ;; TODO: replace with `partitionv-all`
+                   (partition-all cols) ;; when Clojure 1.12 lands
+                   (mapv (partial into  ;;needs to be vec-of-vecs
+                                  [])))] ;;otherwise crashes
+    two-d
+    (quickthing/group-plots-grid two-d)))
+#_
+(-> [[:test1, {:height 100
+               :width  100}]
+     [:test2, {:height 100
+               :width  100}]
+     [:test3, {:height 100
+               :width  100}]
+     [:test4, {:height 100
+               :width  100}]
+     [:test5, {:height 100
+               :width  100}]
+     [:test6, {:height 100
+               :width  100}]
+     [:test7, {:height 100
+               :width  100}]
+     [:test8, {:height 100
+               :width  100}]
+     [:test9, {:height 100
+               :width  100}]]
+    (cyclic 4))

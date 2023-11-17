@@ -917,3 +917,35 @@
 (spit "out/test-weights-actual.svg"
       (-> @state/*selections
           (fx/sub-ctx state/sv-weights-svg)))
+
+(defn
+  cycle-group-svg
+  [context
+   cycle-idx]
+  (let [cycle-phase  (fx/sub-ctx context
+                                 cycle-phase)
+        cycle-length (fx/sub-ctx context
+                                 cycle-length)]
+    (let [cycle-start (+ cycle-phase
+                         (* cycle-idx
+                            cycle-length))]
+      (let [cycle-end (+ cycle-start
+                         cycle-length)]
+        (-> (->> (range cycle-start
+                        cycle-end)
+                 (mapv (partial matrix/extract-grid
+                                (fx/sub-ctx context
+                                            region-matrix)))
+                 (mapv (fn grids-to-maps
+                         [grid]
+                         (plot/grid-map grid
+                                        (fx/sub-ctx context
+                                                    region-svg-hiccup)))))
+            (plot/cyclic (clojure.math/ceil (clojure.math/pow cycle-length
+                                                              0.5)))
+            quickthing/svg2xml
+            (spitstream "cycle.svg"))))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/cycle-group-svg
+                0))
