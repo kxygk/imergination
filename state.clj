@@ -949,3 +949,36 @@
 (-> @state/*selections
     (fx/sub-ctx state/cycle-group-svg
                 0))
+
+(defn
+  annual-cycle
+  [context
+   year-idx]
+  (let [cycle-phase  (fx/sub-ctx context
+                                 cycle-phase)
+        cycle-length (fx/sub-ctx context
+                                 cycle-length)]
+    (let [cycle-start (+ cycle-phase
+                         (* year-idx
+                            cycle-length))]
+      (let [cycle-end (+ cycle-start
+                         cycle-length)]
+        (-> (->> (range cycle-start
+                        cycle-end)
+                 (mapv (partial matrix/extract-grid
+                                (fx/sub-ctx context
+                                            region-matrix)))
+                 (mapv (fn grids-to-maps
+                         [grid]
+                         (plot/grid-map grid
+                                        (fx/sub-ctx context
+                                                    region-svg-hiccup)))))
+            plot/annual-12-month-ring
+            quickthing/svg2xml
+            (spitstream (str "year"
+                             year-idx
+                             ".svg")))))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/annual-cycle
+                0))

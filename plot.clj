@@ -311,3 +311,28 @@
      [:test9, {:height 100
                :width  100}]]
     (cyclic 4))
+
+
+(defn
+  annual-12-month-ring
+  "A ring of 12 months
+  08 07 06 05
+  09 -- -- 04
+  10 -- -- 03
+  11 12 01 02
+  in a counterclockwise fashion
+  (why does counterclockwise seem better?)"
+  [maps]
+  (assert (== 12
+              (count maps))
+          "Can't plot a ring if it's not 12 maps")
+  (let [submap (partial get      ;; helper to make layout easier to see below
+                        maps)
+        blank-spot (assoc (first maps)
+                          2
+                          (svg/group {}))]
+    (let [map-matrix [[(submap 7), (submap 6), (submap 5), (submap 4)]
+                      [(submap 8), blank-spot, blank-spot, (submap 3)]
+                      [(submap 9), blank-spot, blank-spot, (submap 2)]
+                      [(submap 10), (submap 11), (submap 0), (submap 1)]]]
+    (quickthing/group-plots-grid map-matrix))))
