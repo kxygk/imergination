@@ -936,11 +936,16 @@
                  (mapv (partial matrix/extract-grid
                                 (fx/sub-ctx context
                                             region-matrix)))
-                 (mapv (fn grids-to-maps
-                         [grid]
-                         (plot/grid-map grid
-                                        (fx/sub-ctx context
-                                                    region-svg-hiccup)))))
+                 (map-indexed (fn grids-to-maps
+                                [idx
+                                 grid]
+                                (plot/grid-map grid
+                                               (fx/sub-ctx context
+                                                           region-svg-hiccup)
+                                               {:label-top-right (str (inc idx))
+                                                :cycle-frac      (/ idx
+                                                                    12.0)})))
+                 (into []))
             (plot/cyclic (clojure.math/ceil (clojure.math/pow cycle-length
                                                               0.5)))
             quickthing/svg2xml
@@ -967,12 +972,17 @@
                         cycle-end)
                  (mapv (partial matrix/extract-grid
                                 (fx/sub-ctx context
-                                            region-matrix)))
-                 (mapv (fn grids-to-maps
-                         [grid]
-                         (plot/grid-map grid
-                                        (fx/sub-ctx context
-                                                    region-svg-hiccup)))))
+                                            region-matrix))) ;;))))))
+                 (map-indexed (fn grids-to-maps
+                                [idx
+                                 grid]
+                                (plot/grid-map grid
+                                               (fx/sub-ctx context
+                                                           region-svg-hiccup)
+                                               {:label-top-right (str (inc idx))
+                                                :cycle-frac      (/ idx
+                                                                    12.0)})))
+                 (into []))
             plot/annual-12-month-ring
             quickthing/svg2xml
             (spitstream (str "year"

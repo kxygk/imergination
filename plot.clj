@@ -68,32 +68,27 @@
   map-label
   "Label to add to the top right of maps"
   [region
-   text]
+   text
+   & [attribs]]
   (let [[width
-         height] (dimension
-                   region)
-        spacing  (/
-                   (min
-                     width
-                     height)
-                   10.0)]
-    (svg/text
-      [(-
-         width
-         (/
-           spacing
-           2.0))
-       (/
-         spacing
-         3.0)]
-      text
-      {:font-size         spacing
-       :text-anchor       "end"
-       :stroke            "black"
-       :stroke-width      (/ spacing
-                             50)
-       :fill              "white"
-       :dominant-baseline "hanging"})))
+         height] (dimension region)
+        spacing  (/ (min width
+                         height)
+                    10.0)]
+    (svg/text [(- width
+                  (/  spacing
+                      2.0))
+               (/ spacing
+                  3.0)]
+              text
+              (merge {:font-size         spacing
+                      :text-anchor       "end"
+                      :stroke            "black"
+                      :stroke-width      (/ spacing
+                                            50)
+                      :fill              "white"
+                      :dominant-baseline "hanging"}
+                     attribs))))
 
 (defn
   empty-map
@@ -128,7 +123,8 @@
                    (svgmaps/points-of-interest pois
                                                region)
                    (map-label region
-                              label-top-right))
+                              label-top-right
+                              {:fill (quickthing/color-cycle cycle-frac)}))
         (quickthing/svg-wrap (dimension region)
                              360.0))))
 
@@ -311,7 +307,6 @@
      [:test9, {:height 100
                :width  100}]]
     (cyclic 4))
-
 
 (defn
   annual-12-month-ring
