@@ -955,6 +955,20 @@
     (fx/sub-ctx state/cycle-group-svg
                 0))
 
+(def
+  month-map {1  "Jan"
+             2  "Feb"
+             3  "Mar"
+             4  "Apr"
+             5  "May"
+             6  "Jun"
+             7  "Jul"
+             8  "Aug"
+             9  "Sep"
+             10 "Oct"
+             11 "Nov"
+             12 "Dec"})
+
 (defn
   annual-cycle
   [context
@@ -979,7 +993,8 @@
                                 (plot/grid-map grid
                                                (fx/sub-ctx context
                                                            region-svg-hiccup)
-                                               {:label-top-right (str (inc idx))
+                                               {:label-top-right (get month-map
+                                                                      (inc idx))
                                                 :cycle-frac      (/ idx
                                                                     12.0)})))
                  (into []))
