@@ -21,18 +21,31 @@
   Draw a simple shoreline map"
   [region
    shoreline-filestr
-   pois]
+   & [{:keys [pois
+              label-top-right
+              cycle-frac
+              axis-visible?]
+       :or   {pois            nil
+              label-top-right ""
+              cycle-frac      nil
+              axis-visible? false}}]]
   (->
     (svg/group
       {}
-      (svgmaps/latlon-axis ;; draws lat/lon axis
-        region)
+      (if axis-visible?
+        (svgmaps/latlon-axis ;; draws lat/lon axis
+          region)
+        (svg/group {}
+                   nil))
       (geojson2svg/read-file
         shoreline-filestr
         region)
-      (svgmaps/points-of-interest
-        pois
-        region))
+      (if pois
+        (svgmaps/points-of-interest
+          pois
+          region)
+        (svg/group {}
+                  nil)))
     (quickthing/svg-wrap
       (dimension
         region))
@@ -106,27 +119,41 @@
    contour-svg
    & [{:keys [pois
               label-top-right
-              cycle-frac]
+              label-attribs
+              cycle-frac
+              axis-visible?]
        :or   {pois            []
               label-top-right ""
-              cycle-frac      nil}}]]
+              label-attribs   nil
+              cycle-frac      nil
+              axis-visible? false}}]]
   (let [region             (geogrid/covered-region input-grid)
         local-rain-grid    (geogrid/subregion input-grid
                                               region)
         {:keys [overruns]} (geogrid/adjusted-crop-region-to-grid region
                                                                  local-rain-grid)]
     (-> (svg/group {}
-                   (geogrid2svg/to-heatmap local-rain-grid
-                                           overruns)
-                   (svgmaps/latlon-axis region)
-                   contour-svg
+                   (if input-grid ;; TODO: Make it work without a grid..
+                     (geogrid2svg/to-heatmap local-rain-grid
+                                             overruns)
+                     (svg/group {}
+                                nil))
+                   (if axis-visible?
+                     (svgmaps/latlon-axis region)
+                     (svg/group {}
+                                nil))
+                   (if contour-svg
+                     contour-svg
+                     (svg/group {}
+                                nil))
                    (svgmaps/points-of-interest pois
                                                region)
                    (map-label region
                               label-top-right
-                              {:fill (quickthing/color-cycle cycle-frac)}))
+                              (merge label-attribs
+                                     {:fill (quickthing/color-cycle cycle-frac)})))
         (quickthing/svg-wrap (dimension region)
-                             360.0))))
+                             360))))
 
 (defn
   sv-plot

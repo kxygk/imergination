@@ -271,7 +271,7 @@
                 region)
     (plot/shoreline-map (fx/sub-ctx context
                                     shoreline-filestr)
-                        []))) ;; no POI
+                        {:axis-visible? false}))) ;; no POI
 
 (defn
   region-svg
@@ -286,6 +286,17 @@
 (type (-> @state/*selections
           (fx/sub-ctx state/region-svg)))
 
+(defn
+  contour-map-svg
+  [context]
+  (->
+    (fx/sub-ctx context
+                region)
+    (plot/shoreline-map (fx/sub-ctx context
+                                    shoreline-filestr)
+                        {:axis-visible? true})
+    quickthing/svg2xml
+    (spitstream "contour.svg")))
 #_#_
 (defn
   region-batik
@@ -531,7 +542,7 @@
   (if (nil? (fx/sub-ctx context
                         first-datafile-idx))
     (fx/sub-ctx context
-                region-svg)
+                contour-map-svg)
     (-> (fx/sub-ctx context
                     first-datafile-geogrid)
         (plot/grid-map (fx/sub-ctx context
@@ -995,6 +1006,7 @@
                                                            region-svg-hiccup)
                                                {:label-top-right (get month-map
                                                                       (inc idx))
+                                                :label-attribs {:font-size 1.5}
                                                 :cycle-frac      (/ idx
                                                                     12.0)})))
                  (into []))
