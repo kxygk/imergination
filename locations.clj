@@ -1,7 +1,8 @@
 (ns
     locations
   "Different commonly used locations as `def`s"
-  (:use geoprim))
+  (:use geoprim
+        clojure.math))
 
 ;; = `Regions-of-Interest`
 ;;
@@ -45,7 +46,7 @@
     (point
       7.5
       99.0)))
-
+#_
 (def
   krabi-skinny-region
   (region
@@ -55,6 +56,49 @@
     (point
       6
       101.5)))
+
+(def
+  krabi-root-2
+  (region
+    (point
+      (+ 6.0
+         (* 5.0
+            (pow 2.0
+                 0.5)))
+      97.0)
+    (point
+      6
+      101)))
+#_
+(+ 6.0
+         (* 5.0
+            (pow 2.0
+                 0.5)))
+;; => 13.071067811865476
+
+(def
+  rift-valley-small
+  (region (point 15.07
+                 39.0)
+          (point 8.0
+                 43.0)))
+
+
+(def
+  kashmir
+  (region (point 37.07
+                 73.0)
+          (point 30.0
+                 77.0)))
+
+
+
+(def
+  himalaya
+  (region (point 35.07
+                 75.0)
+          (point 28.0
+                 79.0)))
 
 ;;
 ;; == `Taiwan`
