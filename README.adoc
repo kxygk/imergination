@@ -8,10 +8,12 @@
 
 = Imergination
 
-== Intro
-
 A GUI for interactively extracting climate patterns from IMERG precipitation data
 
-This is a work in progress..
+This is a work in progress.. At the moment just my AGU poster giving a broad overview of the method used:
 
-image:https://raw.githubusercontent.com/wiki/kxygk/imergination/agu2023-poster-tall.svg[]
+Feel free to get in touch at:
+
+image:../email-small.svg[]
+
+image:https://raw.githubusercontent.com/wiki/kxygk/imergination/agu2023-poster.svg[]
