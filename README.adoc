@@ -13,3 +13,5 @@
 A GUI for interactively extracting climate patterns from IMERG precipitation data
 
 This is a work in progress..
+
+image:https://raw.githubusercontent.com/wiki/kxygk/imergination/agu2023-poster-tall.svg[]
