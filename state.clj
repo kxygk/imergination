@@ -367,6 +367,34 @@
          0.1))))
 
 (defn
+  region-geogrid-params
+  "This is a bit of a convoluted way to calculate the parameters,
+  but it's the only way to ensure they're correct
+  b/c image reading and segmentation is complicated
+  and it's all done in `geogrid/subregion`"
+  [context]
+  (->> (-> context
+           (fx/sub-ctx datafile-strs)
+           first)
+       vector
+       (map #(str (fx/sub-ctx context
+                               data-dirstr)
+                   %))
+       (map #(geogrid4image/read-file %
+                                       (fx/sub-ctx context
+                                                   eas-res)
+                                       (fx/sub-ctx context
+                                                   sou-res)))
+       (map #(geogrid/subregion %
+                                 (fx/sub-ctx context
+                                             region)))
+       first
+       geogrid/params))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/region-geogrid-params))
+
+(defn
   region-geogrids
   "A vector of all the images of the region of interest
   in the same order as the file listing.
