@@ -44,7 +44,9 @@
                             :cycle-phase       0
                             :eas-res           0.1
                             :sou-res           0.1
-                            :region            locations/krabi-skinny-region
+                            ;; TODO Debug `krabi-region`. Axis labels float off from the map
+                            :region-key            :krabi-root-2 #_locations/krabi-skinny-region
+                            #_locations/eastern-korea #_locations/krabi-root-2 #_locations/himalaya #_locations/rift-valley-small 
                             :mouse-click       nil
                             :datafile-idxs     []
                             :noise-idxs     []}
@@ -70,11 +72,20 @@
   region
   [context]
   (fx/sub-val context
-              :region))
-#_
-(-> @state/*selections
-    (fx/sub-ctx state/region)
-    geoprim/dimension)
+              :elevation-filestr))
+
+(defn
+  region-key
+  [context]
+  (fx/sub-val context
+              :region-key))
+
+(defn
+  region
+  [context]
+  (get locations/regions
+       (fx/sub-ctx context
+                   region-key)))
 
 (defn
   cycle-length
@@ -616,13 +627,17 @@
 (-> @state/*selections
     (fx/sub-ctx state/singular-vector-geogrid
                 0))
-#_
+#_ ;; BROKEN
 (spit
-  "out/first-sv.svg"
-  (quickthing/serialize-with-line-breaks
+  (str "out/"
+       (-> @state/*selections
+           (fx/sub-ctx state/region-key)
+           symbol )
+       "/first-sv.svg")
+  (quickthing/svg2xml
     (plot/grid-map
       (-> @state/*selections
-          (fx/sub-ctx state/re))
+          (fx/sub-ctx state/region))
       (state/region @state/*selections) ;;input-region ;; it'll crop redundantly here..
       "1st SV")))
 
@@ -721,7 +736,11 @@
                                  region-svg-hiccup))
       quickthing/svg2xml))
 #_
-(spit "out/fiftyfifty.svg"
+(spit (str "out/"
+           (-> @state/*selections
+               (fx/sub-ctx state/region-key)
+               symbol )
+           "/fiftyfifty.svg")
       (-> @state/*selections
           (fx/sub-ctx state/singular-vector-mixture-svg
                       0.5
@@ -953,7 +972,11 @@
       quickthing/svg2xml
       (spitstream "sv-weights.svg")))
 #_
-(spit "out/test-weights-actual.svg"
+(spit (str "out/"
+           (-> @state/*selections
+               (fx/sub-ctx state/region-key)
+               symbol)
+           "/test-weights-actual.svg")
       (-> @state/*selections
           (fx/sub-ctx state/sv-weights-svg)))
 

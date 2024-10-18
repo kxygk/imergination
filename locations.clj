@@ -7,6 +7,88 @@
 ;; = `Regions-of-Interest`
 ;;
 ;; == `WORLD`
+
+(def
+  regions
+  {:world-region        (region (point 90
+                                       -180)
+                                (point -90
+                                       180))
+   :two-seas-region     (region (point 23
+                                       85)
+                                (point -5.9
+                                       119))
+   :krabi-region        (region (point 8.5
+                                       98.0)
+                                (point 7.5
+                                       99.0))
+   :krabi-city-region   (region (point 8.5
+                                       98.0)
+                                (point 7.5
+                                       99.0))
+   :krabi-root-2        (region (point (+ 6.0
+                                          (* 5.0
+                                             (pow 2.0
+                                                  0.5)))
+                                       97.0)
+                                (point 6
+                                       101))
+   :rift-valley-small   (region (point 15.07
+                                       39.0)
+                                (point 8.0
+                                       43.0))
+   :kashmir             (region (point 37.07
+                                       73.0)
+                                (point 30.0
+                                       77.0))
+   :himalaya            (region (point 35.07
+                                       75.0)
+                                (point 28.0
+                                       79.0))
+   :eastern-korea       (region (point 38.6
+                                       127.1)
+                                (point 36.1
+                                       129.3))
+   :southern-korea      (region (point 36.6
+                                       126.2)
+                                (point 34.1
+                                       128.6))
+   :minnan-region       (region (point 26.23
+                                       116.47)
+                                (point 21.7
+                                       125))
+   :taiwan-region       (region (point 25.76
+                                       119.74)
+                                (point 21.74
+                                       122.26))
+   :north-taiwan-region (region (point 25.475
+                                       120.75)
+                                (point 23.75
+                                       122.25))
+   :taipei-region       (region (point 25.475
+                                       120.75)
+                                (point 24.75
+                                       122.25))
+   :birdneck-region     (region (point 0.5
+                                       133.0)
+                                (point -5.0
+                                       138.0))
+   })
+
+
+
+(def
+  poi
+  {:taipei        (point 25
+                         121.5)
+   :krabi         (point 8.100833
+                         98.984722)
+   :krabi-airport (point 8.100833
+                         98.984722)})
+
+
+
+
 (def
   world-region
   (region
@@ -99,6 +181,24 @@
                  75.0)
           (point 28.0
                  79.0)))
+
+
+;;
+;; == Korea
+
+(def
+  eastern-korea
+  (region (point 38.6
+                 127.1)
+          (point 36.1
+                 129.3)))
+
+(def
+  southern-korea
+  (region (point 36.6
+                 126.2)
+          (point 34.1
+                 128.6)))
 
 ;;
 ;; == `Taiwan`
