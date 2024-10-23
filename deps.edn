@@ -27,7 +27,8 @@
              org.ojalgo/ojalgo                    {:mvn/version "53.0.0"}
              ;; with native parts..
              ;;#_#_
-             uncomplicate/neanderthal             {:mvn/version "0.43.3"}}
+             org.bytedeco/mkl$linux-x86_64-redist {:mvn/version "2024.0-1.5.10"}
+             uncomplicate/neanderthal             {:mvn/version "0.49.1"}}
  ;; Note this generates a SLF4J Warning
  ;; https://github.com/uncomplicate/neanderthal/issues/54
  ;;
