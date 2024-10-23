@@ -100,6 +100,21 @@
     singular-values)
 
 (defn
+  singular-value
+  [svd
+   sv-index]
+  (-> svd
+      singular-values
+      (get sv-index)
+      second))
+#_
+(-> @state/*selections
+    (cljfx.api/sub-ctx state/region-matrix)
+    svd
+    (singular-value 1))
+;; => 9247.099897276306
+
+(defn
   singular-values-stats
   [singular-values]
   (let [weights (->> singular-values
