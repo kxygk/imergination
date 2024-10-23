@@ -35,10 +35,6 @@
                             :noise-idxs     []}
                            #(cache/lru-cache-factory % :threshold 1000))))
 
-;; (fx/sub-val
-;;   *selections
-;;   :shoreline-file)
-
 (defn
   row-height
   [context]
@@ -293,7 +289,8 @@
 (defn-
   region-svg-hiccup
   "Get a shoreline map of the region of interest
-  TODO: This could be a higher resolution than the world map"
+  TODO: This could be a higher resolution than the world map
+  TODO: RENAME TO SOMETHING LIKE CONTOUR"
   [context]
   (->
     (fx/sub-ctx context
@@ -472,7 +469,6 @@
     keys)
 #_
 (state/region-svd @state/*selections)
-
 
 #_
 (-> @state/*selections
@@ -1026,7 +1022,6 @@
 #_
 (-> @state/*selections
     (fx/sub-ctx state/sv-proj-svg))
-
 
 (defn
   sv-weights-stats

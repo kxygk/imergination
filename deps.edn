@@ -1,7 +1,7 @@
 {:mvn/repos {"central" {:url "https://repo1.maven.org/maven2/"}
              "clojars" {:url "https://clojars.org/repo"}
              "jitpack" {:url "https://jitpack.io"}}
- :deps      {org.clojure/clojure {:mvn/version "1.11.1"}
+ :deps      {org.clojure/clojure                  {:mvn/version "1.12.0"}
              ;; mine
              kxygk/geoprim                        {:local/root "../geoprim"}
              kxygk/geogrid                        {:local/root "../geogrid"}
