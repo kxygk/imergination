@@ -272,6 +272,7 @@
    height
    proj-a
    proj-b
+   cycle-start-value
    cycle-length ;; Maybe make these optional?
    cycle-phase]
   (let [index-a (into [] (map-indexed vector
@@ -286,20 +287,34 @@
                                               :y-ticks [1.0]
                                               :color  "#0008"})
                    (assoc-in [:x-axis
+                              :label]
+                             (thi.ng.geom.viz.core/default-svg-label #(+ cycle-start-value
+                                                                         (/ %
+                                                                            cycle-length))))
+                   #_
+                   (assoc-in [:x-axis
+                              :transform]
+                             "translate(40.0 0.0)")
+                   (assoc-in [:x-axis
                               :major]
                              (range cycle-phase
                                     (count proj-a)
-                                    cycle-length)))]
+                                    cycle-length))
+                   (assoc-in [:y-axis
+                              :major]
+                             []))]
       (-> axis
           (assoc :data
                  (into []
                        cat
                        [(quickthing/hist index-a
-                                         {:attribs {:opacity "0.5"
-                                                    :stroke "red"}})
+                                         {:attribs {;;:opacity "0.5"
+                                                    :stroke-width 10 #_0.4
+                                                    :stroke "#aa8800"}})
                         (quickthing/hist index-b
-                                         {:attribs {:opacity "0.5"
-                                                    :stroke "blue"}})]))
+                                         {:attribs {;;:opacity "0.5"
+                                                    :stroke-width 10 #_0.4
+                                                    :stroke "#00aa88"}})]))
           viz/svg-plot2d-cartesian
           (quickthing/svg-wrap [width
                                 height])))))
