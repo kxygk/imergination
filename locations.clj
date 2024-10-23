@@ -73,6 +73,19 @@
                                        133.0)
                                 (point -5.0
                                        138.0))
+   :sichuan-wall        (region (point 32.54
+                                       102.5)
+                                (point 29.0
+                                       104.5))
+   ;; Deserts
+   :marrah              (region (point 14.5 ;;15
+                                       23.4)
+                                (point 12.0 ;;12
+                                       25.4))
+   :udaipur             (region (point 26.0 ;;15
+                                       72.0)
+                                (point 23.0 ;;12
+                                       74.0))
    })
 
 
