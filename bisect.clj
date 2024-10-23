@@ -442,17 +442,20 @@
   (let [angle (min-var-angle points)
         classified (points-along-angle points
                                        angle)
-        [points-a ;; we're recomputing this.. :/
-         points-b] (vals (group-by #(-> %
-                                          (get 2)
-                                          :above?)
-                                   classified))]
-    (let [centroid-a (centroid points-a)
-          centroid-b (centroid points-b)]
+        grouped (group-by #(-> %
+                                     (get 2)
+                                     :above?)
+                                classified)
+        points-above (get grouped ;;above
+                          true)
+        points-below (get grouped ;;below
+                          false)]
+    (let [centroid-above (centroid points-above)
+          centroid-below (centroid points-below)]
       {:angle angle
        :points classified
-       :centroid-a centroid-a
-       :centroid-b centroid-b})))
+       :centroid-a centroid-above
+       :centroid-b centroid-below})))
 #_
 (let [data                 [[-2.45, 1.55] ;;first group
                             [-2.33, 1.25]

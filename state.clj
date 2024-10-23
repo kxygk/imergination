@@ -838,8 +838,7 @@
   second-pattern-svg
   [context]
   (-> (geogrid4seq/build-grid (-> context
-                                  (fx/sub-ctx region-geogrids)
-                                  first)
+                                  (fx/sub-ctx region-geogrid-params))
                               (-> context
                                   (fx/sub-ctx second-pattern)))
       (plot/grid-map (fx/sub-ctx context
@@ -870,9 +869,13 @@
 (-> @state/*selections
     (fx/sub-ctx state/pattern-proj))
 
+
 (defn
-  pattern-proj-svg
-  "Plot of the climate indeces"
+  pattern-proj-partitioned
+  "Projections of all the data
+  onto the two extracted patterns, but partitioned into two groups
+  Returns:
+  a two list of nonorthogonal coordinates"
   [context]
   (let [projections (fx/sub-ctx context
                                 pattern-proj)
@@ -881,7 +884,7 @@
                             (if (-> proj
                                     (get 2)
                                     :above?
-                                    not)
+                                    #_not)
                               (first proj)
                               0)))
                     (mapv (fn [proj]
@@ -892,27 +895,42 @@
                     (mapv (fn [proj]
                             (if (-> proj
                                     (get 2)
-                                    :above?)
+                                    :above?
+                                    not)
                               (second proj)
                               0)))
                     (mapv (fn [proj]
                             (if (pos? proj)
                               proj
                               0.0))))]
+    [proj-a
+     proj-b]))
+    #_
+(-> @state/*selections
+    (fx/sub-ctx state/pattern-proj-partitioned))
+
+(defn
+  pattern-proj-svg
+  "Plot of the climate indeces"
+  [context]
+  (let [[proj-a
+         proj-b] (fx/sub-ctx context
+                             pattern-proj-partitioned)]
     (-> (plot/indeces (* 1.0
                          (fx/sub-ctx context
-                                 state/window-width))
+                                     state/window-width))
                       (* 1.0
                          (fx/sub-ctx context
                                      state/row-height))
-                      proj-b
                       proj-a
+                      proj-b
+                      2011
                       (fx/sub-ctx context
                                   cycle-length)
                       (fx/sub-ctx context
                                   cycle-phase))
-      quickthing/svg2xml
-      (spitstream "indeces.svg"))))
+        quickthing/svg2xml
+        (spitstream "indeces.svg"))))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/pattern-proj-svg))
