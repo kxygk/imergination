@@ -12,6 +12,7 @@
              kxygk/geojson2svg                    {:local/root "../geojson2svg"}
              kxygk/svgmaps                        {:local/root "../svgmaps"}
              ;; extern
+             hashp/hashp                          {:mvn/version "0.2.2"}
              net.clojars.john/injest              {:mvn/version "0.1.0-beta.8"}
              cljfx/cljfx                          {:mvn/version "1.7.22"
                                                    :exclusions  [org.openjfx/javafx-web
