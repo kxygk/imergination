@@ -185,12 +185,11 @@
                                                                               [data-x
                                                                                data-y
                                                                                nil ;; default radius
-                                                                               {:stroke "#777"
-                                                                                :fill   (quickthing/color-cycle
-                                                                                          (-> attribs
-                                                                                              :cycle-frac))}])))
-                                                          {:scale 20})
-                           (quickthing/index-text data
+                                                                               {:stroke #_"transparent" "#777"
+                                                                                :fill   (quickthing/color-cycle (-> attribs
+                                                                                                                    :cycle-frac))}])))
+                                                          {:scale 30})
+                           #_(quickthing/index-text data
                                                   {:scale 20})
                            (quickthing/line-through-point data
                                                           (->> angle
