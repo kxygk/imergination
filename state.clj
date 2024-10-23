@@ -645,16 +645,11 @@
   singular-vector-geogrid
   [context
    sv-index]
-  (let [sv              (fx/sub-ctx context
-                                    singular-vector
-                                    sv-index)
-        ;;we use the first data grid to extra grid parameters
-        first-data-grid (-> context
-                            (fx/sub-ctx region-geogrids)
-                            first)]
+  (let [sv (fx/sub-ctx context
+                       singular-vector
+                       sv-index)]
     (geogrid4seq/build-grid (-> context
-                                (fx/sub-ctx region-geogrids)
-                                first)
+                                (fx/sub-ctx region-geogrid-params))
                             sv)))
 #_
 (-> @state/*selections
@@ -681,7 +676,7 @@
   [context
    sv-index]
   (if (empty? (fx/sub-ctx context
-                          region-geogrids))
+                          datafile-strs))
     (fx/sub-ctx context
                 region-svg)
     (-> (fx/sub-ctx context
