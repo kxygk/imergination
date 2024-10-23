@@ -24,6 +24,7 @@
                             :shoreline-filestr "./data/shoreline-coarse.json"
                             :contour-filestr   nil
                             :rain-dirstr       "/home/kxygk/Data/imerg/monthly/late/"
+                            :elevation-filestr "./data/World_e-Atlas-UCSD_SRTM30-plus_v8.tif"
                             :cycle-length      12
                             :cycle-phase       0
                             :eas-res           0.1
@@ -49,7 +50,7 @@
               :shoreline-filestr))
 
 (defn
-  region
+  elevation-filestr
   [context]
   (fx/sub-val context
               :elevation-filestr))
@@ -1149,3 +1150,30 @@
 (-> @state/*selections
     (fx/sub-ctx state/annual-cycle
                 0))
+
+#_
+(defn
+  elevation-geogrid
+  "A vector of all the images of the region of interest
+  in the same order as the file listing.
+  Reading and cropping all the images take a min or two "
+  [context]
+  (-> (fx/sub-ctx context
+                  elevation-filestr)
+      (geogrid4image/read-file (fx/sub-ctx context
+                                           eas-res)
+                               (fx/sub-ctx context
+                                           sou-res))
+      #_
+      (geogrid/subregion (fx/sub-ctx context
+                                     region))))
+#_
+(geogrid4image/read-file (str "/home/kxygk/Projects/imergination/data/"
+                              "World_e-Atlas-UCSD_SRTM30-plus_v8.tif")
+                          (fx/sub-ctx @state/*selections
+                                      eas-res)
+                          (fx/sub-ctx @state/*selections
+                                      sou-res))
+#_
+(.getType (fx/sub-ctx @state/*selections
+            elevation-geogrid))
