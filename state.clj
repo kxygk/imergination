@@ -15,24 +15,6 @@
 (def debug?
   true)
 
-(defn
-  spitstream
-  "Take a string, spit it to FILENAME
-  and return the STR back
-  ..
-  NOTE: Argument order reverse from `spit`
-  b/c the `spit` order is inconvenient for most pipelines"
-  [string
-   filename]
-  (assert (instance? String
-                     string))
-  (if debug?
-    (spit (str "./debug/"
-               filename)
-          string)
-    nil)
-  string)
-
 (def
   *selections
   (atom (fx/create-context {:window-width      1080.0
@@ -87,11 +69,46 @@
        (fx/sub-ctx context
                    region-key)))
 
+
+;; DEBUG HELPERS *************************
+(defn
+  spitstream
+  "Take a string, spit it to FILENAME
+  and return the STR back
+  ..
+  NOTE: Argument order reverse from `spit`
+  b/c the `spit` order is inconvenient for most pipelines"
+  [string
+   filename]
+  (assert (instance? String
+                     string))
+  (if debug?
+    (spit (str "./debug/"
+               (-> @state/*selections
+                   (fx/sub-ctx state/region-key)
+                   symbol)
+               "/"
+               filename)
+          string)
+    nil)
+  string)
+
+(if debug?
+  (->> (-> @state/*selections
+           (fx/sub-ctx state/region-key))
+       symbol
+       (str "./debug/")
+       (java.io.File.)
+       (.mkdir)))
+;; ***************************************
+
+
 (defn
   cycle-length
   [context]
   (fx/sub-val context
               :cycle-length))
+
 (defn
   cycle-phase
   [context]
