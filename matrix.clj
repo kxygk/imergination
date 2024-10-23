@@ -158,7 +158,7 @@
                             (matrix/singular-vector sv-index))
           first-geogrid (-> geogrids
                             first)]
-      (let [sv-grid   (geogrid4seq/build-grid first-geogrid
+      (let [sv-grid   (geogrid4seq/build-grid (geogrid/params first-geogrid)
                                               sv)
             shoreline (plot/shoreline-map region
                                           "./data/shoreline-coarse.json"
@@ -301,11 +301,11 @@
          height-pix] dimension
         [eas-res
          sou-res]    resolution]
-    (geogrid4seq/build-grid width-pix
-                            height-pix
-                            eas-res
-                            sou-res
-                            position
+    (geogrid4seq/build-grid [width-pix
+                             height-pix
+                             eas-res
+                             sou-res
+                             position]
                             column-of-data)))
 
 (defn

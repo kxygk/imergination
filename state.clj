@@ -7,6 +7,7 @@
             [injest.path :refer [+> +>> x>> =>>]]
             bisect
             geogrid4image
+            geogrid4seq
             svg2jfx
             matrix
             plot
@@ -423,39 +424,25 @@
     (fx/sub-ctx state/region-geogrid-params))
 
 (defn
-  region-geogrids
-  "A vector of all the images of the region of interest
-  in the same order as the file listing.
-  Reading and cropping all the images take a min or two "
-  [context]
-  (x>> (fx/sub-ctx context
-                   datafile-strs)
-       (map #(str (fx/sub-ctx context
-                               data-dirstr)
-                   %))
-       (map #(geogrid4image/read-file %
-                                       (fx/sub-ctx context
-                                                   eas-res)
-                                       (fx/sub-ctx context
-                                                   sou-res)))
-       (map #(geogrid/subregion %
-                                 (fx/sub-ctx context
-                                             region)))
-       #_vec))
-#_
-(-> @state/*selections
-    (fx/sub-ctx state/region-geogrids)
-    first)
-
-(defn
   region-matrix
   "Matrix of all the data over a region
   Implementation is hidden in `matrix.clj`
   So that the underlying library can be swapped"
   [context]
-  (-> context
-      (fx/sub-ctx state/region-geogrids)
-      matrix/from-geogrids))
+  (->> (fx/sub-ctx context
+                   datafile-strs)
+       (map #(str (fx/sub-ctx context
+                              data-dirstr)
+                  %))
+       (map #(geogrid4image/read-file % ;; TODO: Trans
+                                      (fx/sub-ctx context
+                                                  eas-res)
+                                      (fx/sub-ctx context
+                                                  sou-res)))
+       (map #(geogrid/subregion %
+                                (fx/sub-ctx context
+                                            region)))
+       matrix/from-geogrids))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/region-matrix))
@@ -471,6 +458,7 @@
 ;;     :dimension [50 50],
 ;;     :position {:eas 276.5, :sou 79.0},
 ;;     :resolution [0.1 0.1]}
+
 (defn
   region-svd
   "the SVD of the region matrix"
@@ -757,8 +745,7 @@
    sv-one
    sv-two]
   (geogrid4seq/build-grid (-> context
-                              (fx/sub-ctx region-geogrids)
-                              first)
+                              (fx/sub-ctx region-geogrid-params))
                           (fx/sub-ctx context
                                       singular-vector-mixture
                                       sv-one
@@ -851,8 +838,7 @@
   first-pattern-svg
   [context]
   (-> (geogrid4seq/build-grid (-> context
-                                  (fx/sub-ctx region-geogrids)
-                                  first)
+                                  (fx/sub-ctx region-geogrid-params))
                               (-> context
                                   (fx/sub-ctx first-pattern)))
       (plot/grid-map (fx/sub-ctx context
