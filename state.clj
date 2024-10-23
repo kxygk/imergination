@@ -428,17 +428,17 @@
   in the same order as the file listing.
   Reading and cropping all the images take a min or two "
   [context]
-  (->> (fx/sub-ctx context
+  (x>> (fx/sub-ctx context
                    datafile-strs)
-       (mapv #(str (fx/sub-ctx context
+       (map #(str (fx/sub-ctx context
                                data-dirstr)
                    %))
-       (mapv #(geogrid4image/read-file %
+       (map #(geogrid4image/read-file %
                                        (fx/sub-ctx context
                                                    eas-res)
                                        (fx/sub-ctx context
                                                    sou-res)))
-       (mapv #(geogrid/subregion %
+       (map #(geogrid/subregion %
                                  (fx/sub-ctx context
                                              region)))
        #_vec))
