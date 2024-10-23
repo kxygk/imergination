@@ -715,50 +715,74 @@
   singular-vector-mixture
   "Mixture of the first two singular vectors"
   [context
-   sv-one
-   sv-two]
-  (let [sv1 (fx/sub-ctx context
+   svec-one
+   svec-two
+   sval-one
+   sval-two]
+  (println (str "\nin `singular-vector-mixture`"
+                "\nsvec-one"
+                svec-one
+                "\nsvec-two"
+                svec-two
+                "\nsval-one"
+                sval-one
+                "\nsval-two"
+                sval-two))
+  (let [svec1 (fx/sub-ctx context
                         singular-vector
                         0)
-        sv2 (fx/sub-ctx context
+        svec2 (fx/sub-ctx context
                         singular-vector
                         1)]
-    (let [mixture (mapv (fn [sv1-point
-                             sv2-point]
-                          (/ (+ (* sv1-point
-                                   sv-one)
-                                (* sv2-point
-                                   sv-two))
+    (let [mixture (mapv (fn [svec1-point
+                             svec2-point]
+                          (/ (+ (* svec1-point
+                                   svec-one
+                                   sval-one)
+                                (* svec2-point
+                                   svec-two
+                                   sval-two))
                              2.0))
-                        sv1
-                        sv2)]
+                        svec1
+                        svec2)]
       mixture)))
 
 (defn
   singular-vector-mixture-geogrid
   [context
    sv-one
-   sv-two]
+   sv-two
+   sval-one
+   sval-two]
   (geogrid4seq/build-grid (-> context
                               (fx/sub-ctx region-geogrid-params))
                           (fx/sub-ctx context
                                       singular-vector-mixture
                                       sv-one
-                                      sv-two)))
+                                      sv-two
+   sval-one
+   sval-two)))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/singular-vector-mixture-geogrid
-                0.5))
+                0.5
+                0.5
+                1.0
+                1.0))
 
 (defn
   singular-vector-mixture-svg
   [context
    sv-one
-   sv-two]
+   sv-two
+   sval-one
+   sval-two]
   (-> (fx/sub-ctx context
                   singular-vector-mixture-geogrid
                   sv-one
-                  sv-two)
+                  sv-two
+                  sval-one
+                  sval-two)
       (plot/grid-map (fx/sub-ctx context
                                  region-svg-hiccup))
       quickthing/svg2xml))
@@ -771,7 +795,9 @@
       (-> @state/*selections
           (fx/sub-ctx state/singular-vector-mixture-svg
                       0.5
-                      0.5)))
+                      0.5
+                      1.0
+                      1.0)))
 
 (defn
   sv-proj
@@ -819,12 +845,18 @@
   [context]
   (let [{:keys [centroid-a]} (fx/sub-ctx context
                                          state/sv-bisection)]
-    (let [[x-coord
+    (let [sval-one (-> context
+                          (fx/sub-ctx state/sv-weight 0))
+          sval-two (-> context
+                          (fx/sub-ctx state/sv-weight 1))
+          [x-coord
            y-coord] centroid-a]
       (fx/sub-ctx context
                   singular-vector-mixture
                   x-coord
-                  y-coord))))
+                  y-coord
+                  sval-one
+                  sval-two))))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/first-pattern))
@@ -849,12 +881,29 @@
   [context]
   (let [{:keys [centroid-b]} (fx/sub-ctx context
                                          state/sv-bisection)]
-    (let [[x-coord
+    (let [sval-one (-> context
+                          (fx/sub-ctx state/sv-weight 0))
+          sval-two (-> context
+                       (fx/sub-ctx state/sv-weight 1))
+          [x-coord
            y-coord] centroid-b]
+      (println (str "\nSecond Pattern Centroid: \n"
+                    centroid-b
+                    "\n"
+                    "\nWeight 1: "
+                    sval-one
+                    "\nWeight 2: "
+                    sval-two
+                    "\nCoords: "
+                    x-coord
+                    "  "
+                    y-coord))
       (fx/sub-ctx context
                   singular-vector-mixture
                   x-coord
-                  y-coord))))
+                  y-coord
+                  sval-one
+                  sval-two))))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/second-pattern))
