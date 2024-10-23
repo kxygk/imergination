@@ -609,6 +609,34 @@
 (-> @state/*selections
     (fx/sub-ctx state/first-datafile-svg))
 
+
+(defn
+  sv-weights
+  [context]
+  (-> context
+      (fx/sub-ctx region-matrix)
+      matrix/svd
+      matrix/singular-values))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/sv-weights))
+
+
+(defn
+  sv-weight
+  "Get a particular singular vector
+  Based on `index`"
+  [context
+   sv-index]
+  (-> context
+      (fx/sub-ctx sv-weights)
+      (get sv-index)
+      second))
+#_
+(state/sv-weight @state/*selections
+                       1)
+;; => 9247.099897276306
+
 (defn
   singular-vector
   "Get a particular singular vector
@@ -969,16 +997,6 @@
 (-> @state/*selections
     (fx/sub-ctx state/sv-proj-svg))
 
-(defn
-  sv-weights
-  [context]
-  (-> context
-      (fx/sub-ctx region-matrix)
-      matrix/svd
-      matrix/singular-values))
-#_
-(-> @state/*selections
-    (fx/sub-ctx state/sv-weights))
 
 (defn
   sv-weights-stats
