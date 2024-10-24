@@ -51,6 +51,19 @@
     matrix/from-geogrids)
 
 (defn
+  get-min-max
+  [matrix]
+  (let [data-vec (-> matrix
+                     :matrix
+                     seq
+                     vec
+                     flatten
+                     vec)]
+    ;;data-vec
+    [(apply min data-vec)
+     (apply max data-vec)]))
+
+(defn
   svd
   "Take a data matrix
   Returns
@@ -268,6 +281,16 @@
                         [20.0, 6.0]])
 
 (defn
+  svd-to-weights
+  "get the weight of a particular vector for each data point
+  So for `0` it will give you the weight of the PC-1 for each point in time"
+  [svd
+   sv-index]
+  (let [weight-matrix (:vt svd)]
+    (ncore/row weight-matrix                          ;; data proj on sv1
+               sv-index)))
+
+(defn
   svd-to-2d-sv-space
   [svd]
   (let [weight-matrix (:vt svd)]
@@ -336,6 +359,34 @@
                      (ncore/col matrix
                                 column-index))
                grid-params))
+
+(defn
+  minus-1-sv
+  "Take the SV matrices
+  Zero out the first component
+  Return the new data matrix of (maybe?) only noise"
+  [svd]
+  (let [truncated-sigma (-> svd
+                            :sigma
+                            (ncore/alter! 0
+                                          0
+                                          (fn ^double   ;; the type annotations are required for some reason
+                                            [^double _] ;; crashed without them..
+                                            0.0)))
+        new-data-matrix (ncore/mm (:u svd)
+                                  truncated-sigma
+                                  (:vt svd))]
+  (-> svd
+      (assoc :sigma
+             truncated-sigma)
+      (assoc :matrix
+             new-data-matrix))))
+#_
+(-> [1 2 3]
+    neand/dv
+    (ncore/alter! 0
+                  ;;0
+                  (fn ^double [^double _] 0.0 #_(inc x)) ))
 
 (defn
   minus-2-sv

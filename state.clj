@@ -472,6 +472,16 @@
 #_
 (state/region-svd @state/*selections)
 
+(defn
+  region-min-max
+  [context]
+  (-> context
+      (fx/sub-ctx region-matrix)
+      matrix/get-min-max))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/region-min-max))
+
 #_
 (-> @state/*selections
     (fx/sub-ctx state/region-matrix)
@@ -479,50 +489,18 @@
     (uncomplicate.neanderthal.linalg/svd  true
                                           true)
     (matrix/from-svd))
-;; => #RealGEMatrix[double, mxn:2500x119, layout:column, offset:0]
-;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
-;;       →      54.00    2.00    ⁙      74.00   12.00         
-;;       →      47.00    4.00    ⁙      83.00    9.00         
-;;       →       ⁙       ⁙       ⁙       ⁙       ⁙            
-;;       →     179.00   13.00    ⁙     266.00  326.00         
-;;       →     214.00   13.00    ⁙     281.00  292.00         
-;;       ┗                                               ┛
-
-#_
-(-> @state/*selections
-    (fx/sub-ctx state/region-matrix)
-    (matrix/svd)
-    (matrix/from-svd))
-;; => #RealGEMatrix[double, mxn:2500x119, layout:column, offset:0]
-;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
-;;       →      54.00    2.00    ⁙      74.00   12.00         
-;;       →      47.00    4.00    ⁙      83.00    9.00         
-;;       →       ⁙       ⁙       ⁙       ⁙       ⁙            
-;;       →     179.00   13.00    ⁙     266.00  326.00         
-;;       →     214.00   13.00    ⁙     281.00  292.00         
-;;       ┗                                               ┛    
-#_
-(-> @state/*selections
-    (fx/sub-ctx state/region-svd)
-    (matrix/from-svd))
-;; => #RealGEMatrix[double, mxn:2500x119, layout:column, offset:0]
-;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
-;;       →      19.54  -18.37    ⁙      -5.33    7.28         
-;;       →      14.09  -15.72    ⁙       6.97    6.37         
-;;       →       ⁙       ⁙       ⁙       ⁙       ⁙            
-;;       →      57.02  -22.56    ⁙      21.29   44.10         
-;;       →      80.54  -25.78    ⁙      13.39  -17.36         
-;;       ┗                                               ┛
 
 (defn
-  noise-matrix
+  noise-matrix-2d
+  "Noise matrix when there are two climate systems
+  and the two leading SV are removed from the data"
   [context]
   (-> context
       (fx/sub-ctx region-svd)
       (matrix/minus-2-sv)))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/noise-matrix)
+    (fx/sub-ctx state/noise-matrix-2d)
     keys)
 ;; => (:sigma :u :vt :master :matrix :dimension :position :resolution)
 
@@ -532,7 +510,7 @@
   [context
    id]
   (-> (matrix/extract-grid (fx/sub-ctx context
-                                       noise-matrix)
+                                       noise-matrix-2d)
                            id)
       (plot/grid-map (fx/sub-ctx context
                                  region-svg-hiccup))
@@ -544,6 +522,44 @@
 (-> @state/*selections
     (fx/sub-ctx state/noise-svg
                 3))
+
+(defn
+  noise-1d-matrix
+  "This is a noise matric when only the first EOF is removed
+  This shouldn't be used normally..
+  b/c the code is designed to run on two climate regions"
+  [context]
+  (-> context
+      (fx/sub-ctx region-svd)
+      (matrix/minus-1-sv)))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/noise-matrix-1d)
+    keys)
+
+(defn
+  eof1-weights
+  "Get the EOF1 component at each data point (ie. point in time)"
+  [context]
+  (-> context
+      (fx/sub-ctx region-svd)
+      (matrix/svd-to-weights 0)))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/eof1-weights)
+    seq
+    vec)
+
+
+(defn
+  noise-1d-min-max
+  [context]
+  (-> context
+      (fx/sub-ctx noise-1d-matrix)
+      matrix/get-min-max))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/noise-1d-min-max))
 
 (defn
   datafile-idxs
