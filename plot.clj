@@ -372,3 +372,48 @@
                       [(submap 9), blank-spot, blank-spot, (submap 2)]
                       [(submap 10), (submap 11), (submap 0), (submap 1)]]]
     (quickthing/group-plots-grid map-matrix))))
+
+(defn
+  eof1-vs-var
+  "An [x y] scatter plot of eof1 vs variance"
+  [eof1weight-vs-variance
+   region-name
+   width
+   height]
+  (let [data            eof1weight-vs-variance
+        data-with-index (->> data
+                             (map-indexed (fn [index
+                                               data]
+                                            (conj data
+                                                  index)))
+                             vec)
+        axis            (-> data
+                            (quickthing/primary-axis {:width     width
+                                                      :height    height
+                                                      :x-name    "EOF1 strength"
+                                                      :y-name    "Variance"
+                                                      :title     region-name
+                                                      #_#_:color "#0008"}))]
+    (-> axis
+        (update :data
+                #(into %
+                       (quickthing/adjustable-text data-with-index
+                                                   {:scale 30
+                                                    :attribs {:dy -10.0}})))
+        (update :data
+                #(into %
+                       (quickthing/adjustable-circles data
+                                                      {:scale 10})))
+        viz/svg-plot2d-cartesian
+        (quickthing/svg-wrap [width
+                              height]))))
+
+;;(conj [1 2] 3)
+
+
+
+#_
+(->> [[12 3242] [213 423] [2342 525]]
+     (map-indexed (fn [ index data]
+                    (conj data
+                          index))))

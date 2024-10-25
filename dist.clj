@@ -161,21 +161,58 @@
                                 height])
           quickthing/svg2xml))))
 
-
-
 (spit "out/1d-rain-noise-counts.svg"
       (across-field-1d 19))
 
-(-> @state/*selections
-    (fx/sub-ctx state/region-svd)
-    :vt)
+(var-from-zero [-1 2 -3 4.0])
+
+(def eof1weight-vs-variance
+  "Return a pair of the eof1weight and variance
+   (relative to the EOF1 signal)
+  for a given INDEX (ie. time point)"
+  ;;[index]
+  (let [eof1-weight (-> @state/*selections
+                        (fx/sub-ctx state/sv-weight 0))
+        eof1-components (->> (fx/sub-ctx @state/*selections
+                                         state/eof1-weights)
+                             seq
+                             vec
+                             (mapv #(* %
+                                       -1.0
+                                       eof1-weight)))
+        num-timesteps   (count eof1-components)]
+    (let [var-matrix           (-> @state/*selections
+                                   (fx/sub-ctx #_state/region-matrix state/noise-matrix-1d)
+                                   :matrix)
+          variations-from-mean (->> num-timesteps
+                                    range
+                                    (mapv #(-> var-matrix
+                                               (uncomplicate.neanderthal.core/col %)
+                                               seq
+                                               vec
+                                               var-from-zero
+                                               (clojure.math/pow 2))))]
+      (mapv vector
+            eof1-components
+            variations-from-mean))))
+#_
+(identity eof1weight-vs-variance)
 
 
-(-> @state/*selections
-    (fx/sub-ctx state/sv-weight 0))
-
-(-> @state/*selections
-    (fx/sub-ctx state/eof1-weights)
-    seq
-    vec
-    (get 1))
+(spit "out/index-vs-var.svg"
+      (let [width  1000
+            height 500
+            axis   (-> eof1weight-vs-variance
+                       (quickthing/primary-axis {:x-name "deviation from mean"
+                                                 :y-name "Counts"
+                                                 :title  "INDEX vs VAR"
+                                                 :color  "#0008"}))]
+        (-> axis
+            (update :data
+                    #(into %
+                           (quickthing/adjustable-circles eof1weight-vs-variance
+                                                          {:scale 10})))
+            viz/svg-plot2d-cartesian
+            (quickthing/svg-wrap [width
+                                  height])
+            quickthing/svg2xml))))

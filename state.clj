@@ -1193,3 +1193,78 @@
 #_
 (.getType (fx/sub-ctx @state/*selections
             elevation-geogrid))
+
+
+;; DIAGNOSTIC CHARTS
+;;
+;; ONLY MAKES SENSE IN 1 CLIMATE REGIONS
+(defn-
+  var-from-zero
+  [data-seq]
+  (let [num (count data-seq)]
+    (/ (->> data-seq
+            (reduce #(+ (abs %1)
+                        (abs %2))))
+       num)))
+
+(defn-
+  var-from-mean
+  [data-seq]
+  (let [
+        num (count data-seq)
+        mean (/ (->> data-seq
+                     (reduce +))
+                num)] ;; N or N-1 ?
+    (/ (->> data-seq
+            (reduce #(+ (abs (- %1
+                                mean))
+                        (abs %2))))
+       num)))
+
+(defn
+  eof1weight-vs-variance
+  "Return a pair of the eof1weight and variance
+   (relative to the EOF1 signal)
+  for a given INDEX (ie. time point)"
+  [context]
+  (let [eof1-weight (-> context
+                        (fx/sub-ctx state/sv-weight 0))
+        eof1-components (->> (fx/sub-ctx context
+                                         state/eof1-weights)
+                             seq
+                             vec
+                             (mapv #(* %
+                                       -1.0
+                                       eof1-weight)))
+        num-timesteps   (count eof1-components)]
+    (let [var-matrix           (-> context
+                                   (fx/sub-ctx #_state/region-matrix state/noise-1d-matrix)
+                                   :matrix)
+          variations-from-mean (->> num-timesteps
+                                    range
+                                    (mapv #(-> var-matrix
+                                               (uncomplicate.neanderthal.core/col %)
+                                               seq
+                                               vec
+                                               var-from-mean
+                                               (clojure.math/pow 2))))]
+      (mapv vector
+            eof1-components
+            variations-from-mean))))
+
+(defn
+  eof1-vs-var-svg
+  "Plot and stream to file"
+  [context]
+(-> context
+    (fx/sub-ctx eof1weight-vs-variance)
+    (plot/eof1-vs-var (-> @state/*selections
+                          (fx/sub-ctx state/region-key)
+                          str)
+                      1000 ;; needs values for graphic
+                      1000)
+    quickthing/svg2xml
+    (spitstream "eof1-vs-var.svg")))
+;;  Not in GUI display, so run code to save SVG to file
+(fx/sub-ctx @state/*selections
+            eof1-vs-var-svg)
