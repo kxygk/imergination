@@ -1202,10 +1202,11 @@
   var-from-zero
   [data-seq]
   (let [num (count data-seq)]
-    (/ (->> data-seq
-            (reduce #(+ (abs %1)
-                        (abs %2))))
-       num)))
+    (->> data-seq
+         (reduce #(+ (/ (clojure.math/pow %2
+                                          2.0)
+                        num)
+                     %1)))))
 
 (defn-
   var-from-mean
@@ -1216,10 +1217,13 @@
                      (reduce +))
                 num)] ;; N or N-1 ?
     (/ (->> data-seq
-            (reduce #(+ (abs (- %1
-                                mean))
-                        (abs %2))))
-       num)))
+            (reduce #(+ (/ (clojure.math/pow (- %2
+                                                mean)
+                                             2.0)
+                           num)
+                        %1)
+                    0.0))
+       1.0)))
 
 (defn
   eof1weight-vs-variance
