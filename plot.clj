@@ -380,7 +380,10 @@
    region-name
    width
    height]
-  (let [data            eof1weight-vs-variance
+  (let [data            (->> eof1weight-vs-variance
+                             (mapv #(-> % ;; small rounding errors will make small negative values I guess?
+                                        (update 1
+                                                abs))))
         data-with-index (->> data
                              (map-indexed (fn [index
                                                data]

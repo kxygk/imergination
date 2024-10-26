@@ -121,7 +121,7 @@
         data-bounds [[x-min, y-min]
                      [x-max, y-max]]
         variation-from-mean (-> @state/*selections
-                                  (fx/sub-ctx #_state/region-matrix state/noise-matrix-1d)
+                                  (fx/sub-ctx #_state/region-matrix state/noise-1d-matrix)
                                   :matrix
                                   (uncomplicate.neanderthal.core/col index)
                                   seq

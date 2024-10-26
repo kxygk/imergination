@@ -1208,25 +1208,9 @@
                         num)
                      %1)))))
 
-(defn-
-  var-from-mean
-  [data-seq]
-  (let [
-        num (count data-seq)
-        mean (/ (->> data-seq
-                     (reduce +))
-                num)] ;; N or N-1 ?
-    (/ (->> data-seq
-            (reduce #(+ (/ (clojure.math/pow (- %2
-                                                mean)
-                                             2.0)
-                           num)
-                        %1)
-                    0.0))
-       1.0)))
 
 (defn
-  eof1weight-vs-variance
+  eof1weight-vs-variance-from-zero
   "Return a pair of the eof1weight and variance
    (relative to the EOF1 signal)
   for a given INDEX (ie. time point)"
@@ -1250,25 +1234,90 @@
                                                (uncomplicate.neanderthal.core/col %)
                                                seq
                                                vec
-                                               var-from-mean
-                                               (clojure.math/pow 2))))]
+                                               var-from-zero)))]
       (mapv vector
             eof1-components
             variations-from-mean))))
 
 (defn
-  eof1-vs-var-svg
+  eof1-vs-var-zero-svg
   "Plot and stream to file"
   [context]
 (-> context
-    (fx/sub-ctx eof1weight-vs-variance)
+    (fx/sub-ctx eof1weight-vs-variance-from-zero) ;; #_#_#_
     (plot/eof1-vs-var (-> @state/*selections
                           (fx/sub-ctx state/region-key)
                           str)
                       1000 ;; needs values for graphic
                       1000)
     quickthing/svg2xml
-    (spitstream "eof1-vs-var.svg")))
+    (spitstream "eof1-vs-var-from-zero.svg")))
 ;;  Not in GUI display, so run code to save SVG to file
 (fx/sub-ctx @state/*selections
-            eof1-vs-var-svg)
+            eof1-vs-var-zero-svg)
+
+
+
+(defn-
+  var-from-mean
+  [data-seq]
+  (let [
+        num (count data-seq)
+        mean (/ (->> data-seq
+                     (reduce +))
+                num)] ;; N or N-1 ?
+    (/ (->> data-seq
+            (reduce #(+ (/ (clojure.math/pow (- %2
+                                                mean)
+                                             2.0)
+                           num)
+                        %1)
+                    0.0))
+       1.0)))
+
+(defn
+  eof1weight-vs-variance-from-mean
+  "Return a pair of the eof1weight and variance
+   (relative to the EOF1 signal)
+  for a given INDEX (ie. time point)"
+  [context]
+  (let [eof1-weight (-> context
+                        (fx/sub-ctx state/sv-weight 0))
+        eof1-components (->> (fx/sub-ctx context
+                                         state/eof1-weights)
+                             seq
+                             vec
+                             (mapv #(* %
+                                       -1.0
+                                       eof1-weight)))
+        num-timesteps   (count eof1-components)]
+    (let [var-matrix           (-> context
+                                   (fx/sub-ctx #_state/region-matrix state/noise-1d-matrix)
+                                   :matrix)
+          variations-from-mean (->> num-timesteps
+                                    range
+                                    (mapv #(-> var-matrix
+                                               (uncomplicate.neanderthal.core/col %)
+                                               seq
+                                               vec
+                                               var-from-mean)))]
+      (mapv vector
+            eof1-components
+            variations-from-mean))))
+
+(defn
+  eof1-vs-var-mean-svg
+  "Plot and stream to file"
+  [context]
+(-> context
+    (fx/sub-ctx eof1weight-vs-variance-from-mean) ;; #_#_#_
+    (plot/eof1-vs-var (-> @state/*selections
+                          (fx/sub-ctx state/region-key)
+                          str)
+                      1000 ;; needs values for graphic
+                      1000)
+    quickthing/svg2xml
+    (spitstream "eof1-vs-var-from-mean.svg")))
+;;  Not in GUI display, so run code to save SVG to file
+(fx/sub-ctx @state/*selections
+            eof1-vs-var-mean-svg)
