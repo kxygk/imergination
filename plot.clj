@@ -427,3 +427,54 @@
 #_
 (-> @state/*selections
     (cljfx.api/sub-ctx state/eof1weight-vs-variance-from-zero))
+
+(defn
+  histogram-of-monthly-rain-amounts
+  [index
+   rain-vector
+   [x-min, x-max]
+   [y-min, y-max]
+   [width, height]]
+  (let [data-bounds [[x-min, y-min]
+                     [x-max, y-max]]
+        rounded     (->> rain-vector
+                        (mapv (partial * 1))
+                        (mapv clojure.math/round)
+                        (mapv (partial * 1)))
+        ;; rain-max    (apply max
+        ;;                    rounded)
+        counts      (->> (update-vals (->> rounded
+                                      (group-by identity))
+                                 count)
+                    (into (sorted-map-by <)))]
+    (let [data   counts
+          axis   (-> data-bounds
+                     (quickthing/primary-axis {:x-name "deviation from mean"
+                                               :y-name "Counts"
+                                               :title  (str "#"
+                                                            index #_#_
+                                                            " EOF1: "
+                                                            (clojure.math/round eof1-component))
+                                               :color  "#0008"}))]
+      (-> axis
+          (update :data
+                  #(into %
+                         (quickthing/hist data)))
+          viz/svg-plot2d-cartesian
+          (quickthing/svg-wrap [width
+                                height])
+          quickthing/svg2xml))))
+#_
+(let [index 9]
+  (histogram-of-monthly-rain-amounts index
+                                     (-> @state/*selections
+                                         (cljfx.api/sub-ctx state/noise-1d-matrix)
+                                         :matrix
+                                         (uncomplicate.neanderthal.core/col index)
+                                         seq
+                                         vec)
+                                     (-> @state/*selections
+                                         (cljfx.api/sub-ctx state/noise-1d-min-max))
+                                     [0.0, 3.0]
+                                     [1000
+                                      500])))
