@@ -1206,8 +1206,11 @@
          (reduce #(+ (/ (clojure.math/pow %2
                                           2.0)
                         num)
-                     %1)))))
-
+                     %1)
+                 0.0)
+         clojure.math/sqrt)))
+#_
+(clojure.math/sqrt -1)
 
 (defn
   eof1weight-vs-variance-from-zero
@@ -1266,14 +1269,14 @@
         mean (/ (->> data-seq
                      (reduce +))
                 num)] ;; N or N-1 ?
-    (/ (->> data-seq
-            (reduce #(+ (/ (clojure.math/pow (- %2
-                                                mean)
-                                             2.0)
-                           num)
-                        %1)
-                    0.0))
-       1.0)))
+    (->> data-seq
+         (reduce #(+ (/ (clojure.math/pow (- %2
+                                             mean)
+                                          2.0)
+                        num)
+                     %1)
+                 0.0)
+         clojure.math/sqrt)))
 
 (defn
   eof1weight-vs-variance-from-mean
