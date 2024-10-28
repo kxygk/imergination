@@ -377,7 +377,7 @@
   eof1-vs-var
   "An [x y] scatter plot of eof1 vs variance"
   [eof1weight-vs-variance
-   region-name
+   region-str
    width
    height]
   (let [data            (->> eof1weight-vs-variance
@@ -395,7 +395,7 @@
                                                       :height    height
                                                       :x-name    "EOF1 strength"
                                                       :y-name    "Variance"
-                                                      :title     region-name
+                                                      :title     region-str
                                                       #_#_:color "#0008"}))]
     (-> axis
         (update :data
@@ -416,7 +416,14 @@
 
 
 #_
-(->> [[12 3242] [213 423] [2342 525]]
-     (map-indexed (fn [ index data]
-                    (conj data
-                          index))))
+(-> [[12 3242] [213 423] [2342 525]]
+    (eof1-vs-var :blah 1000 1000))
+
+#_
+(-> @state/*selections
+    (cljfx.api/sub-ctx state/eof1weight-vs-variance-from-zero)
+    (eof1-vs-var :blah 1000 1000))
+
+#_
+(-> @state/*selections
+    (cljfx.api/sub-ctx state/eof1weight-vs-variance-from-zero))

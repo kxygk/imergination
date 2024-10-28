@@ -414,12 +414,6 @@
              truncated-sigma)
       (assoc :matrix
              new-data-matrix))))
-#_
-(-> [1 2 3]
-    neand/dv
-    (ncore/alter! 0
-                  ;;0
-                  (fn ^double [^double _] 0.0 #_(inc x)) ))
 
 #_
 (defn

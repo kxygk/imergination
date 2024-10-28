@@ -149,8 +149,10 @@
           axis      (-> data-bounds
                         (quickthing/primary-axis {:x-name "deviation from mean"
                                                   :y-name "Counts"
-                                                  :title  (str "EOF1: "
-                                                               eof1-component)
+                                                  :title  (str "#"
+                                                               index
+                                                               " EOF1: "
+                                                               (clojure.math/round eof1-component))
                                                   :color  "#0008"}))]
       (-> axis
           (update :data
@@ -161,10 +163,16 @@
                                 height])
           quickthing/svg2xml))))
 
-(spit "out/1d-rain-noise-counts.svg"
-      (across-field-1d 19))
-
-(var-from-zero [-1 2 -3 4.0])
+(let [index 95]
+  (spit (str "./debug/"
+             (-> @state/*selections
+                 (fx/sub-ctx state/region-key)
+                 symbol)
+             "/"
+             "noise-hist-"
+             index
+             ".svg")
+        (across-field-1d index)))
 
 (def eof1weight-vs-variance
   "Return a pair of the eof1weight and variance
