@@ -64,9 +64,9 @@
 (defn
   region
   [context]
-  (get locations/regions
-       (fx/sub-ctx context
-                   region-key)))
+  (:region (get locations/regions
+                (fx/sub-ctx context
+                            region-key))))
 
 
 ;; DEBUG HELPERS *************************

@@ -10,82 +10,83 @@
 
 (def
   regions
-  {:world-region        (region (point 90
-                                       -180)
-                                (point -90
-                                       180))
-   :two-seas-region     (region (point 23
-                                       85)
-                                (point -5.9
-                                       119))
-   :krabi-region        (region (point 8.5
-                                       98.0)
-                                (point 7.5
-                                       99.0))
-   :krabi-city-region   (region (point 8.5
-                                       98.0)
-                                (point 7.5
-                                       99.0))
-   :krabi-root-2        (region (point (+ 6.0
-                                          (* 5.0
-                                             (pow 2.0
-                                                  0.5)))
-                                       97.0)
-                                (point 6
-                                       101))
-   :rift-valley-small   (region (point 15.07
-                                       39.0)
-                                (point 8.0
-                                       43.0))
-   :kashmir             (region (point 37.07
-                                       73.0)
-                                (point 30.0
-                                       77.0))
-   :himalaya            (region (point 35.07
-                                       75.0)
-                                (point 28.0
-                                       79.0))
-   :eastern-korea       (region (point 38.6
-                                       127.1)
-                                (point 36.1
-                                       129.3))
-   :southern-korea      (region (point 36.6
-                                       126.2)
-                                (point 34.1
-                                       128.6))
-   :minnan-region       (region (point 26.23
-                                       116.47)
-                                (point 21.7
-                                       125))
-   :taiwan-region       (region (point 25.76
-                                       119.74)
-                                (point 21.74
-                                       122.26))
-   :north-taiwan-region (region (point 25.475
-                                       120.75)
-                                (point 23.75
-                                       122.25))
-   :taipei-region       (region (point 25.475
-                                       120.75)
-                                (point 24.75
-                                       122.25))
-   :birdneck-region     (region (point 0.5
-                                       133.0)
-                                (point -5.0
-                                       138.0))
-   :sichuan-wall        (region (point 32.54
-                                       102.5)
-                                (point 29.0
-                                       104.5))
+  {:world-region        {:region (region (point 90
+                                                -180)
+                                         (point -90
+                                                180))}
+   :two-seas-region     {:region (region (point 23
+                                                85)
+                                         (point -5.9
+                                                119))}
+   :krabi-region        {:region (region (point 8.5
+                                                98.0)
+                                         (point 7.5
+                                                99.0))}
+   :krabi-city-region   {:region (region (point 8.5
+                                                98.0)
+                                         (point 7.5
+                                                99.0))}
+   :krabi-root-2        {:region (region (point (+ 6.0
+                                                   (* 5.0
+                                                      (pow 2.0
+                                                           0.5)))
+                                                97.0)
+                                         (point 6
+                                                101))}
+   :rift-valley-small   {:region (region (point 15.07
+                                                39.0)
+                                         (point 8.0
+                                                43.0))}
+   :kashmir             {:region (region (point 37.07
+                                                73.0)
+                                         (point 30.0
+                                                77.0))}
+   :himalaya            {:region (region (point 35.07
+                                                75.0)
+                                         (point 28.0
+                                                79.0))}
+   :eastern-korea       {:region (region (point 38.6
+                                                127.1)
+                                         (point 36.1
+                                                129.3))}
+   :southern-korea      {:region (region (point 36.6
+                                                126.2)
+                                         (point 34.1
+                                                128.6))}
+   :minnan-region       {:region (region (point 26.23
+                                                116.47)
+                                         (point 21.7
+                                                125))}
+   :taiwan-region       {:region (region (point 25.76
+                                                119.74)
+                                         (point 21.74
+                                                122.26))}
+   :north-taiwan-region {:region (region (point 25.475
+                                                120.75)
+                                         (point 23.75
+                                                122.25))}
+   :taipei-region       {:region (region (point 25.475
+                                                120.75)
+                                         (point 24.75
+                                                122.25))}
+   :birdneck-region     {:region (region (point 0.5
+                                                133.0)
+                                         (point -5.0
+                                                138.0))}
+   :sichuan-wall        {:region (region (point 32.54
+                                                102.5)
+                                         (point 29.0
+                                                104.5))}
    ;; Deserts
-   :marrah              (region (point 14.5 ;;15
-                                       23.4)
-                                (point 12.0 ;;12
-                                       25.4))
-   :udaipur             (region (point 26.0 ;;15
-                                       72.0)
-                                (point 23.0 ;;12
-                                       74.0))
+   :marrah              {:region      (region (point 14.5 ;;15
+                                                     23.4)
+                                              (point 12.0 ;;12
+                                                     25.4))
+                         :time-points [55, 88, 30, 42, 65, 54, 41, 39, 4]}
+   :udaipur             {:region (region (point 26.0 ;;15
+                                                72.0)
+                                         (point 23.0 ;;12
+                                                74.0))}
    })
 
 
@@ -166,9 +167,9 @@
       101)))
 #_
 (+ 6.0
-         (* 5.0
-            (pow 2.0
-                 0.5)))
+   (* 5.0
+      (pow 2.0
+           0.5)))
 ;; => 13.071067811865476
 
 (def
