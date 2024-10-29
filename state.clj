@@ -1321,3 +1321,26 @@
 ;;  Not in GUI display, so run code to save SVG to file
 (fx/sub-ctx @state/*selections
             eof1-vs-var-mean-svg)
+
+(defn
+  noise-1d-hist-svg
+  [context
+   time-index]
+  (plot/histogram-of-monthly-rain-amounts time-index
+                                          (-> context
+                                              (cljfx.api/sub-ctx state/noise-1d-matrix)
+                                              :matrix
+                                              (uncomplicate.neanderthal.core/col time-index)
+                                              seq
+                                              vec)
+                                          (-> context
+                                              (cljfx.api/sub-ctx state/noise-1d-min-max))
+                                          [0.0, 30.0]
+                                          [1000
+                                           500]))
+#_
+(-> @state/*selections
+    (fx/sub-ctx noise-1d-hist-svg 5)
+    (spitsvgstream (str "noise-hist-t"
+                        5
+                        ".svg")))
