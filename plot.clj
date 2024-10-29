@@ -462,8 +462,7 @@
                          (quickthing/hist data)))
           viz/svg-plot2d-cartesian
           (quickthing/svg-wrap [width
-                                height])
-          quickthing/svg2xml))))
+                                height])))))
 #_
 (let [index 9]
   (histogram-of-monthly-rain-amounts index

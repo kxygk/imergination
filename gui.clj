@@ -23,13 +23,14 @@
   This is addition Group that functions as a wrapper post-scaling
   This wrapped group is essential! Prevents spill out after scaling"
   [{:keys [fx/context
-           svg-str
+           svg-hiccup
            scale-x
            scale-y]}]
   {:fx/type  :group
    :children [{:fx/type fx/ext-instance-factory
                :create  (fn []
-                          (-> svg-str
+                          (-> svg-hiccup
+                              quickthing/svg2xml
                               svg2jfx/batik-load
                               (svg2jfx/batik-scale
                                 scale-x
@@ -128,15 +129,15 @@
                          2.0)
    :on-mouse-pressed  {:effect event-worldmap-mouse-press}
    :on-mouse-released {:effect event-worldmap-mouse-release}
-   :children          [{:fx/type svg
-                        :svg-str (fx/sub-ctx context
-                                             state/world-svg)
-                        :scale-x (-> context
-                                     (fx/sub-ctx state/display-width)
-                                     (/ 360.0))
-                        :scale-y (-> context
-                                     (fx/sub-ctx state/display-width)
-                                     (/ 360.0))}]})
+   :children          [{:fx/type    svg
+                        :svg-hiccup (fx/sub-ctx context
+                                                state/world-svg)
+                        :scale-x    (-> context
+                                        (fx/sub-ctx state/display-width)
+                                        (/ 360.0))
+                        :scale-y    (-> context
+                                        (fx/sub-ctx state/display-width)
+                                        (/ 360.0))}]})
 
 (defn
   region
@@ -152,7 +153,7 @@
                 :v-box/vgrow :always
                 :children    [{:fx/type     svg
                                :v-box/hgrow :always
-                               :svg-str     (fx/sub-ctx context
+                               :svg-hiccup  (fx/sub-ctx context
                                                         state/region-svg)
                                :scale-x     (fx/sub-ctx context
                                                         state/region-to-display-scale-x)
@@ -213,12 +214,13 @@
   {:fx/type   :v-box
    :alignment :center
    :children  [{:fx/type svg2jfx/xml
-                :svg     (fx/sub-ctx context
+                :svg     (-> (fx/sub-ctx context
                                          state/first-datafile-svg)
-                :scale-x     (fx/sub-ctx context
-                                         state/region-to-display-scale-x)
-                :scale-y     (fx/sub-ctx context
-                                         state/region-to-display-scale-y)}]})
+                             quickthing/svg2xml)
+                :scale-x (fx/sub-ctx context
+                                     state/region-to-display-scale-x)
+                :scale-y (fx/sub-ctx context
+                                     state/region-to-display-scale-y)}]})
 
 (defn
   sv
@@ -244,7 +246,7 @@
                              :text    "Select"}]}
                {:fx/type     svg
                 :v-box/hgrow :always
-                :svg-str     (fx/sub-ctx context
+                :svg-hiccup  (fx/sub-ctx context
                                          state/singular-vector-svg
                                          sv-num)
                 :scale-x     (fx/sub-ctx context
@@ -278,7 +280,7 @@
                              :text    "Select"}]}
                {:fx/type     svg
                 :v-box/hgrow :always
-                :svg-str     (fx/sub-ctx context
+                :svg-hiccup  (fx/sub-ctx context
                                          state/first-sv-svg)
                 :scale-x     (fx/sub-ctx context
                                          state/region-to-display-scale-x)
@@ -311,7 +313,7 @@
                              :text    "Select"}]}
                {:fx/type     svg
                 :v-box/hgrow :always
-                :svg-str     (fx/sub-ctx context
+                :svg-hiccup  (fx/sub-ctx context
                                          state/second-sv-svg)
                 :scale-x     (fx/sub-ctx context
                                          state/region-to-display-scale-x)
@@ -327,9 +329,9 @@
   "Where we select the data to read in..
   We can inspect how it looks in our region"
   [{:keys [fx/context]}]
-  {:fx/type svg
+  {:fx/type     svg
    :v-box/hgrow :always
-   :svg-str     (fx/sub-ctx context
+   :svg-hiccup  (fx/sub-ctx context
                             state/first-pattern-svg)
    :scale-x     (fx/sub-ctx context
                             state/region-to-display-scale-x)
@@ -341,9 +343,9 @@
   "Where we select the data to read in..
   We can inspect how it looks in our region"
   [{:keys [fx/context]}]
-  {:fx/type svg
+  {:fx/type     svg
    :v-box/hgrow :always
-   :svg-str     (fx/sub-ctx context
+   :svg-hiccup  (fx/sub-ctx context
                             state/second-pattern-svg)
    :scale-x     (fx/sub-ctx context
                             state/region-to-display-scale-x)
@@ -357,7 +359,7 @@
   [{:keys [fx/context]}]
   {:fx/type     svg
    :v-box/hgrow :always
-   :svg-str     (-> context
+   :svg-hiccup  (-> context
                     (fx/sub-ctx state/sv-proj-svg))
    :scale-x     1.0
    :scale-y     1.0})
@@ -370,7 +372,7 @@
   [{:keys [fx/context]}]
   {:fx/type     svg
    :v-box/hgrow :always
-   :svg-str     (-> context
+   :svg-hiccup  (-> context
                     (fx/sub-ctx state/sv-weights-svg))
    :scale-x     1.0
    :scale-y     1.0})
@@ -380,7 +382,7 @@
   [{:keys [fx/context]}]
   {:fx/type     svg
    :v-box/hgrow :always
-   :svg-str     (-> context
+   :svg-hiccup  (-> context
                     (fx/sub-ctx state/pattern-proj-svg))
    :scale-x     1.0
    :scale-y     1.0})
@@ -456,7 +458,7 @@
                                      :grid-pane/row-span    1
                                      :grid-pane/column      0
                                      :grid-pane/column-span 2}
-                                    {:fx/type svg
+                                    {:fx/type          svg
                                      :grid-pane/row    9
                                      :grid-pane/column 0
                                      :v-box/hgrow :always

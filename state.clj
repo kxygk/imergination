@@ -99,6 +99,18 @@
        (str "./debug/")
        (java.io.File.)
        (.mkdir)))
+
+(defn
+  spitsvgstream
+  "Take an SVG hiccup
+  Render it to XML and same to the `filename`
+  And return the hiccup"
+  [svg-hiccup
+   filename]
+  (spitstream (-> svg-hiccup
+                  quickthing/svg2xml)
+              filename)
+  svg-hiccup)
 ;; ***************************************
 
 
@@ -231,8 +243,7 @@
   [context]
   (-> context
       (fx/sub-ctx world-svg-hiccup)
-      quickthing/svg2xml
-      (spitstream "world.svg")))
+      (spitsvgstream "world.svg")))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/world-svg))
@@ -308,8 +319,7 @@
   [context]
   (-> context
       (fx/sub-ctx region-svg-hiccup)
-      quickthing/svg2xml
-      (spitstream "region.svg")))
+      (spitsvgstream "region.svg")))
 #_
 (type (-> @state/*selections
           (fx/sub-ctx state/region-svg)))
@@ -323,8 +333,7 @@
     (plot/shoreline-map (fx/sub-ctx context
                                     shoreline-filestr)
                         {:axis-visible? true})
-    quickthing/svg2xml
-    (spitstream "contour.svg")))
+    (spitsvgstream "contour.svg")))
 #_#_
 (defn
   region-batik
@@ -514,8 +523,7 @@
                            id)
       (plot/grid-map (fx/sub-ctx context
                                  region-svg-hiccup))
-      quickthing/svg2xml
-      (spitstream (str "noise-"
+      (spitsvgstream (str "noise-"
                        id
                        "file.svg"))))
 #_
@@ -605,8 +613,7 @@
                     first-datafile-geogrid)
         (plot/grid-map (fx/sub-ctx context
                                    region-svg-hiccup))
-        quickthing/svg2xml
-        (spitstream "first-data-file.svg"))))
+        (spitsvgstream "first-data-file.svg"))))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/first-datafile-svg))
@@ -698,8 +705,7 @@
                     sv-index)
         (plot/grid-map (fx/sub-ctx context
                                    region-svg-hiccup))
-        quickthing/svg2xml
-        (spitstream (str "sv-"
+        (spitsvgstream (str "sv-"
                          sv-index
                          ".svg")))))
 
@@ -709,7 +715,7 @@
   (-> context
       (fx/sub-ctx singular-vector-svg
                   0)
-      (spitstream "first-sv.svg")))
+      (spitsvgstream "first-sv.svg")))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/first-sv-svg))
@@ -720,7 +726,7 @@
   (-> context
       (fx/sub-ctx singular-vector-svg
                   1)
-      (spitstream "second-sv.svg")))
+      (spitsvgstream "second-sv.svg")))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/second-sv-svg))
@@ -798,8 +804,7 @@
                   sval-one
                   sval-two)
       (plot/grid-map (fx/sub-ctx context
-                                 region-svg-hiccup))
-      quickthing/svg2xml))
+                                 region-svg-hiccup))))
 #_
 (spit (str "out/"
            (-> @state/*selections
@@ -884,8 +889,7 @@
                                   (fx/sub-ctx first-pattern)))
       (plot/grid-map (fx/sub-ctx context
                                  region-svg-hiccup))
-      quickthing/svg2xml
-      (spitstream "first-pattern.svg")))
+      (spitsvgstream "first-pattern.svg")))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/first-pattern-svg))
@@ -932,8 +936,7 @@
                                   (fx/sub-ctx second-pattern)))
       (plot/grid-map (fx/sub-ctx context
                                  region-svg-hiccup))
-      quickthing/svg2xml
-      (spitstream "second-pattern.svg")))
+      (spitsvgstream "second-pattern.svg")))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/second-pattern-svg))
@@ -1018,8 +1021,7 @@
                                   cycle-length)
                       (fx/sub-ctx context
                                   cycle-phase))
-        quickthing/svg2xml
-        (spitstream "indeces.svg"))))
+        (spitsvgstream "indeces.svg"))))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/pattern-proj-svg))
@@ -1035,8 +1037,7 @@
                     (* 2.0
                        (fx/sub-ctx context
                                    row-height)))
-      quickthing/svg2xml
-      (spitstream "sv-projs.svg")))
+      (spitsvgstream "sv-projs.svg")))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/sv-proj-svg))
@@ -1065,8 +1066,7 @@
                        (* 2.0
                           (fx/sub-ctx context
                                       state/row-height)))
-      quickthing/svg2xml
-      (spitstream "sv-weights.svg")))
+      (spitsvgstream "sv-weights.svg")))
 #_
 (spit (str "out/"
            (-> @state/*selections
@@ -1106,8 +1106,7 @@
                  (into []))
             (plot/cyclic (clojure.math/ceil (clojure.math/pow cycle-length
                                                               0.5)))
-            quickthing/svg2xml
-            (spitstream "cycle.svg"))))))
+            (spitsvgstream "cycle.svg"))))))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/cycle-group-svg
@@ -1158,8 +1157,7 @@
                                                                     12.0)})))
                  (into []))
             plot/annual-12-month-ring
-            quickthing/svg2xml
-            (spitstream (str "year"
+            (spitsvgstream (str "year"
                              year-idx
                              ".svg")))))))
 #_
@@ -1256,8 +1254,7 @@
                           str)
                       1000 ;; needs values for graphic
                       1000)
-    quickthing/svg2xml
-    (spitstream "eof1-vs-var-from-zero.svg")))
+    (spitsvgstream "eof1-vs-var-from-zero.svg")))
 ;;  Not in GUI display, so run code to save SVG to file
 (fx/sub-ctx @state/*selections
             eof1-vs-var-zero-svg)
@@ -1320,8 +1317,7 @@
                             str)
                         1000 ;; needs values for graphic
                         1000)
-      quickthing/svg2xml
-      (spitstream "eof1-vs-var-from-mean.svg")))
+      (spitsvgstream "eof1-vs-var-from-mean.svg")))
 ;;  Not in GUI display, so run code to save SVG to file
 (fx/sub-ctx @state/*selections
             eof1-vs-var-mean-svg)
