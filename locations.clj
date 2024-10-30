@@ -76,7 +76,8 @@
    :sichuan-wall        {:region (region (point 32.54
                                                 102.5)
                                          (point 29.0
-                                                104.5))}
+                                                104.5))
+                         :interesting-times [97, 52, 101, 89, 54, 55, 27, 61]}
    ;; Deserts
    :marrah              {:region            (region (point 14.5 ;;15
                                                            23.4)
