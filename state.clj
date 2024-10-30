@@ -68,6 +68,15 @@
                 (fx/sub-ctx context
                             region-key))))
 
+(defn
+  region-meta
+  "Other data attached to the region"
+  [context]
+  (get locations/regions
+                (fx/sub-ctx context
+                            region-key)))#_
+(-> @state/*selections
+    (fx/sub-ctx state/region-meta))
 
 ;; DEBUG HELPERS *************************
 (defn
@@ -1337,10 +1346,34 @@
                                               (cljfx.api/sub-ctx state/noise-1d-min-max))
                                           [0.0, 30.0]
                                           [1000
-                                           500]))
+                                           1000]))
 #_
 (-> @state/*selections
     (fx/sub-ctx noise-1d-hist-svg 5)
     (spitsvgstream (str "noise-hist-t"
                         5
                         ".svg")))
+
+(defn
+  noise-1d-var-stats
+  [context]
+  (let [eof1-vs-var-svg (-> context
+                            (fx/sub-ctx eof1-vs-var-zero-svg))
+        hist-svg-vec (->> (fx/sub-ctx context
+                                      region-meta)
+                          :interesting-times
+                          (#(if (nil? %)
+                              [0 1 2 3 4 5 6 7]
+                              %))
+                          (mapv (fn get-hist-at-time-point
+                                  [time-index]
+                                  (-> context
+                                      (noise-1d-hist-svg time-index)))))]
+    (-> eof1-vs-var-svg)
+    (plot/non-eof1-variance-stats eof1-vs-var-svg
+                                  hist-svg-vec)))
+#_
+(-> @state/*selections
+    (fx/sub-ctx noise-1d-var-stats)
+    (spitsvgstream (str "noise-1d-stats.svg")))
+

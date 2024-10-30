@@ -401,7 +401,7 @@
         (update :data
                 #(into %
                        (quickthing/adjustable-text data-with-index
-                                                   {:scale   30
+                                                   {:scale   50
                                                     :attribs {:dy -10.0}})))
         (update :data
                 #(into %
@@ -409,7 +409,8 @@
                                                       {:scale 10})))
         viz/svg-plot2d-cartesian
         (quickthing/svg-wrap [width
-                              height]))))
+                              height]
+                             360))))
 
 ;;(conj [1 2] 3)
 
@@ -449,20 +450,23 @@
                          (into (sorted-map-by <)))]
     (let [data counts
           axis (-> data-bounds
-                   (quickthing/primary-axis {:x-name "deviation from mean"
+                   (quickthing/primary-axis {:width width
+                                             :height height
+                                             :x-name "deviation from mean"
                                              :y-name "Counts"
                                              :title  (str "#"
                                                           index #_#_
                                                           " EOF1: "
                                                           (clojure.math/round eof1-component))
-                                             :color  "#0008"}))]
+                                             #_#_:color  "#0008"}))]
       (-> axis
           (update :data
                   #(into %
                          (quickthing/hist data)))
           viz/svg-plot2d-cartesian
           (quickthing/svg-wrap [width
-                                height])))))
+                                height]
+                               360)))))
 #_
 (let [index 9]
   (histogram-of-monthly-rain-amounts index
@@ -476,4 +480,25 @@
                                          (cljfx.api/sub-ctx state/noise-1d-min-max))
                                      [0.0, 3.0]
                                      [1000
-                                      500])))
+                                      500]))
+
+(defn
+  non-eof1-variance-stats
+  "A ring of 12 months
+  08 07 06 05
+  09 -- -- 04
+  10 -- -- 03
+  11 12 01 02
+  in a counterclockwise fashion
+  (why does counterclockwise seem better?)"
+  [eof1-vs-var-svg
+   hist-svg-vec]
+  (assert (< 8
+             (count hist-svg-vec))
+          "Can't plot a ring of less than 8 histograms")
+  (let [hists (partial get      ;; helper to make layout easier to see below
+                       hist-svg-vec)]
+    (let [map-matrix [[(hists 0),    (hists 1),    (hists 2)]
+                      [(hists 7), eof1-vs-var-svg, (hists 3)]
+                      [(hists 6),    (hists 5),    (hists 4)]]]
+      (quickthing/group-plots-grid map-matrix))))

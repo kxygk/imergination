@@ -78,11 +78,11 @@
                                          (point 29.0
                                                 104.5))}
    ;; Deserts
-   :marrah              {:region      (region (point 14.5 ;;15
-                                                     23.4)
-                                              (point 12.0 ;;12
-                                                     25.4))
-                         :time-points [55, 88, 30, 42, 65, 54, 41, 39, 4]}
+   :marrah              {:region            (region (point 14.5 ;;15
+                                                           23.4)
+                                                    (point 12.0 ;;12
+                                                           25.4))
+                         :interesting-times [55, 88, 30, 42, 65, 54, 41, 39, 4]}
    :udaipur             {:region (region (point 26.0 ;;15
                                                 72.0)
                                          (point 23.0 ;;12
