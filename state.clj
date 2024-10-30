@@ -1214,10 +1214,15 @@
                                           2.0)
                         num)
                      %1)
-                 0.0)
-         clojure.math/sqrt)))
-#_
-(clojure.math/sqrt -1)
+                 0.0))))
+
+(defn-
+  std-from-zero
+  [data-seq]
+  (-> data-seq
+      var-from-zero
+      clojure.math/sqrt))
+
 
 (defn
   eof1weight-vs-variance-from-zero
@@ -1236,7 +1241,7 @@
                                        eof1-weight)))
         num-timesteps   (count eof1-components)]
     (let [var-matrix           (-> context
-                                   (fx/sub-ctx #_state/region-matrix state/noise-1d-matrix)
+                                   (fx/sub-ctx state/noise-1d-matrix)
                                    :matrix)
           variations-from-mean (->> num-timesteps
                                     range
@@ -1262,11 +1267,71 @@
                           (fx/sub-ctx state/region-key)
                           str)
                       1000 ;; needs values for graphic
-                      1000)
+                      1000
+                      {:y-name "variance"
+                       :highlighted-idx-vec (-> @state/*selections
+                                                  (fx/sub-ctx state/region-meta)
+                                                  :interesting-times)})
     (spitsvgstream "eof1-vs-var-from-zero.svg")))
 ;;  Not in GUI display, so run code to save SVG to file
 (fx/sub-ctx @state/*selections
             eof1-vs-var-zero-svg)
+
+
+(defn
+  eof1weight-vs-std-from-zero
+  "Return a pair of the eof1weight and variance
+   (relative to the EOF1 signal)
+  for a given INDEX (ie. time point)"
+  [context]
+  (let [eof1-weight     (-> context
+                            (fx/sub-ctx state/sv-weight 0))
+        eof1-components (->> (fx/sub-ctx context
+                                         state/eof1-weights)
+                             seq
+                             vec
+                             (mapv #(* %
+                                       -1.0
+                                       eof1-weight)))
+        num-timesteps   (count eof1-components)]
+    (let [var-matrix           (-> context
+                                   (fx/sub-ctx state/noise-1d-matrix)
+                                   :matrix)
+          variations-from-mean (->> num-timesteps
+                                    range
+                                    (mapv #(-> var-matrix
+                                               (uncomplicate.neanderthal.core/col %)
+                                               seq
+                                               vec
+                                               std-from-zero)))]
+      (mapv vector
+            eof1-components
+            variations-from-mean))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx eof1weight-vs-variance-from-zero))
+
+(defn
+  eof1-vs-std-zero-svg
+  "Plot and stream to file"
+  [context]
+(-> context
+    (fx/sub-ctx eof1weight-vs-std-from-zero)
+    (plot/eof1-vs-var (-> @state/*selections
+                          (fx/sub-ctx state/region-key)
+                          str)
+                      1000 ;; needs values for graphic
+                      1000
+                      {:y-name "standard deviation"
+                       :highlighted-idx-vec (-> @state/*selections
+                                                  (fx/sub-ctx state/region-meta)
+                                                  :interesting-times)})
+    (spitsvgstream "eof1-vs-std-from-zero.svg")))
+;;  Not in GUI display, so run code to save SVG to file
+(fx/sub-ctx @state/*selections
+            eof1-vs-std-zero-svg)
+
+
 
 (defn-
   var-from-mean
@@ -1282,8 +1347,15 @@
                                           2.0)
                         num)
                      %1)
-                 0.0)
-         clojure.math/sqrt)))
+                 0.0))))
+
+(defn-
+  std-from-mean
+  [data-seq]
+  (-> data-seq
+      var-from-zero
+      clojure.math/sqrt))
+
 
 (defn
   eof1weight-vs-variance-from-mean
@@ -1302,7 +1374,7 @@
                                        eof1-weight)))
         num-timesteps   (count eof1-components)]
     (let [var-matrix           (-> context
-                                   (fx/sub-ctx #_state/region-matrix state/noise-1d-matrix)
+                                   (fx/sub-ctx state/noise-1d-matrix)
                                    :matrix)
           variations-from-mean (->> num-timesteps
                                     range
@@ -1325,7 +1397,11 @@
                             (fx/sub-ctx state/region-key)
                             str)
                         1000 ;; needs values for graphic
-                        1000)
+                        1000
+                        {:y-name "variance"
+                         :highlighted-idx-vec (-> @state/*selections
+                                                  (fx/sub-ctx state/region-meta)
+                                                  :interesting-times)})
       (spitsvgstream "eof1-vs-var-from-mean.svg")))
 ;;  Not in GUI display, so run code to save SVG to file
 (fx/sub-ctx @state/*selections
@@ -1369,11 +1445,33 @@
                                   [time-index]
                                   (-> context
                                       (noise-1d-hist-svg time-index)))))]
-    (-> eof1-vs-var-svg)
-    (plot/non-eof1-variance-stats eof1-vs-var-svg
+    (plot/non-eof1-stats eof1-vs-var-svg
                                   hist-svg-vec)))
 #_
 (-> @state/*selections
     (fx/sub-ctx noise-1d-var-stats)
-    (spitsvgstream (str "noise-1d-stats.svg")))
+    (spitsvgstream (str "noise-1d-var-stats.svg")))
 
+
+
+(defn
+  noise-1d-std-stats
+  [context]
+  (let [eof1-vs-std-svg (-> context
+                            (fx/sub-ctx eof1-vs-std-zero-svg))
+        hist-svg-vec (->> (fx/sub-ctx context
+                                      region-meta)
+                          :interesting-times
+                          (#(if (nil? %)
+                              [0 1 2 3 4 5 6 7]
+                              %))
+                          (mapv (fn get-hist-at-time-point
+                                  [time-index]
+                                  (-> context
+                                      (noise-1d-hist-svg time-index)))))]
+    (plot/non-eof1-stats eof1-vs-std-svg
+                         hist-svg-vec)))
+#_
+(-> @state/*selections
+    (fx/sub-ctx noise-1d-std-stats)
+    (spitsvgstream (str "noise-1d-std-stats.svg")))

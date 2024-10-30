@@ -379,7 +379,9 @@
   [eof1weight-vs-variance
    region-str
    width
-   height]
+   height
+   & [{:keys [y-name
+              highlighted-idx-vec]}]]
   (let [data            (->> eof1weight-vs-variance
                              (mapv #(-> % ;; small rounding errors will make small negative values I guess?
                                         (update 1
@@ -394,7 +396,7 @@
                             (quickthing/primary-axis {:width     width
                                                       :height    height
                                                       :x-name    "EOF1 strength"
-                                                      :y-name    "Variance"
+                                                      :y-name    y-name
                                                       :title     region-str
                                                       #_#_:color "#0008"}))]
     (-> axis
@@ -405,6 +407,16 @@
                                                     :attribs {:dy -10.0}})))
         (update :data
                 #(into %
+                       (quickthing/adjustable-circles (-> data
+                                                          (select-keys highlighted-idx-vec)
+                                                          vals
+                                                          vec)
+                                                      {:scale 70
+                                                       :attribs {:stroke "#f004"
+                                                                 :stroke-width 8
+                                                                 :fill "none"}})))
+        (update :data
+                #(into %
                        (quickthing/adjustable-circles data
                                                       {:scale 10})))
         viz/svg-plot2d-cartesian
@@ -413,8 +425,6 @@
                              360))))
 
 ;;(conj [1 2] 3)
-
-
 
 #_
 (-> [[12 3242] [213 423] [2342 525]]
@@ -483,7 +493,7 @@
                                       500]))
 
 (defn
-  non-eof1-variance-stats
+  non-eof1-stats
   "A ring of 12 months
   08 07 06 05
   09 -- -- 04
@@ -493,7 +503,7 @@
   (why does counterclockwise seem better?)"
   [eof1-vs-var-svg
    hist-svg-vec]
-  (assert (< 8
+  (assert (<= 8
              (count hist-svg-vec))
           "Can't plot a ring of less than 8 histograms")
   (let [hists (partial get      ;; helper to make layout easier to see below
