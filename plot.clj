@@ -28,7 +28,7 @@
        :or   {pois            nil
               label-top-right ""
               cycle-frac      nil
-              axis-visible? false}}]]
+              axis-visible?   false}}]]
   (->
     (svg/group
       {}
@@ -45,7 +45,7 @@
           pois
           region)
         (svg/group {}
-                  nil)))
+                   nil)))
     (quickthing/svg-wrap
       (dimension
         region))
@@ -64,18 +64,18 @@
         y-start          (:sou norwes)]
     ;;{:norwes {:eas 278.0, :sou 81.5}, :soueas {:eas 279.0, :sou 82.5}}
     (quickthing/svg-wrap
-        (svg/group {}
-                   world-map
-                   (svg/rect [x-start
-                              y-start]
-                             (- (:eas soueas)
-                                x-start)
-                             (- (:sou soueas)
-                                y-start)
-                             {:fill "red"
-                              :fill-opacity "0.25"}))
-        [360.0
-         180.0])))
+      (svg/group {}
+                 world-map
+                 (svg/rect [x-start
+                            y-start]
+                           (- (:eas soueas)
+                              x-start)
+                           (- (:sou soueas)
+                              y-start)
+                           {:fill         "red"
+                            :fill-opacity "0.25"}))
+      [360.0
+       180.0])))
 
 (defn
   map-label
@@ -126,7 +126,7 @@
               label-top-right ""
               label-attribs   nil
               cycle-frac      nil
-              axis-visible? false}}]]
+              axis-visible?   false}}]]
   (let [region             (geogrid/covered-region input-grid)
         local-rain-grid    (geogrid/subregion input-grid
                                               region)
@@ -185,12 +185,12 @@
                                                                               [data-x
                                                                                data-y
                                                                                nil ;; default radius
-                                                                               {:stroke #_"transparent" "#777"
+                                                                               {:stroke #_ "transparent" "#777"
                                                                                 :fill   (quickthing/color-cycle (-> attribs
                                                                                                                     :cycle-frac))}])))
                                                           {:scale 30})
                            #_(quickthing/index-text data
-                                                  {:scale 20})
+                                                    {:scale 20})
                            (quickthing/line-through-point data
                                                           (->> angle
                                                                bisect/angle-to-unitvector)
@@ -225,8 +225,8 @@
   (let [first-two (take 2 weights)
         the-rest  (drop 2 weights)]
     (-> weights
-        (quickthing/primary-axis {:width  width
-                                  :height height
+        (quickthing/primary-axis {:width       width
+                                  :height      height
                                   :margin-frac 0.00})
         #_#_
         (assoc-in [:x-axis
@@ -279,12 +279,12 @@
         index-b (map-indexed vector
                              proj-b)]
     (let [axis (-> (quickthing/primary-axis (into index-a
-                                                   index-b)
-                                             {:width width
-                                              :height height
-                                              :x-ticks [1.0]
-                                              :y-ticks [1.0]
-                                              :color  "#0008"})
+                                                  index-b)
+                                            {:width   width
+                                             :height  height
+                                             :x-ticks [1.0]
+                                             :y-ticks [1.0]
+                                             :color   "#0008"})
                    (assoc-in [:x-axis
                               :label]
                              (thi.ng.geom.viz.core/default-svg-label #(+ cycle-start-value
@@ -309,11 +309,11 @@
                        [(quickthing/hist index-a
                                          {:attribs {;;:opacity "0.5"
                                                     :stroke-width 10 #_0.4
-                                                    :stroke "#aa8800"}})
+                                                    :stroke       "#aa8800"}})
                         (quickthing/hist index-b
                                          {:attribs {;;:opacity "0.5"
                                                     :stroke-width 10 #_0.4
-                                                    :stroke "#00aa88"}})]))
+                                                    :stroke       "#00aa88"}})]))
           viz/svg-plot2d-cartesian
           (quickthing/svg-wrap [width
                                 height])))))
@@ -362,8 +362,8 @@
   (assert (== 12
               (count maps))
           "Can't plot a ring if it's not 12 maps")
-  (let [submap (partial get      ;; helper to make layout easier to see below
-                        maps)
+  (let [submap     (partial get      ;; helper to make layout easier to see below
+                            maps)
         blank-spot (assoc (first maps)
                           2
                           (svg/group {}))]
@@ -371,7 +371,7 @@
                       [(submap 8), blank-spot, blank-spot, (submap 3)]
                       [(submap 9), blank-spot, blank-spot, (submap 2)]
                       [(submap 10), (submap 11), (submap 0), (submap 1)]]]
-    (quickthing/group-plots-grid map-matrix))))
+      (quickthing/group-plots-grid map-matrix))))
 
 (defn
   eof1-vs-var
@@ -401,7 +401,7 @@
         (update :data
                 #(into %
                        (quickthing/adjustable-text data-with-index
-                                                   {:scale 30
+                                                   {:scale   30
                                                     :attribs {:dy -10.0}})))
         (update :data
                 #(into %
@@ -438,24 +438,24 @@
   (let [data-bounds [[x-min, y-min]
                      [x-max, y-max]]
         rounded     (->> rain-vector
-                        (mapv (partial * 1))
-                        (mapv clojure.math/round)
-                        (mapv (partial * 1)))
+                         (mapv (partial * 1))
+                         (mapv clojure.math/round)
+                         (mapv (partial * 1)))
         ;; rain-max    (apply max
         ;;                    rounded)
         counts      (->> (update-vals (->> rounded
-                                      (group-by identity))
-                                 count)
-                    (into (sorted-map-by <)))]
-    (let [data   counts
-          axis   (-> data-bounds
-                     (quickthing/primary-axis {:x-name "deviation from mean"
-                                               :y-name "Counts"
-                                               :title  (str "#"
-                                                            index #_#_
-                                                            " EOF1: "
-                                                            (clojure.math/round eof1-component))
-                                               :color  "#0008"}))]
+                                           (group-by identity))
+                                      count)
+                         (into (sorted-map-by <)))]
+    (let [data counts
+          axis (-> data-bounds
+                   (quickthing/primary-axis {:x-name "deviation from mean"
+                                             :y-name "Counts"
+                                             :title  (str "#"
+                                                          index #_#_
+                                                          " EOF1: "
+                                                          (clojure.math/round eof1-component))
+                                             :color  "#0008"}))]
       (-> axis
           (update :data
                   #(into %

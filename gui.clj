@@ -232,18 +232,18 @@
    :alignment :top-center
    ;;   :style     {:-fx-background-color :blue}
    :children  [#_{:fx/type   :h-box
-                :alignment :top-left
-                :children  [{:fx/type :label
-                             :text    " Contour File: "}
-                            {:fx/type     :text-field
-                             :disable     true
-                             :h-box/hgrow :always
-                             ;;:pref-width Double/MAX_VALUE
-                             :text        (->> context
-                                               state/shoreline-filestr
-                                               (str " "))} ;;..spacer
-                            {:fx/type :button
-                             :text    "Select"}]}
+                  :alignment :top-left
+                  :children  [{:fx/type :label
+                               :text    " Contour File: "}
+                              {:fx/type     :text-field
+                               :disable     true
+                               :h-box/hgrow :always
+                               ;;:pref-width Double/MAX_VALUE
+                               :text        (->> context
+                                                 state/shoreline-filestr
+                                                 (str " "))} ;;..spacer
+                              {:fx/type :button
+                               :text    "Select"}]}
                {:fx/type     svg
                 :v-box/hgrow :always
                 :svg-hiccup  (fx/sub-ctx context
@@ -254,8 +254,8 @@
                 :scale-y     (fx/sub-ctx context
                                          state/region-to-display-scale-y)}
                #_{:fx/type     :label
-                :v-box/vgrow :always
-                :text        "Preview Map!!"}]})
+                  :v-box/vgrow :always
+                  :text        "Preview Map!!"}]})
 
 (defn
   sv-one
@@ -266,18 +266,18 @@
    :alignment :top-center
    ;;   :style     {:-fx-background-color :blue}
    :children  [#_{:fx/type   :h-box
-                :alignment :top-left
-                :children  [{:fx/type :label
-                             :text    " Contour File: "}
-                            {:fx/type     :text-field
-                             :disable     true
-                             :h-box/hgrow :always
-                             ;;:pref-width Double/MAX_VALUE
-                             :text        (->> context
-                                               state/shoreline-filestr
-                                               (str " "))} ;;..spacer
-                            {:fx/type :button
-                             :text    "Select"}]}
+                  :alignment :top-left
+                  :children  [{:fx/type :label
+                               :text    " Contour File: "}
+                              {:fx/type     :text-field
+                               :disable     true
+                               :h-box/hgrow :always
+                               ;;:pref-width Double/MAX_VALUE
+                               :text        (->> context
+                                                 state/shoreline-filestr
+                                                 (str " "))} ;;..spacer
+                              {:fx/type :button
+                               :text    "Select"}]}
                {:fx/type     svg
                 :v-box/hgrow :always
                 :svg-hiccup  (fx/sub-ctx context
@@ -287,8 +287,8 @@
                 :scale-y     (fx/sub-ctx context
                                          state/region-to-display-scale-y)}
                #_{:fx/type     :label
-                :v-box/vgrow :always
-                :text        "Preview Map!!"}]})
+                  :v-box/vgrow :always
+                  :text        "Preview Map!!"}]})
 
 (defn
   sv-two
@@ -299,18 +299,18 @@
    :alignment :top-center
    ;;   :style     {:-fx-background-color :blue}
    :children  [#_{:fx/type   :h-box
-                :alignment :top-left
-                :children  [{:fx/type :label
-                             :text    " Contour File: "}
-                            {:fx/type     :text-field
-                             :disable     true
-                             :h-box/hgrow :always
-                             ;;:pref-width Double/MAX_VALUE
-                             :text        (->> context
-                                               state/shoreline-filestr
-                                               (str " "))} ;;..spacer
-                            {:fx/type :button
-                             :text    "Select"}]}
+                  :alignment :top-left
+                  :children  [{:fx/type :label
+                               :text    " Contour File: "}
+                              {:fx/type     :text-field
+                               :disable     true
+                               :h-box/hgrow :always
+                               ;;:pref-width Double/MAX_VALUE
+                               :text        (->> context
+                                                 state/shoreline-filestr
+                                                 (str " "))} ;;..spacer
+                              {:fx/type :button
+                               :text    "Select"}]}
                {:fx/type     svg
                 :v-box/hgrow :always
                 :svg-hiccup  (fx/sub-ctx context
@@ -461,25 +461,25 @@
                                     {:fx/type          svg
                                      :grid-pane/row    9
                                      :grid-pane/column 0
-                                     :v-box/hgrow :always
-                                     :svg-str     (fx/sub-ctx context
-                                                              state/noise-svg
-                                                              3)
-                                     :scale-x     (fx/sub-ctx context
-                                                              state/region-to-display-scale-x)
-                                     :scale-y     (fx/sub-ctx context
-                                                              state/region-to-display-scale-y)}
-                                    {:fx/type svg
+                                     :v-box/hgrow      :always
+                                     :svg-hiccup       (fx/sub-ctx context
+                                                                   state/noise-svg
+                                                                   3)
+                                     :scale-x          (fx/sub-ctx context
+                                                                   state/region-to-display-scale-x)
+                                     :scale-y          (fx/sub-ctx context
+                                                                   state/region-to-display-scale-y)}
+                                    {:fx/type          svg
                                      :grid-pane/row    9
                                      :grid-pane/column 1
-                                     :v-box/hgrow :always
-                                     :svg-str     (fx/sub-ctx context
-                                                              state/noise-svg
-                                                              8)
-                                     :scale-x     (fx/sub-ctx context
-                                                              state/region-to-display-scale-x)
-                                     :scale-y     (fx/sub-ctx context
-                                                              state/region-to-display-scale-y)}]}]})
+                                     :v-box/hgrow      :always
+                                     :svg-hiccup       (fx/sub-ctx context
+                                                                   state/noise-svg
+                                                                   8)
+                                     :scale-x          (fx/sub-ctx context
+                                                                   state/region-to-display-scale-x)
+                                     :scale-y          (fx/sub-ctx context
+                                                                   state/region-to-display-scale-y)}]}]})
 
 
 (defn
