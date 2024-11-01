@@ -380,13 +380,24 @@
   NOTE: This does not automatically detect if
   the directory contents have been changed"
   [context]
-  (-> ^String ;; I forget why I type hint..
-      (fx/sub-ctx
-        context
-        data-dirstr)
-      java.io.File.
-      .list
-      sort))
+  (->> ^String ;; I forget why I type hint..
+       (fx/sub-ctx
+         context
+         data-dirstr)
+       java.io.File.
+       .list
+       sort))
+#_
+(->> (fx/sub-ctx @state/*selections
+                 state/datafile-strs)
+     (map-indexed (fn append-index
+                    [index
+                     file-str]
+                    (str "["
+                         index
+                         "]"
+                         file-str)))
+     vec)
 
 ;; TODO Test out with caching the whole dataset..
 ;; see if the computer catches fire

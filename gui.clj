@@ -184,9 +184,17 @@
                :cell-factory {:fx/cell-type :list-cell
                               :describe     (fn [path]
                                               {:text path})}
-               :items        (fx/sub-ctx
-                               context
-                               state/datafile-strs)}}))
+               :items       (->> (fx/sub-ctx
+                                   context
+                                  state/datafile-strs)
+                                 (map-indexed (fn append-index
+                                                [index
+                                                 file-str]
+                                                (str "["
+                                                     index
+                                                     "]"
+                                                     file-str)))
+                                 vec)}}))
 
 (defn
   datadir
