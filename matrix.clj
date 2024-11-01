@@ -436,3 +436,166 @@
                             first
                             geogrid/eassou-res)}
            grid-params)))
+
+
+(defn
+  design-matrix
+  "This is the matrix used for the regression
+  https://en.wikipedia.org/wiki/Design_matrix
+  Basically just have leading column of 1s for the constant"
+  [xs]
+  (neand/dge (count xs)
+             2
+             (concat (repeat (count xs)
+                             1.0)
+                     xs)))
+#_
+(design-matrix [1 2 3 4])
+
+
+;; example data from
+;; wikipedia.org/wiki/Simple_linear_regression#Example
+;; going to use for demos below
+(def
+  data [[1.47 	52.21]
+        [1.50 	53.12]
+        [1.52 	54.48]
+        [1.55 	55.84]
+        [1.57 	57.20]
+        [1.60 	58.57]
+        [1.63 	59.93]
+        [1.65 	61.29]
+        [1.68 	63.11]
+        [1.70 	64.47]
+        [1.73 	66.28]
+        [1.75 	68.10]
+        [1.78 	69.92]
+        [1.80 	72.19]
+        [1.83 	74.46]])
+
+(defn
+  linear-fit
+  "Fit a line to a set of [x y] pairs
+  Return a column vector with
+  first offset (alpha)
+  second slope (beta)"
+  [xy-pairs-vec]
+  (let [xs (->> xy-pairs-vec
+                (mapv first))
+        ys (->> xy-pairs-vec
+                (mapv second))
+        least-squares-matrix (neand/dge (count xy-pairs-vec)
+                                        2
+                                        (design-matrix xs))
+        y-vector (neand/dge (count xy-pairs-vec)
+                            1
+                            ys)]
+
+    (ncore/view-ge (linalg/ls least-squares-matrix
+                                        y-vector)
+                   2
+                   1)))
+#_
+(-> data
+    linear-fit)
+;; => #RealGEMatrix[double, mxn:2x1, layout:column]
+;;       ▥       ↓       ┓    
+;;       →     -39.06         
+;;       →      61.27         
+;;       ┗               ┛    
+;; These match the wiki page!
+;; First is offset and second is slope - as expected
+
+
+(defn
+  predicted-values
+  [fit-params
+   xy-pairs]
+  (-> (mapv first
+            xy-pairs)
+      design-matrix
+      (ncore/mm fit-params)
+      seq
+      flatten
+      vec))
+#_
+(-> data
+    linear-fit
+    (predicted-values data))
+
+(defn
+  residual
+  [xy-pairs
+   predicted-ys]
+  (mapv (fn [xy-pair
+             predicted-y]
+          (- (second xy-pair)
+             predicted-y))
+        xy-pairs
+        predicted-ys))
+#_
+(residual data
+          (-> data
+              linear-fit
+              (predicted-values data)))
+
+(defn
+  self-inner-product
+  [xs]
+  (->> xs
+       (mapv (fn [x]
+               (clojure.math/pow x
+                                 2.0)))
+       (reduce +)))
+#_
+(self-inner-product (residual data
+                              (-> data
+                                  linear-fit
+                                  (predicted-values data))))
+;; => 7.490558403882591
+
+(defn
+  residual-variance
+  [fit-params
+   xy-pairs]
+  (/ (self-inner-product (residual xy-pairs
+                                   (predicted-values fit-params
+                                                     xy-pairs)))
+     (- (count xy-pairs)
+        2.0)))
+#_
+(residual-variance data)
+
+(defn
+  subsets-for-linear-regression
+  [sorted-xy-pairs]
+  (->> sorted-xy-pairs
+       count
+       range
+       (drop-last 2)
+       (mapv (fn [num-to-drop]
+               (let [subset (->> sorted-xy-pairs
+                                 (drop-last num-to-drop))
+                     fit-params (-> subset
+                                    linear-fit)
+                     [offset
+                      slope]     (-> fit-params
+                                      seq
+                                      flatten
+                                      vec)]
+                 {:num-dropped num-to-drop
+                  :residual-variance (->> subset
+                                          (residual-variance fit-params))
+                  :fit-params {:slope slope
+                               :offset offset}
+                  :subset subset})))))
+#_
+(->> data
+     subsets-for-linear-regression
+     (mapv :residual-variance))
+#_
+(->> data
+     subsets-for-linear-regression
+     (apply min-key
+            :residual-variance)
+     :fit-params)
