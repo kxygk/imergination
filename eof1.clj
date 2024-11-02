@@ -203,9 +203,9 @@
                   subset]} (->> xy-pairs
                                 (sort #(> (first %1)
                                           (first %2)))
-                                 (matrix/subsets-for-linear-regression)
-                                 (apply min-key
-                                        :residual-variance))]
+                                (matrix/subsets-for-linear-regression)
+                                (apply min-key
+                                       :residual-variance))]
       (-> xy-pairs
           (plot/eof1-vs-var (-> @state/*selections
                                 (fx/sub-ctx state/region-key)
@@ -228,6 +228,8 @@
      (sort #(> (first %1)
                (first %2)))
      (matrix/subsets-for-linear-regression)
+     ;;     (apply min-key
+     ;;            :residual-variance))
      (mapv :residual-variance))
 
 (defn-
@@ -294,7 +296,7 @@
                             str)
                         1000 ;; needs values for graphic
                         1000
-                        {:y-name "variance"
+                        {:y-name              "variance"
                          :highlighted-idx-vec (-> @state/*selections
                                                   (fx/sub-ctx state/region-meta)
                                                   :interesting-times)})

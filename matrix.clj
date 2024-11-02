@@ -313,16 +313,16 @@
    singular-vector-b
    weight-a
    weight-b]
-    (let [mixture (mapv (fn [sv1-point
-                             sv2-point]
-                          (/ (+ (* sv1-point
-                                   weight-a)
-                                (* sv2-point
-                                   weight-b))
-                             2.0))
-                        singular-vector-a
-                        singular-vector-b)]
-      mixture))
+  (let [mixture (mapv (fn [sv1-point
+                           sv2-point]
+                        (/ (+ (* sv1-point
+                                 weight-a)
+                              (* sv2-point
+                                 weight-b))
+                           2.0))
+                      singular-vector-a
+                      singular-vector-b)]
+    mixture))
 
 (defn
   col-to-grid
@@ -376,11 +376,11 @@
         new-data-matrix (ncore/mm (:u svd)
                                   truncated-sigma
                                   (:vt svd))]
-  (-> svd
-      (assoc :sigma
-             truncated-sigma)
-      (assoc :matrix
-             new-data-matrix))))
+    (-> svd
+        (assoc :sigma
+               truncated-sigma)
+        (assoc :matrix
+               new-data-matrix))))
 #_
 (-> [1 2 3]
     neand/dv
@@ -409,11 +409,11 @@
         new-data-matrix (ncore/mm (:u svd)
                                   truncated-sigma
                                   (:vt svd))]
-  (-> svd
-      (assoc :sigma
-             truncated-sigma)
-      (assoc :matrix
-             new-data-matrix))))
+    (-> svd
+        (assoc :sigma
+               truncated-sigma)
+        (assoc :matrix
+               new-data-matrix))))
 
 #_
 (defn
@@ -422,10 +422,10 @@
    geogrid]
   (let [{:keys [u
                 vt
-                sigma]}  svd]
-    (merge {:matrix (ncore/mm u
-                              sigma
-                              vt)
+                sigma]} svd]
+    (merge {:matrix     (ncore/mm u
+                                  sigma
+                                  vt)
             :dimension  (-> geogrids
                             first
                             geogrid/dimension-pix)
@@ -480,19 +480,19 @@
   first offset (alpha)
   second slope (beta)"
   [xy-pairs-vec]
-  (let [xs (->> xy-pairs-vec
-                (mapv first))
-        ys (->> xy-pairs-vec
-                (mapv second))
+  (let [xs                   (->> xy-pairs-vec
+                                  (mapv first))
+        ys                   (->> xy-pairs-vec
+                                  (mapv second))
         least-squares-matrix (neand/dge (count xy-pairs-vec)
                                         2
                                         (design-matrix xs))
-        y-vector (neand/dge (count xy-pairs-vec)
-                            1
-                            ys)]
+        y-vector             (neand/dge (count xy-pairs-vec)
+                                        1
+                                        ys)]
 
     (ncore/view-ge (linalg/ls least-squares-matrix
-                                        y-vector)
+                              y-vector)
                    2
                    1)))
 #_
@@ -572,24 +572,24 @@
   (->> sorted-xy-pairs
        count
        range
-       (drop-last 2)
+       (drop-last 3)
        (mapv (fn [num-to-drop]
-               (let [subset (->> sorted-xy-pairs
-                                 (drop-last num-to-drop)
-                                 vec)
+               (let [subset     (->> sorted-xy-pairs
+                                     (drop-last num-to-drop)
+                                     vec)
                      fit-params (-> subset
                                     linear-fit)
                      [offset
-                      slope]     (-> fit-params
-                                      seq
-                                      flatten
-                                      vec)]
-                 {:num-dropped num-to-drop
+                      slope]    (-> fit-params
+                                    seq
+                                    flatten
+                                    vec)]
+                 {:num-dropped       num-to-drop
                   :residual-variance (residual-variance fit-params
-                                                        subset))
-                  :fit-params {:slope slope
-                               :offset offset}
-                  :subset subset})))))
+                                                        subset)
+                  :fit-params        {:slope  slope
+                                      :offset offset}
+                  :subset            subset})))))
 #_
 (->> data
      subsets-for-linear-regression
