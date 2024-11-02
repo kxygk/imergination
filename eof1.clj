@@ -139,7 +139,7 @@
                          :highlighted-idx-vec (-> @state/*selections
                                                   (fx/sub-ctx state/region-meta)
                                                   :interesting-times)})
-      (spitsvgstream "eof1-vs-var-from-zero.svg")))
+      #_(spitsvgstream "eof1-vs-var-from-zero.svg")))
 ;;  Not in GUI display, so run code to save SVG to file
 (fx/sub-ctx @state/*selections
             eof1-vs-var-zero-svg)
@@ -218,7 +218,7 @@
                                                       :interesting-times)
                              :traced-id-vec       subset
                              :fit-params          #_ {:slope 1.0, :offset 0.0} fit-params})
-          (spitsvgstream "eof1-vs-std-from-zero.svg")))))
+          #_(spitsvgstream "eof1-vs-std-from-zero.svg")))))
 ;;  Not in GUI display, so run code to save SVG to file
 (fx/sub-ctx @state/*selections
             eof1-vs-std-zero-svg)
@@ -300,7 +300,7 @@
                          :highlighted-idx-vec (-> @state/*selections
                                                   (fx/sub-ctx state/region-meta)
                                                   :interesting-times)})
-      (spitsvgstream "eof1-vs-var-from-mean.svg")))
+      #_(spitsvgstream "eof1-vs-var-from-mean.svg")))
 ;;  Not in GUI display, so run code to save SVG to file
 (fx/sub-ctx @state/*selections
             eof1-vs-var-mean-svg)
@@ -321,7 +321,7 @@
                                               [0.0, 30.0]
                                               [1000
                                                1000])
-      (spitsvgstream (str "noise-hist-t"
+      #_(spitsvgstream (str "noise-hist-t"
                           time-index
                           ".svg"))))
 ;;#_
