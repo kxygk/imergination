@@ -189,8 +189,8 @@
                                                                                 :fill   (quickthing/color-cycle (-> attribs
                                                                                                                     :cycle-frac))}])))
                                                           {:scale 30})
-                           #_(quickthing/index-text data
-                                                    {:scale 20})
+                           (quickthing/index-text data
+                                                    {:scale 40})
                            (quickthing/line-through-point data
                                                           (->> angle
                                                                bisect/angle-to-unitvector)

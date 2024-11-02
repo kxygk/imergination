@@ -575,7 +575,8 @@
        (drop-last 2)
        (mapv (fn [num-to-drop]
                (let [subset (->> sorted-xy-pairs
-                                 (drop-last num-to-drop))
+                                 (drop-last num-to-drop)
+                                 vec)
                      fit-params (-> subset
                                     linear-fit)
                      [offset
@@ -584,8 +585,8 @@
                                       flatten
                                       vec)]
                  {:num-dropped num-to-drop
-                  :residual-variance (->> subset
-                                          (residual-variance fit-params))
+                  :residual-variance (residual-variance fit-params
+                                                        subset))
                   :fit-params {:slope slope
                                :offset offset}
                   :subset subset})))))
@@ -598,4 +599,5 @@
      subsets-for-linear-regression
      (apply min-key
             :residual-variance)
-     :fit-params)
+     keys)
+;; => (:num-dropped :residual-variance :fit-params :subset)

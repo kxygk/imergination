@@ -216,7 +216,6 @@
       var-from-zero
       clojure.math/sqrt))
 
-
 (defn
   eof1weight-vs-variance-from-mean
   "Return a pair of the eof1weight and variance
