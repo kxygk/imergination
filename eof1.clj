@@ -138,23 +138,40 @@
   eof1-vs-std-zero-svg
   "Plot and stream to file"
   [context]
-(-> context
-    (fx/sub-ctx eof1weight-vs-std-from-zero)
-    (plot/eof1-vs-var (-> @state/*selections
-                          (fx/sub-ctx state/region-key)
-                          str)
-                      1000 ;; needs values for graphic
-                      1000
-                      {:y-name "standard deviation"
-                       :highlighted-idx-vec (-> @state/*selections
-                                                  (fx/sub-ctx state/region-meta)
-                                                  :interesting-times)})
-    (state/spitsvgstream "eof1-vs-std-from-zero.svg")))
+  (let [xy-pairs (-> context
+                     (fx/sub-ctx eof1weight-vs-std-from-zero))]
+    (let [{:keys [num-dropped
+                  residual-variance
+                  fit-params
+                  subset]} (->> xy-pairs
+                                (sort #(> (first %1)
+                                          (first %2)))
+                                 (matrix/subsets-for-linear-regression)
+                                 (apply min-key
+                                        :residual-variance))]
+      (-> xy-pairs
+          (plot/eof1-vs-var (-> @state/*selections
+                                (fx/sub-ctx state/region-key)
+                                str)
+                            1000 ;; needs values for graphic
+                            1000
+                            {:y-name              "standard deviation"
+                             :highlighted-idx-vec (-> @state/*selections
+                                                      (fx/sub-ctx state/region-meta)
+                                                      :interesting-times)
+                             :traced-id-vec       subset
+                             :fit-params          #_{:slope 1.0, :offset 0.0} fit-params})
+          (state/spitsvgstream "eof1-vs-std-from-zero.svg")))))
 ;;  Not in GUI display, so run code to save SVG to file
 (fx/sub-ctx @state/*selections
             eof1-vs-std-zero-svg)
-
-
+#_
+(->> (fx/sub-ctx @state/*selections
+                 eof1weight-vs-std-from-zero)
+     (sort #(> (first %1)
+               (first %2)))
+     (matrix/subsets-for-linear-regression)
+     (mapv :residual-variance))
 
 (defn-
   var-from-mean

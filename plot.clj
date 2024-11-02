@@ -381,7 +381,13 @@
    width
    height
    & [{:keys [y-name
-              highlighted-idx-vec]}]]
+              highlighted-idx-vec
+              traced-id-vec
+              fit-params]}]]
+  (println (str "Fit Params: "
+                fit-params
+                "\n"
+                traced-id-vec))
   (let [data            (->> eof1weight-vs-variance
                              (mapv #(-> % ;; small rounding errors will make small negative values I guess?
                                         (update 1
@@ -400,6 +406,20 @@
                                                       :title     region-str
                                                       #_#_:color "#0008"}))]
     (-> axis
+        (update :data
+                #(into %
+                       (quickthing/polyline data
+                                            [(:offset fit-params)
+                                             (:slope fit-params)]
+                                            {:scale   50
+                                             :attribs {:dy -10.0}})))
+        (update :data
+                #(into %
+                       (quickthing/adjustable-circles traced-id-vec
+                                                      {:scale 20
+                                                       :attribs {:stroke "#0004"
+                                                                 :stroke-width 3
+                                                                 :fill "none"}})))
         (update :data
                 #(into %
                        (quickthing/adjustable-text data-with-index
