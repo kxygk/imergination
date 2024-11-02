@@ -12,6 +12,26 @@
             plot
             locations))
 
+(defn
+  spitstream
+  "This is an override of the one in `state`
+  This makes plot be spit to the `eof1` subfolder"
+  [string
+   filename]
+  (assert (instance? String
+                     string))
+  (if debug?
+    (spit (str "./debug/"
+               (-> @state/*selections
+                   (fx/sub-ctx state/region-key)
+                   symbol)
+               "/eof1/"
+               filename)
+          string)
+    nil)
+  string)
+
+
 ;; DIAGNOSTIC CHARTS
 ;;
 ;; ONLY MAKES SENSE IN 1 CLIMATE REGIONS
