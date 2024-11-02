@@ -12,6 +12,10 @@
             plot
             locations))
 
+(def debug?
+  true)
+
+;; DEBUG HELPERS *************************
 (defn
   spitstream
   "This is an override of the one in `state`
@@ -30,6 +34,39 @@
           string)
     nil)
   string)
+
+(defn
+  spitsvgstream
+  "Take an SVG hiccup
+  Render it to XML and same to the `filename`
+  And return the hiccup"
+  [svg-hiccup
+   filename]
+  (spitstream (-> svg-hiccup
+                  quickthing/svg2xml)
+              filename)
+  svg-hiccup)
+
+;; make output directory
+(if debug?
+  (->> (-> @state/*selections
+           (fx/sub-ctx state/region-key))
+       symbol
+       (str "./debug/")
+       (java.io.File.)
+       (.mkdir)))
+
+;; make output directory
+(if debug?
+  (->> (str "./debug/"
+            (-> @state/*selections
+                (fx/sub-ctx state/region-key)
+                symbol)
+            "/eof1/")
+       (java.io.File.)
+       (.mkdirs)))
+
+;; ***************************************
 
 
 ;; DIAGNOSTIC CHARTS
@@ -91,18 +128,18 @@
   eof1-vs-var-zero-svg
   "Plot and stream to file"
   [context]
-(-> context
-    (fx/sub-ctx eof1weight-vs-variance-from-zero)
-    (plot/eof1-vs-var (-> @state/*selections
-                          (fx/sub-ctx state/region-key)
-                          str)
-                      1000 ;; needs values for graphic
-                      1000
-                      {:y-name "variance"
-                       :highlighted-idx-vec (-> @state/*selections
+  (-> context
+      (fx/sub-ctx eof1weight-vs-variance-from-zero)
+      (plot/eof1-vs-var (-> @state/*selections
+                            (fx/sub-ctx state/region-key)
+                            str)
+                        1000 ;; needs values for graphic
+                        1000
+                        {:y-name              "variance"
+                         :highlighted-idx-vec (-> @state/*selections
                                                   (fx/sub-ctx state/region-meta)
                                                   :interesting-times)})
-    (state/spitsvgstream "eof1-vs-var-from-zero.svg")))
+      (spitsvgstream "eof1-vs-var-from-zero.svg")))
 ;;  Not in GUI display, so run code to save SVG to file
 (fx/sub-ctx @state/*selections
             eof1-vs-var-zero-svg)
@@ -180,8 +217,8 @@
                                                       (fx/sub-ctx state/region-meta)
                                                       :interesting-times)
                              :traced-id-vec       subset
-                             :fit-params          #_{:slope 1.0, :offset 0.0} fit-params})
-          (state/spitsvgstream "eof1-vs-std-from-zero.svg")))))
+                             :fit-params          #_ {:slope 1.0, :offset 0.0} fit-params})
+          (spitsvgstream "eof1-vs-std-from-zero.svg")))))
 ;;  Not in GUI display, so run code to save SVG to file
 (fx/sub-ctx @state/*selections
             eof1-vs-std-zero-svg)
@@ -261,7 +298,7 @@
                          :highlighted-idx-vec (-> @state/*selections
                                                   (fx/sub-ctx state/region-meta)
                                                   :interesting-times)})
-      (state/spitsvgstream "eof1-vs-var-from-mean.svg")))
+      (spitsvgstream "eof1-vs-var-from-mean.svg")))
 ;;  Not in GUI display, so run code to save SVG to file
 (fx/sub-ctx @state/*selections
             eof1-vs-var-mean-svg)
@@ -270,46 +307,46 @@
   noise-1d-hist-svg
   [context
    time-index]
-  (plot/histogram-of-monthly-rain-amounts time-index
-                                          (-> context
-                                              (cljfx.api/sub-ctx state/noise-1d-matrix)
-                                              :matrix
-                                              (uncomplicate.neanderthal.core/col time-index)
-                                              seq
-                                              vec)
-                                          (-> context
-                                              (cljfx.api/sub-ctx state/noise-1d-min-max))
-                                          [0.0, 30.0]
-                                          [1000
-                                           1000]))
-#_
+  (-> time-index
+      (plot/histogram-of-monthly-rain-amounts (-> context
+                                                  (cljfx.api/sub-ctx state/noise-1d-matrix)
+                                                  :matrix
+                                                  (uncomplicate.neanderthal.core/col time-index)
+                                                  seq
+                                                  vec)
+                                              (-> context
+                                                  (cljfx.api/sub-ctx state/noise-1d-min-max))
+                                              [0.0, 30.0]
+                                              [1000
+                                               1000])
+      (spitsvgstream (str "noise-hist-t"
+                          time-index
+                          ".svg"))))
+;;#_
 (-> @state/*selections
-    (fx/sub-ctx noise-1d-hist-svg 5)
-    (spitsvgstream (str "noise-hist-t"
-                        5
-                        ".svg")))
+    (fx/sub-ctx noise-1d-hist-svg 5))
 
 (defn
   noise-1d-var-stats
   [context]
   (let [eof1-vs-var-svg (-> context
                             (fx/sub-ctx eof1-vs-var-zero-svg))
-        hist-svg-vec (->> (fx/sub-ctx context
-                                      state/region-meta)
-                          :interesting-times
-                          (#(if (nil? %)
-                              [0 1 2 3 4 5 6 7]
-                              %))
-                          (mapv (fn get-hist-at-time-point
-                                  [time-index]
-                                  (-> context
-                                      (noise-1d-hist-svg time-index)))))]
-    (plot/non-eof1-stats eof1-vs-var-svg
-                                  hist-svg-vec)))
-#_
+        hist-svg-vec    (->> (fx/sub-ctx context
+                                         state/region-meta)
+                             :interesting-times
+                             (#(if (nil? %)
+                                 [0 1 2 3 4 5 6 7]
+                                 %))
+                             (mapv (fn get-hist-at-time-point
+                                     [time-index]
+                                     (-> context
+                                         (noise-1d-hist-svg time-index)))))]
+    (spitsvgstream (plot/non-eof1-stats eof1-vs-var-svg
+                                        hist-svg-vec)
+                   "noise-1d-var-stats.svg")))
+;;#_
 (-> @state/*selections
-    (fx/sub-ctx noise-1d-var-stats)
-    (spitsvgstream (str "noise-1d-var-stats.svg")))
+    (fx/sub-ctx noise-1d-var-stats))
 
 
 
@@ -318,19 +355,19 @@
   [context]
   (let [eof1-vs-std-svg (-> context
                             (fx/sub-ctx eof1-vs-std-zero-svg))
-        hist-svg-vec (->> (fx/sub-ctx context
-                                      state/region-meta)
-                          :interesting-times
-                          (#(if (nil? %)
-                              [0 1 2 3 4 5 6 7]
-                              %))
-                          (mapv (fn get-hist-at-time-point
-                                  [time-index]
-                                  (-> context
-                                      (noise-1d-hist-svg time-index)))))]
+        hist-svg-vec    (->> (fx/sub-ctx context
+                                         state/region-meta)
+                             :interesting-times
+                             (#(if (nil? %)
+                                 [0 1 2 3 4 5 6 7]
+                                 %))
+                             (mapv (fn get-hist-at-time-point
+                                     [time-index]
+                                     (-> context
+                                         (noise-1d-hist-svg time-index)))))]
     (plot/non-eof1-stats eof1-vs-std-svg
                          hist-svg-vec)))
-#_
+;;#_
 (-> @state/*selections
     (fx/sub-ctx noise-1d-std-stats)
     (spitsvgstream (str "noise-1d-std-stats.svg")))
