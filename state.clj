@@ -91,7 +91,7 @@
   (assert (instance? String
                      string))
   (if debug?
-    (spit (str "./debug/"
+    (spit (str "../imergination.wiki/"
                (-> @state/*selections
                    (fx/sub-ctx state/region-key)
                    symbol)
@@ -105,7 +105,7 @@
   (->> (-> @state/*selections
            (fx/sub-ctx state/region-key))
        symbol
-       (str "./debug/")
+       (str "../imergination.wiki/")
        (java.io.File.)
        (.mkdir)))
 

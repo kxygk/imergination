@@ -25,7 +25,7 @@
   (assert (instance? String
                      string))
   (if debug?
-    (spit (str "./debug/"
+    (spit (str "../imergination.wiki/"
                (-> @state/*selections
                    (fx/sub-ctx state/region-key)
                    symbol)
@@ -52,13 +52,13 @@
   (->> (-> @state/*selections
            (fx/sub-ctx state/region-key))
        symbol
-       (str "./debug/")
+       (str "../imergination.wiki/")
        (java.io.File.)
        (.mkdir)))
 
 ;; make output directory
 (if debug?
-  (->> (str "./debug/"
+  (->> (str "../imergination.wiki/"
             (-> @state/*selections
                 (fx/sub-ctx state/region-key)
                 symbol)
@@ -67,6 +67,55 @@
        (.mkdirs)))
 
 ;; ***************************************
+
+
+(defn-
+  right-to-left-line-fitted-plot
+  "Generic plot of some aspect of the data
+  Given arbitrary XY values
+  - scatter plot
+  - fit a line right to left with minimal residual variance
+  - highlight indexes designated in the region metadata
+  Not clear if this is used more widely.."
+  [context
+   xy-pairs]
+  (let [{:keys [num-dropped
+                  residual-variance
+                  fit-params
+                  subset]} (->> xy-pairs
+                                (sort #(> (first %1)
+                                          (first %2)))
+                                (matrix/subsets-for-linear-regression)
+                                (apply min-key
+                                       :residual-variance))]
+      (-> xy-pairs
+          (plot/eof1-vs-var (str (-> @state/*selections
+                                     (fx/sub-ctx state/region-key)
+                                     symbol
+                                     str
+                                     clojure.string/upper-case)
+                                 " - - - - - - "
+                                 " slope = "
+                                 (-> fit-params
+                                     :slope
+                                     (* 100)
+                                     clojure.math/round
+                                     (* 0.01))
+                                 " intercept  = "
+                                 (-> fit-params
+                                     :offset
+                                     (* 100)
+                                     clojure.math/round
+                                     (* 0.01)))
+                            1000 ;; needs values for graphic.. and for `svg/group`
+                            1000
+                            {:y-name              "standard deviation"
+                             :highlighted-idx-vec (-> @state/*selections
+                                                      (fx/sub-ctx state/region-meta)
+                                                      :interesting-times)
+                             :traced-id-vec       subset
+                             :fit-params          fit-params})
+          #_(spitsvgstream "eof1-vs-std-from-zero.svg"))))
 
 
 ;; DIAGNOSTIC CHARTS
@@ -89,7 +138,6 @@
   (-> data-seq
       var-from-zero
       clojure.math/sqrt))
-
 
 (defn
   eof1weight-vs-variance-from-zero
@@ -128,6 +176,12 @@
   eof1-vs-var-zero-svg
   "Plot and stream to file"
   [context]
+  (let [xy-pairs (-> context
+                     (fx/sub-ctx eof1weight-vs-variance-from-zero))]
+    (-> context
+        (fx/sub-ctx right-to-left-line-fitted-plot
+                    xy-pairs))))
+#_
   (-> context
       (fx/sub-ctx eof1weight-vs-variance-from-zero)
       (plot/eof1-vs-var (-> @state/*selections
@@ -139,11 +193,10 @@
                          :highlighted-idx-vec (-> @state/*selections
                                                   (fx/sub-ctx state/region-meta)
                                                   :interesting-times)})
-      #_(spitsvgstream "eof1-vs-var-from-zero.svg")))
+      #_(spitsvgstream "eof1-vs-var-from-zero.svg"))
 ;;  Not in GUI display, so run code to save SVG to file
 (fx/sub-ctx @state/*selections
             eof1-vs-var-zero-svg)
-
 
 (defn
   eof1weight-vs-std-from-zero
@@ -197,6 +250,11 @@
   [context]
   (let [xy-pairs (-> context
                      (fx/sub-ctx eof1weight-vs-std-from-zero))]
+    (-> context
+        (fx/sub-ctx right-to-left-line-fitted-plot
+                    xy-pairs)
+        #_(spitsvgstream "eof1-vs-std-from-zero.svg"))
+    #_
     (let [{:keys [num-dropped
                   residual-variance
                   fit-params
@@ -373,4 +431,3 @@
 (-> @state/*selections
     (fx/sub-ctx noise-1d-std-stats)
     (spitsvgstream (str "noise-1d-std-stats.svg")))
--
