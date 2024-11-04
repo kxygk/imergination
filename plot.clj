@@ -244,7 +244,8 @@
                        (quickthing/hist the-rest)))
         viz/svg-plot2d-cartesian
         (quickthing/svg-wrap [width
-                              height]))))
+                              height]
+                             width))))
 #_
 (let [width   1000
       height  500
@@ -316,7 +317,8 @@
                                                     :stroke       "#00aa88"}})]))
           viz/svg-plot2d-cartesian
           (quickthing/svg-wrap [width
-                                height])))))
+                                height]
+                               width)))))
 
 (defn
   cyclic
