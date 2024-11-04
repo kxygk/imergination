@@ -379,7 +379,7 @@
   eof1-vs-var
   "An [x y] scatter plot of eof1 vs variance"
   [eof1weight-vs-variance
-   region-str
+   title-str
    width
    height
    & [{:keys [y-name
@@ -405,7 +405,7 @@
                                                       :height    height
                                                       :x-name    "EOF1 strength"
                                                       :y-name    y-name
-                                                      :title     region-str
+                                                      :title     title-str
                                                       #_#_:color "#0008"}))]
     (-> axis
         (update :data
@@ -470,6 +470,15 @@
    [width, height]]
   (let [data-bounds [[x-min, y-min]
                      [x-max, y-max]]
+        mean (/ (->> rain-vector
+                     (reduce +))
+                (count rain-vector))
+        var (/ (->> rain-vector
+                    (mapv #(clojure.math/pow %
+                                             2.0))
+                    (reduce +))
+               (count rain-vector))
+        std (clojure.math/sqrt var)
         rounded     (->> rain-vector
                          (mapv (partial * 1))
                          (mapv clojure.math/round)
@@ -487,9 +496,14 @@
                                              :x-name "deviation from mean"
                                              :y-name "Counts"
                                              :title  (str "#"
-                                                          index #_#_
-                                                          " EOF1: "
-                                                          (clojure.math/round eof1-component))
+                                                          index
+                                                          " - - - - - - "
+                                                          " var:"
+                                                          (format "%.2f"
+                                                                  var)
+                                                          " std:"
+                                                          (format "%.2f"
+                                                                  std))
                                              #_#_:color  "#0008"}))]
       (-> axis
           (update :data
