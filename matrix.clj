@@ -562,7 +562,7 @@
                                    (predicted-values fit-params
                                                      xy-pairs)))
      (- (count xy-pairs)
-        2.0)))
+        3.0)))
 #_
 (residual-variance data)
 
