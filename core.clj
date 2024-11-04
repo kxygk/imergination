@@ -63,3 +63,7 @@
 
 #_
 (renderer)
+#_
+(require 'eof1)
+#_
+(require 'summary)
