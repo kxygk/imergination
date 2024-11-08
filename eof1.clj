@@ -430,4 +430,50 @@
 ;;#_
 (-> @state/*selections
     (fx/sub-ctx noise-1d-std-stats)
-    (spitsvgstream (str "noise-1d-std-stats.svg")))
+    (spitsvgstream (str "noise-1d-std-stats.svg")))2
+
+(defn
+  eof-index
+  "Simple extraction of the EOF1 component"
+  [context]
+  (->> (fx/sub-ctx context
+                   state/sv-proj)
+       (mapv (fn remove-ys
+               [proj]
+               (-> proj
+                   (get 0)
+                   abs)))
+       (map-indexed vector)
+       #_(vector)))
+               #_
+               (->> (-> proj
+                        (get 0)
+                        abs)
+                    (assoc proj 1)
+                    (into [])
+               (drop 1))))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx eof-index))
+
+(defn
+  eof-index-svg
+  [context]
+  (let [proj (fx/sub-ctx context
+                         eof-index)]
+    (-> (plot/index (* 1.0
+                         (fx/sub-ctx context
+                                     state/window-width))
+                      (* 1.0
+                         (fx/sub-ctx context
+                                     state/row-height))
+                      proj
+                      2011
+                      (fx/sub-ctx context
+                                  state/cycle-length)
+                      (fx/sub-ctx context
+                                  state/cycle-phase))
+        (spitsvgstream "index.svg"))))2
+#_
+(-> @state/*selections
+    (fx/sub-ctx eof-index-svg))

@@ -116,8 +116,16 @@ Climate Indices |
        "/indeces.svg) |"
        "
 
-## Single Pattern Analysis
+## Single Pattern Analysis"
+       "
 
+EOF1 Index |
+:-------------------------:|
+"
+       "![]("
+       region
+       "/eof1/index.svg) |"
+       "
 EOF1 vs Var |
 :-------------------------:|
 "

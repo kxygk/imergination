@@ -267,6 +267,47 @@
             quickthing/svg2xml)))
 
 (defn
+  index
+  [width
+   height
+   proj
+   cycle-start-value
+   cycle-length ;; Maybe make these optional?
+   cycle-phase]
+  (let [indexed proj]
+    (let [axis (-> (quickthing/primary-axis indexed
+                                            {:width   width
+                                             :height  height
+                                             :x-ticks [1.0]
+                                             :y-ticks [1.0]
+                                             :color   "#0008"})
+                   (assoc-in [:x-axis
+                              :label]
+                             (thi.ng.geom.viz.core/default-svg-label #(+ cycle-start-value
+                                                                         (/ %
+                                                                            cycle-length))))
+                   (assoc-in [:x-axis
+                              :major]
+                             (range cycle-phase
+                                    (count proj)
+                                    cycle-length))
+                   (assoc-in [:y-axis
+                              :major]
+                             []))]
+      (-> axis
+          (assoc :data
+                 (into []
+                       cat
+                       [(quickthing/hist indexed
+                                         {:attribs {;;:opacity "0.5"
+                                                    :stroke-width 10 #_0.4
+                                                    :stroke       "black"}})]))
+          viz/svg-plot2d-cartesian
+          (quickthing/svg-wrap [width
+                                height]
+                               width)))))
+
+(defn
   indeces
   [width
    height
