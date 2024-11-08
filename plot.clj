@@ -502,6 +502,41 @@
 (-> @state/*selections
     (cljfx.api/sub-ctx state/eof1weight-vs-variance-from-zero))
 
+
+(defn
+  histogram-of-index-values
+  [index-values
+   [width, height]]
+  (let [max-index (->> index-values
+                       (apply max))]
+    (let [bin-size (/ max-index
+                      10.0)]
+      (let [hist-data (->> (update-vals (->> index-values
+                                             (mapv #(/ %
+                                                       bin-size))
+                                             (mapv clojure.math/round)
+                                             (group-by identity))
+                                        count)
+                           (into (sorted-map-by <))
+                           (into []))]
+        (let [axis (-> (into hist-data
+                             [[0, 0]]) ;; make sure 0,0 is included
+                       (quickthing/primary-axis {:width  width
+                                                 :height height
+                                                 :x-name "deviation from mean"
+                                                 :y-name "Counts"}))]
+          (-> axis
+              (update :data
+                      #(into  %
+                              (quickthing/hist hist-data
+                                               {:attribs {;;:opacity "0.5"
+                                                          :stroke-width 20 #_0.4
+                                                          :stroke       "black"}})))
+                      viz/svg-plot2d-cartesian
+              (quickthing/svg-wrap [width
+                                    height]
+                                   width)))))))
+
 (defn
   histogram-of-monthly-rain-amounts
   [index

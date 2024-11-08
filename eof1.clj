@@ -477,3 +477,15 @@
 #_
 (-> @state/*selections
     (fx/sub-ctx eof-index-svg))
+
+(defn
+  eof-index-hist
+  [context]
+  (let [proj (fx/sub-ctx context
+                         eof-index)]
+    (-> (plot/histogram-of-index-values proj
+                                        [1000, 400])
+        (spitsvgstream "index-pdf.svg"))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx eof-index-hist))
