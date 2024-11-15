@@ -485,7 +485,7 @@
         viz/svg-plot2d-cartesian
         (quickthing/svg-wrap [width
                               height]
-                             360))))
+                             width))))
 
 ;;(conj [1 2] 3)
 
@@ -588,7 +588,7 @@
           viz/svg-plot2d-cartesian
           (quickthing/svg-wrap [width
                                 height]
-                               360)))))
+                               width)))))
 #_
 (let [index 9]
   (histogram-of-monthly-rain-amounts index
