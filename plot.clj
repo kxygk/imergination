@@ -427,10 +427,6 @@
               highlighted-idx-vec
               traced-id-vec
               fit-params]}]]
-  (println (str "Fit Params: "
-                fit-params
-                "\n"
-                traced-id-vec))
   (let [data            (->> eof1weight-vs-variance
                              (mapv #(-> % ;; small rounding errors will make small negative values I guess?
                                         (update 1
@@ -450,6 +446,7 @@
                                                       :title     title-str
                                                       #_#_:color "#0008"}))]
     (-> axis
+        #_
         (update :data
                 #(into %
                        (quickthing/polyline data
@@ -540,70 +537,79 @@
 
 (defn
   histogram-of-monthly-rain-amounts
-  [index
-   rain-vector
+  [counts
    [x-min, x-max]
    [y-min, y-max]
    [width, height]]
-  (let [data-bounds [[x-min, y-min]
-                     [x-max, y-max]]
-        mean (/ (->> rain-vector
-                     (reduce +))
-                (count rain-vector))
-        var (/ (->> rain-vector
-                    (mapv #(clojure.math/pow %
-                                             2.0))
-                    (reduce +))
-               (count rain-vector))
-        std (clojure.math/sqrt var)
-        rounded     (->> rain-vector
-                         (mapv (partial * 1))
-                         (mapv clojure.math/round)
-                         (mapv (partial * 1)))
-        ;; rain-max    (apply max
-        ;;                    rounded)
-        counts      (->> (update-vals (->> rounded
-                                           (group-by identity))
-                                      count)
-                         (into (sorted-map-by <)))]
-    (let [data counts
-          axis (-> data-bounds
-                   (quickthing/primary-axis {:width width
-                                             :height height
-                                             :x-name "deviation from mean"
-                                             :y-name "Counts"
-                                             :title  (str "#"
-                                                          index
-                                                          " - - - - - - "
-                                                          " var:"
-                                                          (format "%.2f"
-                                                                  var)
-                                                          " std:"
-                                                          (format "%.2f"
-                                                                  std))
-                                             #_#_:color  "#0008"}))]
-      (-> axis
-          (update :data
-                  #(into %
-                         (quickthing/hist data)))
-          viz/svg-plot2d-cartesian
-          (quickthing/svg-wrap [width
-                                height]
-                               width)))))
+  (let [data counts
+        axis (-> [[x-min, y-min]
+                  [x-max, y-max]]
+                 (quickthing/primary-axis {:width     width
+                                           :height    height
+                                           :x-name    "deviation from mean"
+                                           :y-name    "Counts"
+                                           :title     "" ;; todo add? maybe?
+                                           }))]
+    (-> axis
+        (update :data
+                #(into %
+                       (quickthing/hist data)))
+        viz/svg-plot2d-cartesian
+        (quickthing/svg-wrap [width
+                              height]
+                             width))))
+
+(defn
+  histograms-of-monthly-rain-amounts
+  [data-matrix
+   [width,height]
+   indeces]
+  (let [counts-for-each-index  (->> indeces
+                                    (mapv (fn [time-index]
+                                            (let [rain-vector (-> data-matrix
+                                                                  (uncomplicate.neanderthal.core/col time-index)
+                                                                  seq
+                                                                  vec)]
+                                              (let [bin-size (inc (clojure.math/round (/ (clojure.math/log (count rain-vector))
+                                                                                         (clojure.math/log 2))))] ;; Sturges' rule
+                                                (->> (update-vals (->> (uncomplicate.neanderthal.core/col data-matrix
+                                                                                                          time-index)
+                                                                       seq
+                                                                       vec
+                                                                       (mapv #(/ %
+                                                                                 bin-size))
+                                                                       (mapv clojure.math/round)
+                                                                       (mapv (partial *
+                                                                                      bin-size))
+                                                                       (group-by identity))
+                                                                  count)
+                                                     (into (sorted-map-by <))))))))]
+    (let [max-count (->> counts-for-each-index
+                         (mapv vals)
+                         flatten
+                         (apply max))
+          x-bins (->> counts-for-each-index
+                      (mapv keys)
+                      flatten)]
+      (println (str "Max Count: "
+                    max-count
+                    " Zero count: "
+                    (->> counts-for-each-index
+                         (mapv #(get %
+                                     0)))))
+      (->> counts-for-each-index
+           (mapv (fn [counts]
+                   (histogram-of-monthly-rain-amounts counts
+                                                      [(apply min x-bins)
+                                                       (apply max x-bins)]
+                                                      [0.0, max-count]
+                                                      [width, height])))))))
 #_
-(let [index 9]
-  (histogram-of-monthly-rain-amounts index
-                                     (-> @state/*selections
-                                         (cljfx.api/sub-ctx state/noise-1d-matrix)
-                                         :matrix
-                                         (uncomplicate.neanderthal.core/col index)
-                                         seq
-                                         vec)
-                                     (-> @state/*selections
-                                         (cljfx.api/sub-ctx state/noise-1d-min-max))
-                                     [0.0, 3.0]
-                                     [1000
-                                      500]))
+(histograms-of-monthly-rain-amounts (-> @state/*selections
+                                        (cljfx.api/sub-ctx state/noise-1d-matrix)
+                                        :matrix)
+                                    [100,100]
+                                    [1, 2, 3])
 
 (defn
   non-eof1-stats

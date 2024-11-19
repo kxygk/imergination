@@ -68,7 +68,6 @@
 
 ;; ***************************************
 
-
 (defn-
   right-to-left-line-fitted-plot
   "Generic plot of some aspect of the data
@@ -94,19 +93,14 @@
                                      symbol
                                      str
                                      clojure.string/upper-case)
-                                 " - - - - - - "
-                                 " slope = "
-                                 (-> fit-params
-                                     :slope
-                                     (* 100)
-                                     clojure.math/round
-                                     (* 0.01))
-                                 " intercept  = "
-                                 (-> fit-params
-                                     :offset
-                                     (* 100)
-                                     clojure.math/round
-                                     (* 0.01)))
+                                 ": "
+                                 (->> fit-params
+                                      :slope
+                                      (format "%.3G"))
+                                 "x + "
+                                 (->> fit-params
+                                      :offset
+                                      (format "%.3G")))
                             1000 ;; needs values for graphic.. and for `svg/group`
                             1000
                             {:y-name              "standard deviation"
@@ -366,7 +360,8 @@
 (defn
   noise-1d-hist-svg
   [context
-   time-index]
+   time-index
+   y-max]
   (-> time-index
       (plot/histogram-of-monthly-rain-amounts (-> context
                                                   (cljfx.api/sub-ctx state/noise-1d-matrix)
@@ -382,7 +377,7 @@
       #_(spitsvgstream (str "noise-hist-t"
                           time-index
                           ".svg"))))
-;;#_
+#_
 (-> @state/*selections
     (fx/sub-ctx noise-1d-hist-svg 5))
 
@@ -397,10 +392,10 @@
                              (#(if (nil? %)
                                  [0 1 2 3 4 5 6 7]
                                  %))
-                             (mapv (fn get-hist-at-time-point
-                                     [time-index]
-                                     (-> context
-                                         (noise-1d-hist-svg time-index)))))]
+                             (plot/histograms-of-monthly-rain-amounts (-> context
+                                                                          (fx/sub-ctx state/noise-1d-matrix)
+                                                                          :matrix)
+                                                                      [1000,1000]))]
     (spitsvgstream (plot/non-eof1-stats eof1-vs-var-svg
                                         hist-svg-vec)
                    "noise-1d-var-stats.svg")))
@@ -409,7 +404,7 @@
     (fx/sub-ctx noise-1d-var-stats))
 
 
-
+#_
 (defn
   noise-1d-std-stats
   [context]
@@ -427,7 +422,7 @@
                                          (noise-1d-hist-svg time-index)))))]
     (plot/non-eof1-stats eof1-vs-std-svg
                          hist-svg-vec)))
-;;#_
+#_
 (-> @state/*selections
     (fx/sub-ctx noise-1d-std-stats)
     (spitsvgstream (str "noise-1d-std-stats.svg")))
@@ -467,7 +462,10 @@
                       (fx/sub-ctx context
                                   state/cycle-phase))
         (spitsvgstream "index.svg"))))
-#_
+#_{:region (region (point 90
+                          -180)
+                   (point -90
+                          180))}
 (-> @state/*selections
     (fx/sub-ctx eof-index-svg))
 
@@ -479,6 +477,6 @@
     (-> (plot/histogram-of-index-values proj
                                         [1000, 400])
         (spitsvgstream "index-pdf.svg"))))
-#_
+;;#_
 (-> @state/*selections
     (fx/sub-ctx eof-index-hist))
