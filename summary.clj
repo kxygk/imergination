@@ -131,16 +131,7 @@ EOF1 vs Var |
 "
        "![]("
        region
-       "/eof1/noise-1d-var-stats.svg) |"
-       "
-
-EOF1 vs Standard Deviation |
-:-------------------------:|
-"
-       "![]("
-       region
-       "/eof1/noise-1d-std-stats.svg) |"
-))
+       "/eof1/noise-1d-var-stats.svg) |"))
 
 (spit (str "../imergination.wiki/"
            region

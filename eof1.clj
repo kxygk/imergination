@@ -192,98 +192,6 @@
 (fx/sub-ctx @state/*selections
             eof1-vs-var-zero-svg)
 
-(defn
-  eof1weight-vs-std-from-zero
-  "Return a pair of the eof1weight and variance
-   (relative to the EOF1 signal)
-  for a given INDEX (ie. time point)"
-  [context]
-  (let [eof1-weight     (-> context
-                            (fx/sub-ctx state/sv-weight 0))
-        eof1-components (->> (fx/sub-ctx context
-                                         state/eof1-weights)
-                             seq
-                             vec
-                             (mapv #(* %
-                                       -1.0
-                                       eof1-weight)))
-        num-timesteps   (count eof1-components)]
-    (let [var-matrix           (-> context
-                                   (fx/sub-ctx state/noise-1d-matrix)
-                                   :matrix)
-          variations-from-mean (->> num-timesteps
-                                    range
-                                    (mapv #(-> var-matrix
-                                               (uncomplicate.neanderthal.core/col %)
-                                               seq
-                                               vec
-                                               std-from-zero)))]
-      (mapv vector
-            eof1-components
-            variations-from-mean))))
-#_
-(-> @state/*selections
-    (fx/sub-ctx eof1weight-vs-variance-from-zero))
-
-
-
-#_
-(->> (fx/sub-ctx @state/*selections
-                 eof1weight-vs-variance-from-zero)
-     (sort #(> (first %1)
-               (first %2)))
-     matrix/subsets-for-linear-regression
-     (apply min-key
-            :residual-variance)
-     :fit-params)
-
-
-(defn
-  eof1-vs-std-zero-svg
-  "Plot and stream to file"
-  [context]
-  (let [xy-pairs (-> context
-                     (fx/sub-ctx eof1weight-vs-std-from-zero))]
-    (-> context
-        (fx/sub-ctx right-to-left-line-fitted-plot
-                    xy-pairs)
-        #_(spitsvgstream "eof1-vs-std-from-zero.svg"))
-    #_
-    (let [{:keys [num-dropped
-                  residual-variance
-                  fit-params
-                  subset]} (->> xy-pairs
-                                (sort #(> (first %1)
-                                          (first %2)))
-                                (matrix/subsets-for-linear-regression)
-                                (apply min-key
-                                       :residual-variance))]
-      (-> xy-pairs
-          (plot/eof1-vs-var (-> @state/*selections
-                                (fx/sub-ctx state/region-key)
-                                str)
-                            1000 ;; needs values for graphic
-                            1000
-                            {:y-name              "standard deviation"
-                             :highlighted-idx-vec (-> @state/*selections
-                                                      (fx/sub-ctx state/region-meta)
-                                                      :interesting-times)
-                             :traced-id-vec       subset
-                             :fit-params          #_ {:slope 1.0, :offset 0.0} fit-params})
-          #_(spitsvgstream "eof1-vs-std-from-zero.svg")))))
-;;  Not in GUI display, so run code to save SVG to file
-(fx/sub-ctx @state/*selections
-            eof1-vs-std-zero-svg)
-#_
-(->> (fx/sub-ctx @state/*selections
-                 eof1weight-vs-std-from-zero)
-     (sort #(> (first %1)
-               (first %2)))
-     (matrix/subsets-for-linear-regression)
-     ;;     (apply min-key
-     ;;            :residual-variance))
-     (mapv :residual-variance))
-
 (defn-
   var-from-mean
   [data-seq]
@@ -402,30 +310,6 @@
 ;;#_
 (-> @state/*selections
     (fx/sub-ctx noise-1d-var-stats))
-
-
-#_
-(defn
-  noise-1d-std-stats
-  [context]
-  (let [eof1-vs-std-svg (-> context
-                            (fx/sub-ctx eof1-vs-std-zero-svg))
-        hist-svg-vec    (->> (fx/sub-ctx context
-                                         state/region-meta)
-                             :interesting-times
-                             (#(if (nil? %)
-                                 [0 1 2 3 4 5 6 7]
-                                 %))
-                             (mapv (fn get-hist-at-time-point
-                                     [time-index]
-                                     (-> context
-                                         (noise-1d-hist-svg time-index)))))]
-    (plot/non-eof1-stats eof1-vs-std-svg
-                         hist-svg-vec)))
-#_
-(-> @state/*selections
-    (fx/sub-ctx noise-1d-std-stats)
-    (spitsvgstream (str "noise-1d-std-stats.svg")))
 
 (defn
   eof-index
