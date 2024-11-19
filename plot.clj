@@ -190,7 +190,7 @@
                                                                                                                     :cycle-frac))}])))
                                                           {:scale 30})
                            (quickthing/index-text data
-                                                    {:scale 40})
+                                                  {:scale 40})
                            (quickthing/line-through-point data
                                                           (->> angle
                                                                bisect/angle-to-unitvector)
@@ -457,10 +457,10 @@
         (update :data
                 #(into %
                        (quickthing/adjustable-circles traced-id-vec
-                                                      {:scale 20
-                                                       :attribs {:stroke "#0004"
+                                                      {:scale   20
+                                                       :attribs {:stroke       "#0004"
                                                                  :stroke-width 3
-                                                                 :fill "none"}})))
+                                                                 :fill         "none"}})))
         (update :data
                 #(into %
                        (quickthing/adjustable-text data-with-index
@@ -472,10 +472,10 @@
                                                           (select-keys highlighted-idx-vec)
                                                           vals
                                                           vec)
-                                                      {:scale 70
-                                                       :attribs {:stroke "#f004"
+                                                      {:scale   70
+                                                       :attribs {:stroke       "#f004"
                                                                  :stroke-width 8
-                                                                 :fill "none"}})))
+                                                                 :fill         "none"}})))
         (update :data
                 #(into %
                        (quickthing/adjustable-circles data
@@ -532,7 +532,7 @@
                                                {:attribs {;;:opacity "0.5"
                                                           :stroke-width 20 #_0.4
                                                           :stroke       "black"}})))
-                      viz/svg-plot2d-cartesian
+              viz/svg-plot2d-cartesian
               (quickthing/svg-wrap [width
                                     height]
                                    width)))))))
@@ -566,33 +566,33 @@
   [data-matrix
    [width,height]
    indeces]
-  (let [counts-for-each-index  (->> indeces
-                                    (mapv (fn [time-index]
-                                            (let [rain-vector (-> data-matrix
-                                                                  (uncomplicate.neanderthal.core/col time-index)
-                                                                  seq
-                                                                  vec)]
-                                              (let [bin-size (inc (clojure.math/round (/ (clojure.math/log (count rain-vector))
-                                                                                         (clojure.math/log 2))))] ;; Sturges' rule
-                                                (->> (update-vals (->> (uncomplicate.neanderthal.core/col data-matrix
-                                                                                                          time-index)
-                                                                       seq
-                                                                       vec
-                                                                       (mapv #(/ %
-                                                                                 bin-size))
-                                                                       (mapv clojure.math/round)
-                                                                       (mapv (partial *
-                                                                                      bin-size))
-                                                                       (group-by identity))
-                                                                  count)
-                                                     (into (sorted-map-by <))))))))]
+  (let [counts-for-each-index (->> indeces
+                                   (mapv (fn [time-index]
+                                           (let [rain-vector (-> data-matrix
+                                                                 (uncomplicate.neanderthal.core/col time-index)
+                                                                 seq
+                                                                 vec)]
+                                             (let [bin-size (inc (clojure.math/round (/ (clojure.math/log (count rain-vector))
+                                                                                        (clojure.math/log 2))))] ;; Sturges' rule
+                                               (->> (update-vals (->> (uncomplicate.neanderthal.core/col data-matrix
+                                                                                                         time-index)
+                                                                      seq
+                                                                      vec
+                                                                      (mapv #(/ %
+                                                                                bin-size))
+                                                                      (mapv clojure.math/round)
+                                                                      (mapv (partial *
+                                                                                     bin-size))
+                                                                      (group-by identity))
+                                                                 count)
+                                                    (into (sorted-map-by <))))))))]
     (let [max-count (->> counts-for-each-index
                          (mapv vals)
                          flatten
                          (apply max))
-          x-bins (->> counts-for-each-index
-                      (mapv keys)
-                      flatten)]
+          x-bins    (->> counts-for-each-index
+                         (mapv keys)
+                         flatten)]
       (println (str "Max Count: "
                     max-count
                     " Zero count: "
@@ -625,7 +625,7 @@
   [eof1-vs-var-svg
    hist-svg-vec]
   (assert (<= 8
-             (count hist-svg-vec))
+              (count hist-svg-vec))
           "Can't plot a ring of less than 8 histograms")
   (let [hists (partial get      ;; helper to make layout easier to see below
                        hist-svg-vec)]
