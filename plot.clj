@@ -441,7 +441,8 @@
                                             (conj data
                                                   index)))
                              vec)
-        axis            (-> data
+        axis            (-> (into [[0 0]]
+                                  data)
                             (quickthing/primary-axis {:width     width
                                                       :height    height
                                                       :x-name    "EOF1 strength"
