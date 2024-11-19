@@ -504,7 +504,8 @@
 (defn
   histogram-of-index-values
   [index-values
-   [width, height]]
+   [width, height]
+   & [{:keys [title]}]]
   (let [max-index (->> index-values
                        (apply max))]
     (let [bin-size (/ max-index
@@ -522,7 +523,8 @@
                        (quickthing/primary-axis {:width  width
                                                  :height height
                                                  :x-name "deviation from mean"
-                                                 :y-name "Counts"}))]
+                                                 :y-name "Counts"
+                                                 :title  title}))]
           (-> axis
               (update :data
                       #(into  %
@@ -540,16 +542,16 @@
   [counts
    [x-min, x-max]
    [y-min, y-max]
-   [width, height]]
+   [width, height]
+   & [{:keys [title]}]]
   (let [data counts
         axis (-> [[x-min, y-min]
                   [x-max, y-max]]
-                 (quickthing/primary-axis {:width     width
-                                           :height    height
-                                           :x-name    "deviation from mean"
-                                           :y-name    "Counts"
-                                           :title     "" ;; todo add? maybe?
-                                           }))]
+                 (quickthing/primary-axis {:width  width
+                                           :height height
+                                           :x-name "deviation from mean"
+                                           :y-name "Counts"
+                                           :title  title}))]
     (-> axis
         (update :data
                 #(into %
