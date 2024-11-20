@@ -78,15 +78,14 @@
   Not clear if this is used more widely.."
   [context
    xy-pairs]
-  (let [{:keys [num-dropped
-                  residual-variance
-                  fit-params
-                  subset]} (->> xy-pairs
-                                (sort #(> (first %1)
-                                          (first %2)))
-                                (matrix/subsets-for-linear-regression)
-                                (apply min-key
-                                       :residual-variance))]
+  (let [fit-params (->> xy-pairs
+                        matrix/linear-fit
+                        seq
+                        flatten
+                        (zipmap [:offset
+                                 :slope]))]
+    (println (str " FIT PARAMS "
+                  fit-params))
       (-> xy-pairs
           (plot/eof1-vs-var (str (-> @state/*selections
                                      (fx/sub-ctx state/region-key)
@@ -107,10 +106,15 @@
                              :highlighted-idx-vec (-> @state/*selections
                                                       (fx/sub-ctx state/region-meta)
                                                       :interesting-times)
+                             #_#_
                              :traced-id-vec       subset
                              :fit-params          fit-params})
           #_(spitsvgstream "eof1-vs-std-from-zero.svg"))))
-
+#_
+(fx/sub-ctx @state/*selections
+            right-to-left-line-fitted-plot
+            (fx/sub-ctx @state/*selections
+                        eof1weight-vs-variance-from-zero))
 
 ;; DIAGNOSTIC CHARTS
 ;;
