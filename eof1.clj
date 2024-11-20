@@ -103,7 +103,7 @@
                                       (format "%.3G")))
                             1000 ;; needs values for graphic.. and for `svg/group`
                             1000
-                            {:y-name              "standard deviation"
+                            {:y-name              "variance"
                              :highlighted-idx-vec (-> @state/*selections
                                                       (fx/sub-ctx state/region-meta)
                                                       :interesting-times)
