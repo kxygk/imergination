@@ -270,35 +270,22 @@
             eof1-vs-var-mean-svg)
 
 (defn
-  noise-1d-hist-svg
-  [context
-   time-index
-   y-max]
-  (-> time-index
-      (plot/histogram-of-monthly-rain-amounts (-> context
-                                                  (cljfx.api/sub-ctx state/noise-1d-matrix)
-                                                  :matrix
-                                                  (uncomplicate.neanderthal.core/col time-index)
-                                                  seq
-                                                  vec)
-                                              (-> context
-                                                  (cljfx.api/sub-ctx state/noise-1d-min-max))
-                                              [0.0, 30.0]
-                                              [1000
-                                               1000])
-      #_(spitsvgstream (str "noise-hist-t"
-                          time-index
-                          ".svg"))))
-#_
-(-> @state/*selections
-    (fx/sub-ctx noise-1d-hist-svg 5))
-
-(defn
   noise-1d-var-stats
   [context]
   (let [eof1-vs-var-svg (-> context
                             (fx/sub-ctx eof1-vs-var-zero-svg))
-        hist-svg-vec    (->> (fx/sub-ctx context
+        original-hist-svg-vec (->> (fx/sub-ctx context
+                                               state/region-meta)
+                                   :interesting-times
+                                   (#(if (nil? %)
+                                       [0 1 2 3 4 5 6 7]
+                                       %))
+                                   (plot/histograms-of-monthly-rain-amounts (-> context
+                                                                                (fx/sub-ctx state/region-matrix)
+                                                                                :matrix)
+                                                                            [1000,500]
+                                                                            "Original "))
+        noise-hist-svg-vec    (->> (fx/sub-ctx context
                                          state/region-meta)
                              :interesting-times
                              (#(if (nil? %)
@@ -307,9 +294,15 @@
                              (plot/histograms-of-monthly-rain-amounts (-> context
                                                                           (fx/sub-ctx state/noise-1d-matrix)
                                                                           :matrix)
-                                                                      [1000,1000]))]
+                                                                      [1000,500]
+                                                                      "No-EOF1 "))]
     (spitsvgstream (plot/non-eof1-stats eof1-vs-var-svg
-                                        hist-svg-vec)
+                                        (mapv (fn [original-hist
+                                                   noise-hist]
+                                                (quickthing/group-plots-grid [[original-hist]
+                                                                              [noise-hist]]))
+                                              original-hist-svg-vec
+                                              noise-hist-svg-vec))
                    "noise-1d-var-stats.svg")))
 ;;#_
 (-> @state/*selections

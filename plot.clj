@@ -446,7 +446,6 @@
                                                       :title     title-str
                                                       #_#_:color "#0008"}))]
     (-> axis
-        #_
         (update :data
                 #(into %
                        (quickthing/polyline data
@@ -454,6 +453,7 @@
                                              (:slope fit-params)]
                                             {:scale   50
                                              :attribs {:dy -10.0}})))
+        #_
         (update :data
                 #(into %
                        (quickthing/adjustable-circles traced-id-vec
@@ -565,6 +565,7 @@
   histograms-of-monthly-rain-amounts
   [data-matrix
    [width,height]
+   title-prefix
    indeces]
   (let [counts-for-each-index (->> indeces
                                    (mapv (fn [time-index]
