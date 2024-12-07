@@ -496,7 +496,7 @@
                    2
                    1)))
 #_
-(-> data
+(->> data
     linear-fit)
 ;; => #RealGEMatrix[double, mxn:2x1, layout:column]
 ;;       ▥       ↓       ┓    
@@ -505,7 +505,14 @@
 ;;       ┗               ┛    
 ;; These match the wiki page!
 ;; First is offset and second is slope - as expected
-
+#_
+(->> data
+    linear-fit
+    seq
+    flatten
+    (zipmap [:offset
+             :slope]))
+;; => {:offset -39.061955918843935, :slope 61.27218654211063}
 
 (defn
   predicted-values
