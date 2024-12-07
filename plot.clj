@@ -599,13 +599,18 @@
                     (->> counts-for-each-index
                          (mapv #(get %
                                      0)))))
-      (->> counts-for-each-index
-           (mapv (fn [counts]
-                   (histogram-of-monthly-rain-amounts counts
-                                                      [(apply min x-bins)
-                                                       (apply max x-bins)]
-                                                      [0.0, max-count]
-                                                      [width, height])))))))
+      (mapv (fn [counts,
+                 index]
+              (histogram-of-monthly-rain-amounts counts
+                                                 [(apply min x-bins)
+                                                  (apply max x-bins)]
+                                                 [0.0, max-count]
+                                                 [width, height]
+                                                 {:title (str title-prefix
+                                                              "#"
+                                                              index)}))
+            counts-for-each-index
+            indeces))))
 #_
 (histograms-of-monthly-rain-amounts (-> @state/*selections
                                         (cljfx.api/sub-ctx state/noise-1d-matrix)
