@@ -572,7 +572,7 @@
                                                                  (uncomplicate.neanderthal.core/col time-index)
                                                                  seq
                                                                  vec)]
-                                             (let [bin-size (inc (clojure.math/round (/ (clojure.math/log (count rain-vector))
+                                             (let [bin-size (inc (clojure.math/ceil (/ (clojure.math/log (count rain-vector))
                                                                                         (clojure.math/log 2))))] ;; Sturges' rule
                                                (->> (update-vals (->> (uncomplicate.neanderthal.core/col data-matrix
                                                                                                          time-index)
@@ -580,7 +580,7 @@
                                                                       vec
                                                                       (mapv #(/ %
                                                                                 bin-size))
-                                                                      (mapv clojure.math/round)
+                                                                      (mapv int )
                                                                       (mapv (partial *
                                                                                      bin-size))
                                                                       (group-by identity))
