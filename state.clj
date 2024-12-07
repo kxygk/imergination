@@ -23,15 +23,40 @@
                             :row-height        360
                             :shoreline-filestr "./data/shoreline-coarse.json"
                             :contour-filestr   nil
-                            :rain-dirstr       "/home/kxygk/Data/imerg/monthly/late/"
+                            :rain-dirstr
+                            #_
+                            "/home/kxygk/Projects/raingrid/out/"
+                            #_
+                            "/home/kxygk/Data/imerg/daily/late/"
+                            ;;#_
+                            "/home/kxygk/Data/imerg/monthly/late/"
                             :elevation-filestr "./data/World_e-Atlas-UCSD_SRTM30-plus_v8.tif"
                             :cycle-length      12
                             :cycle-phase       0
                             :eas-res           0.1
                             :sou-res           0.1
                             ;; TODO Debug `krabi-region`. Axis labels float off from the map
-                            :region-key            :krabi-root-2 #_locations/krabi-skinny-region
-                            #_locations/eastern-korea #_locations/krabi-root-2 #_locations/himalaya #_locations/rift-valley-small 
+                            :region-key
+                            ;;;;;;;;;;;;;;;;;;;;;;;
+                            #_:ocean1large
+                            #_:ocean1largeextra
+                            #_:ocean1largeextraextra
+                            #_extraextraextra
+                            #_:ocean2
+                            #_:ocean1
+                            #_:ghana-large
+                            #_:togo
+                            #_:jos
+                            #_:taipei-region
+                            #_:udaipur
+                            #_:marrah
+                            #_:sichuan-wall
+                            :krabi-root-2
+                            #_krabi-skinny-region
+                            #_eastern-korea
+                            #_:himalaya
+                            #_:rift-valley-small
+                            ;;;;;;;;;;;;;;;;;;;;;;;
                             :mouse-click       nil
                             :datafile-idxs     []
                             :noise-idxs     []}
@@ -462,11 +487,13 @@
        (map #(str (fx/sub-ctx context
                               data-dirstr)
                   %))
-       (map #(geogrid4image/read-file % ;; TODO: Trans
-                                      (fx/sub-ctx context
-                                                  eas-res)
-                                      (fx/sub-ctx context
-                                                  sou-res)))
+       (map #(do (println (str "READING: "
+                               %))
+                 (geogrid4image/read-file % ;; TODO: Trans
+                                          (fx/sub-ctx context
+                                                      eas-res)
+                                          (fx/sub-ctx context
+                                                      sou-res))))
        (map #(geogrid/subregion %
                                 (fx/sub-ctx context
                                             region)))
@@ -486,6 +513,17 @@
 ;;     :dimension [50 50],
 ;;     :position {:eas 276.5, :sou 79.0},
 ;;     :resolution [0.1 0.1]}
+#_
+(geogrid4image/read-file (->> (fx/sub-ctx @state/*selections
+                                          datafile-strs)
+                              (map #(str (fx/sub-ctx @state/*selections
+                                                     data-dirstr)
+                                         %))
+                              first)
+                         (fx/sub-ctx @state/*selections
+                                     eas-res)
+                         (fx/sub-ctx @state/*selections
+                                     sou-res))
 
 (defn
   region-svd
@@ -890,12 +928,13 @@
                           (fx/sub-ctx state/sv-weight 1))
           [x-coord
            y-coord] centroid-a]
-      (fx/sub-ctx context
-                  singular-vector-mixture
-                  x-coord
-                  y-coord
-                  sval-one
-                  sval-two))))
+      (let [mixture (fx/sub-ctx context
+                                singular-vector-mixture
+                                x-coord
+                                y-coord
+                                sval-one
+                                sval-two)]
+      mixture)))) ;; TODO: Normalize? I think..
 #_
 (-> @state/*selections
     (fx/sub-ctx state/first-pattern))
