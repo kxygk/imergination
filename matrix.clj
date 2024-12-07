@@ -601,3 +601,43 @@
             :residual-variance)
      keys)
 ;; => (:num-dropped :residual-variance :fit-params :subset)
+
+
+(defn
+  vecnorm
+  "Normalize vector...
+  Why does Neanderthal not have a function for this?"
+  [somevec]
+  (ncore/scal (/ 1.0
+                 (ncore/nrm2 somevec))
+              somevec))
+
+(ncore/dim (neand/dv [1 2 3 4 5]))
+
+(defn
+  vecvar
+  "variance with mean zero"
+  [somevec]
+  (/ (ncore/dot somevec ;; some of the squares
+                somevec)
+     (ncore/dim somevec)))
+
+#_
+(let [num (count data-seq)]
+  (->> data-seq
+       (reduce #(+ (/ (clojure.math/pow %2
+                                        2.0)
+                      num)
+                   %1)
+               0.0)))
+
+(defn
+  colvars
+  "for each column in a matrix
+  caluclate it's variance
+  ..
+  Assumes a mean of zero"
+  [somematrix]
+  (->> somematrix
+       ncore/cols
+       (mapv vecvar)))
