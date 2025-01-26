@@ -208,22 +208,52 @@
 (defn
   plot-variance-summaries
   [context]
-  (let [width 1000
-        height 2000
+  (let [width                1000
+        height               2000
         {:keys [above-vars
                 below-vars]} (-> context
                                  (fx/sub-ctx above-below-variances)) ]
-    (-> (quickthing/group-plots-grid [[(plot/eof1-vs-var above-vars
-                                                         "Above"
-                                                         width
-                                                         (/ height
-                                                            2.0))]
-                                      [(plot/eof1-vs-var below-vars
-                                                         "Below"
-                                                         width
-                                                         (/ height
-                                                            2.0))]]))))
-#_
+    (let [above-fit-params (->> above-vars
+                                matrix/linear-fit
+                                seq
+                                flatten
+                                (zipmap [:offset
+                                         :slope]))
+          below-fit-params (->> below-vars
+                                matrix/linear-fit
+                                seq
+                                flatten
+                                (zipmap [:offset
+                                         :slope]))]
+      (-> (quickthing/group-plots-grid [[(plot/eof1-vs-var above-vars
+                                                           (str "Above: "
+                                                                (->> above-fit-params
+                                                                     :slope
+                                                                     (format "%.3G"))
+                                                                "x + "
+                                                                (->> above-fit-params
+                                                                     :offset
+                                                                     (format "%.3G")))
+                                                           width
+                                                           (/ height
+                                                              2.0)
+                                                           {:y-name     "variance"
+                                                            :fit-params above-fit-params})]
+                                        [(plot/eof1-vs-var below-vars
+                                                           (str "Below: "
+                                                                (->> below-fit-params
+                                                                     :slope
+                                                                     (format "%.3G"))
+                                                                "x + "
+                                                                (->> below-fit-params
+                                                                     :offset
+                                                                     (format "%.3G")))
+                                                           width
+                                                           (/ height
+                                                              2.0)
+                                                           {:y-name     "variance"
+                                                            :fit-params below-fit-params})]])))))
+;;#_
 (-> @state/*selections
     plot-variance-summaries
     (state/spitsvgstream "pattern-variances.svg"))
