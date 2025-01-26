@@ -1175,6 +1175,20 @@
 ;;     0.0614008470602693
 ;;     {:cycle-frac 0, :above? false}]
 
+(defn
+  binary-index-vector
+  "A vector of true/false values.
+  Indicating the given data index was labeled pattern1 or pattern2"
+  [context]
+  (->> (fx/sub-ctx context
+                   pattern-proj)
+       (mapv (fn [datapoint]
+             (-> datapoint
+                 (get 2)
+                 :above?)))))
+#_
+(-> @state/*selections
+    binary-index-vector)
 
 (defn
   pattern-proj-partitioned
