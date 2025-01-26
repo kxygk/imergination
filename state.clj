@@ -702,6 +702,24 @@
 (-> @state/*selections
     (fx/sub-ctx state/datafile-geogrid
                 3))
+
+(defn
+  datafile-svg
+  "Get an SVG of a given datafile
+  (ex: day, month)
+  Selected with an ID index"
+  [context
+   id]
+  (println (str "svg of file: "
+                id))
+  (-> (fx/sub-ctx context
+                  datafile-geogrid
+                  id)
+      (plot/grid-map (fx/sub-ctx context
+                                 region-svg-hiccup))
+      (spitsvgstream (str "data-file-"
+                          id
+                          ".svg"))))
 #_
 (-> @state/*selections
     (state/datafile-svg 31))
