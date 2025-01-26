@@ -57,6 +57,9 @@
     (fx/sub-ctx state/region-images)
     matrix/from-geogrids)
 
+;; SEE: https://www.ojalgo.org/2019/03/statquest-pca-example/
+
+
 (defn
   svd
   "Take a data matrix
