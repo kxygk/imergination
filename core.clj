@@ -67,3 +67,5 @@
 (require 'eof1)
 #_
 (require 'summary)
+#_
+(require 'varfield)

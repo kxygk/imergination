@@ -630,8 +630,7 @@
                        "file.svg"))))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/noise-svg
-                3))
+    (state/noise-svg 31))
 
 (defn
   noise-1d-matrix
@@ -660,7 +659,6 @@
     seq
     vec)
 
-
 (defn
   noise-1d-min-max
   [context]
@@ -677,6 +675,9 @@
   [context]
   (fx/sub-val context
               :datafile-idxs))
+#_
+(fx/sub-ctx @state/*selections
+            datafile-idxs)
 
 (defn
   first-datafile-idx
