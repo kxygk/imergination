@@ -142,6 +142,8 @@
   And return the hiccup"
   [svg-hiccup
    filename]
+  (println (str "Writing out SVG: "
+                filename))
   (spitstream (-> svg-hiccup
                   quickthing/svg2xml)
               filename)
