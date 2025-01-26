@@ -575,6 +575,47 @@
 ;; => (:sigma :u :vt :master :matrix :dimension :position :resolution)
 
 (defn
+  noise-vars
+  "Calculate the variances of the noise in the columns/datapoints"
+  [context]
+  (-> context
+      (fx/sub-ctx noise-matrix-2d)
+      :matrix
+      (matrix/colvars)))
+#_
+(take 12
+      (-> @state/*selections
+          (fx/sub-ctx state/noise-vars)))
+
+(defn
+  num-points
+  [context]
+  (let [num-pix (apply *
+                       (-> context
+                           (fx/sub-ctx noise-matrix-2d)
+                           :dimension))]
+    (->> noise-vars
+         (fx/sub-ctx context)
+         (map #(/ %
+                  num-pix)))))
+#_
+(take 12
+      (-> @state/*selections
+          (fx/sub-ctx state/num-points)))
+
+(defn
+  climate-noise-matrix-2d-normalized
+  "The noise matrix is normalized according to its corresponding climate pattern
+  Areas where the climate doesn't manifest are in effect given a lower weight
+  As it can not skew the climate index in those areas"
+  [context]
+  (let [noise-matrix (fx/sub-ctx context
+                                 noise-matrix-2d)
+        climate-index-vec 69 ;; index vector that tells you which of the two climate systems is active
+        normalized-pattern1 69
+        normalized-pattern1 69]))
+
+(defn
   noise-svg
   "Get the noise background of one data point"
   [context
