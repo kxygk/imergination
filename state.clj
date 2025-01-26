@@ -1038,12 +1038,22 @@
                           ".svg"))))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/first-pattern-weighted-noise-svg 31))
-
+    (state/datafile-svg 6))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/first-pattern-weighted-noise 2)
-    :data-array)
+    (state/noise-svg 6))
+#_
+(-> @state/*selections
+    (state/first-pattern-weighted-noise-svg 6))
+#_
+(-> @state/*selections
+    (state/datafile-svg 31))
+#_
+(-> @state/*selections
+    (state/noise-svg 31))
+#_
+(-> @state/*selections
+    (state/first-pattern-weighted-noise-svg 31))
 
 (defn
   second-pattern
@@ -1092,6 +1102,55 @@
 (-> @state/*selections
     (fx/sub-ctx state/second-pattern-svg))
 
+(defn
+  second-pattern-weighted-noise
+  "Weight the remaining noise by the first pattern"
+  [context
+   index]
+  (-> context
+      (fx/sub-ctx noise-matrix-2d)
+      (matrix/extract-grid index)
+      :data-array
+      (#(mapv *
+             %
+             (fx/sub-ctx context
+                         second-pattern)))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/second-pattern-weighted-noise 6))
+
+(defn
+  second-pattern-weighted-noise-svg
+  [context
+   index]
+  (-> (geogrid4seq/build-grid (-> context
+                                  (fx/sub-ctx region-geogrid-params))
+                              (-> context
+                                  (fx/sub-ctx second-pattern-weighted-noise
+                                              index)))
+      (plot/grid-map (fx/sub-ctx context
+                                 region-svg-hiccup))
+      (spitsvgstream (str "second-pattern-weighted-noise-"
+                          index
+                          ".svg"))))
+#_
+(-> @state/*selections
+    (state/datafile-svg 10))
+#_
+(-> @state/*selections
+    (state/noise-svg 10))
+#_
+(-> @state/*selections
+    (state/second-pattern-weighted-noise-svg 10))
+#_
+(-> @state/*selections
+    (state/datafile-svg 11))
+#_
+(-> @state/*selections
+    (state/noise-svg 11))
+#_
+(-> @state/*selections
+    (state/second-pattern-weighted-noise-svg 11))
 
 (defn
   pattern-proj
@@ -1110,7 +1169,11 @@
       projections)))
     #_
 (-> @state/*selections
-    (fx/sub-ctx state/pattern-proj))
+    (fx/sub-ctx state/pattern-proj)
+    first)
+;; => [-0.009947702296436598
+;;     0.0614008470602693
+;;     {:cycle-frac 0, :above? false}]
 
 
 (defn
