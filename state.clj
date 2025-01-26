@@ -643,38 +643,40 @@
   Which in effect meaning the ~earliest~ in the list
   Or the lowest value"
   [context]
-  (get (fx/sub-ctx context
-                   datafile-idxs)
-       0))
+  (first (fx/sub-ctx context
+                     datafile-idxs)))
 #_
 (fx/sub-ctx @state/*selections
             first-datafile-idx)
 
 (defn-
-  first-datafile-geogrid
-  [context]
+  datafile-geogrid
+  [context
+   id]
   (matrix/extract-grid (fx/sub-ctx context
                                    region-matrix)
-                       (fx/sub-ctx context
-                                   first-datafile-idx)))
+                       id))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/first-datafile-geogrid))
+    (fx/sub-ctx state/datafile-geogrid
+                3))
+#_
+(-> @state/*selections
+    (state/datafile-svg 31))
 
 (defn
   first-datafile-svg
   "Get a shoreline map of the region of interest
   TODO: This could be a higher resolution than the world map"
   [context]
-  (if (nil? (fx/sub-ctx context
-                        first-datafile-idx))
-    (fx/sub-ctx context
-                contour-map-svg)
-    (-> (fx/sub-ctx context
-                    first-datafile-geogrid)
-        (plot/grid-map (fx/sub-ctx context
-                                   region-svg-hiccup))
-        (spitsvgstream "first-data-file.svg"))))
+  (let [first-selections-idx (fx/sub-ctx context
+                                         first-datafile-idx)]
+    (if (nil? first-selections-idx)
+      (fx/sub-ctx context
+                  contour-map-svg)
+      (fx/sub-ctx context
+                  datafile-svg
+                  first-selections-idx))))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/first-datafile-svg))
