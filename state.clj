@@ -1019,6 +1019,45 @@
     (fx/sub-ctx state/first-pattern-svg))
 
 (defn
+  first-pattern-weighted-noise
+  "Weight the remaining noise by the first pattern"
+  [context
+   index]
+  (-> context
+      (fx/sub-ctx noise-matrix-2d)
+      (matrix/extract-grid index)
+      :data-array
+      (#(mapv *
+             %
+             (fx/sub-ctx context first-pattern)))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/first-pattern-weighted-noise 6))
+
+(defn
+  first-pattern-weighted-noise-svg
+  [context
+   index]
+  (-> (geogrid4seq/build-grid (-> context
+                                  (fx/sub-ctx region-geogrid-params))
+                              (-> context
+                                  (fx/sub-ctx first-pattern-weighted-noise
+                                              index)))
+      (plot/grid-map (fx/sub-ctx context
+                                 region-svg-hiccup))
+      (spitsvgstream (str "first-pattern-weighted-noise-"
+                          index
+                          ".svg"))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/first-pattern-weighted-noise-svg 31))
+
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/first-pattern-weighted-noise 2)
+    :data-array)
+
+(defn
   second-pattern
   [context]
   (let [{:keys [centroid-b]} (fx/sub-ctx context
