@@ -1183,12 +1183,92 @@
   (->> (fx/sub-ctx context
                    pattern-proj)
        (mapv (fn [datapoint]
-             (-> datapoint
-                 (get 2)
-                 :above?)))))
+               (-> datapoint
+                   (get 2)
+                   :above?)))))
 #_
 (-> @state/*selections
     binary-index-vector)
+
+(defn
+  climate-noise-matrix-2d-normalized
+  "The noise matrix is normalized according to its corresponding climate pattern
+  Areas where the climate doesn't manifest are in effect given a lower weight
+  As it can not skew the climate index in those areas
+  NOTE: This could probably be rewritten in terms of matrix operations if it's slow"
+  [context]
+  (let [binary-classifications  (fx/sub-ctx context
+                                            binary-index-vector)]
+    (->> binary-classifications
+         (map-indexed (fn [index
+                           is-top-pattern]
+                        (if is-top-pattern
+                          (second-pattern-weighted-noise context
+                                                         index)
+                          (first-pattern-weighted-noise context
+                                                        index))))
+         (matrix/from-vecofvecs))))
+(->> @state/*selections
+     climate-noise-2d-normalized)
+;;Validating the matric is built correctly row by row
+#_
+(->> @state/*selections
+     climate-noise-matrix-2d-normalized)
+;; => #RealGEMatrix[double, mxn:2840x119, layout:column]
+;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
+;;       →    2.34E+4 -9.23E+4   ⁙    -5.83E+41.69E+4         
+;;       →    1.81E+4 -9.04E+4   ⁙    -4.47E+43.57E+4         
+;;       →       ⁙       ⁙       ⁙       ⁙       ⁙            
+;;       →    -2.83E+47.42E+4    ⁙    1.75E+4 -2.40E+4        
+;;       →    -1.17E+41.46E+4    ⁙    -1.20E+4-6.52E+3        
+;;       ┗                                               ┛
+;; We repeat the projections/normalization manually
+#_
+(-> @state/*selections
+    binary-index-vector
+    first)
+;; => false
+;; (so January is classified as "summer")
+#_
+(take 2
+      (-> @state/*selections
+          (first-pattern-weighted-noise 0)))
+;; => (23429.16540445495 18104.86334445968)
+#_
+(take-last 2
+      (-> @state/*selections
+          (first-pattern-weighted-noise 0)))
+;; => (-28273.311179534514 -11668.173447261712)
+
+(defn
+  climate-noise-vars
+  [context]
+  (-> context
+      (fx/sub-ctx climate-noise-matrix-2d-normalized)
+      (matrix/colvars)))
+#_
+(->> @state/*selections
+     climate-noise-vars)
+
+(defn climate-noise-var-svg
+  [context]
+  (-> (plot/index (* 1.0
+                     (fx/sub-ctx context
+                                 state/window-width))
+                  (* 1.0
+                     (fx/sub-ctx context
+                                 state/row-height))
+                  (-> context
+                      (fx/sub-ctx climate-noise-vars))
+                  2011
+                  (fx/sub-ctx context
+                              cycle-length)
+                  (fx/sub-ctx context
+                              cycle-phase))
+      (spitsvgstream "indeces-vars.svg")))
+#_
+(->> @state/*selections
+     climate-noise-var-svg)
 
 (defn
   pattern-proj-partitioned

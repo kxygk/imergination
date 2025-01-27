@@ -648,3 +648,14 @@
   (->> somematrix
        ncore/cols
        (mapv vecvar)))
+
+(defn
+  from-vecofvecs
+  "Take a vector of vector of values and turn it into a matrix"
+  [vecofvecs]
+  (neand/dge (-> vecofvecs
+                 first
+                 count)
+             (-> vecofvecs
+                 count)
+             vecofvecs))

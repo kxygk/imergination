@@ -274,7 +274,11 @@
    cycle-start-value
    cycle-length ;; Maybe make these optional?
    cycle-phase]
-  (let [indexed proj]
+  (let [indexed (map-indexed vector
+                             proj)]
+    (println (range cycle-phase
+                    (count proj)
+                    cycle-length))
     (let [axis (-> (quickthing/primary-axis indexed
                                             {:width   width
                                              :height  height
@@ -288,9 +292,9 @@
                                                                             cycle-length))))
                    (assoc-in [:x-axis
                               :major]
-                             (range cycle-phase
-                                    (count proj)
-                                    cycle-length))
+                             (into [] (range cycle-phase
+                                             (count proj)
+                                             cycle-length)))
                    (assoc-in [:y-axis
                               :major]
                              []))]
@@ -301,7 +305,7 @@
                        [(quickthing/hist indexed
                                          {:attribs {;;:opacity "0.5"
                                                     :stroke-width 10 #_0.4
-                                                    :stroke       "black"}})]))
+                                                    :stroke       "gray"}})]))
           viz/svg-plot2d-cartesian
           (quickthing/svg-wrap [width
                                 height]
@@ -332,10 +336,6 @@
                              (thi.ng.geom.viz.core/default-svg-label #(+ cycle-start-value
                                                                          (/ %
                                                                             cycle-length))))
-                   #_
-                   (assoc-in [:x-axis
-                              :transform]
-                             "translate(40.0 0.0)")
                    (assoc-in [:x-axis
                               :major]
                              (range cycle-phase
