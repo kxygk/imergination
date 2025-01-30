@@ -418,6 +418,9 @@
        sort))
 #_
 (->> (fx/sub-ctx @state/*selections
+                 state/datafile-strs))
+#_
+(->> (fx/sub-ctx @state/*selections
                  state/datafile-strs)
      (map-indexed (fn append-index
                     [index
@@ -769,8 +772,7 @@
 
 (defn
   first-datafile-svg
-  "Get a shoreline map of the region of interest
-  TODO: This could be a higher resolution than the world map"
+  ""
   [context]
   (let [first-selections-idx (fx/sub-ctx context
                                          first-datafile-idx)]
@@ -783,7 +785,6 @@
 #_
 (-> @state/*selections
     (fx/sub-ctx state/first-datafile-svg))
-
 
 (defn
   sv-weights
@@ -912,6 +913,7 @@
 #_
 (-> @state/*selections
     (fx/sub-ctx state/first-datafile-svg))
+
 
 (defn
   singular-vector-mixture
@@ -1279,6 +1281,7 @@
                           (first-pattern-weighted-noise context
                                                         index))))
          (matrix/from-vecofvecs))))
+#_
 (->> @state/*selections
      climate-noise-2d-normalized)
 ;;Validating the matric is built correctly row by row
@@ -1410,10 +1413,10 @@
   [context]
   (-> context
       (cljfx.api/sub-ctx sv-proj)
-      (plot/sv-plot (* 0.5
+      (plot/sv-plot (* 1.0
                        (fx/sub-ctx context
                                    window-width))
-                    (* 2.0
+                    (* 4.0
                        (fx/sub-ctx context
                                    row-height)))
       (spitsvgstream "sv-projs.svg")))
@@ -1434,15 +1437,15 @@
 (defn
   sv-weights-svg
   [context]
-  (-> (plot/sv-weights (take 10
-                             (fx/sub-ctx context
-                                         sv-weights))
+  (-> (plot/sv-weights (fx/sub-ctx context
+                                   sv-weights)
+                       50
                        (fx/sub-ctx context
                                    sv-weights-stats)
-                       (* 0.5
+                       (* 1.0
                           (fx/sub-ctx context
                                       state/window-width))
-                       (* 2.0
+                       (* 1.0
                           (fx/sub-ctx context
                                       state/row-height)))
       (spitsvgstream "sv-weights.svg")))

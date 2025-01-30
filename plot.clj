@@ -168,8 +168,6 @@
                 points-b
                 centroid-a
                 centroid-b]} (bisect/min-var data)]
-    (println "ANGLE "
-             angle)
     (->> (-> (quickthing/zero-axis data
                                    {:width       width
                                     :height      height
@@ -219,33 +217,46 @@
 (defn
   sv-weights
   [weights
+   num-display
    sv-weights-stats
    width
    height]
-  (let [first-two (take 2 weights)
-        the-rest  (drop 2 weights)]
-    (-> weights
-        (quickthing/primary-axis {:width       width
-                                  :height      height
-                                  :margin-frac 0.00})
-        #_#_
-        (assoc-in [:x-axis
-                   :major]
-                  nil)
-        (assoc-in [:y-axis
-                   :major]
-                  nil)
-        (update :data
-                #(into %
-                       (quickthing/hist first-two
-                                        {:attribs {:stroke "red"}})))
-        (update :data
-                #(into %
-                       (quickthing/hist the-rest)))
-        viz/svg-plot2d-cartesian
-        (quickthing/svg-wrap [width
-                              height]
-                             width))))
+  (let [total-weight (->> weights
+                          (mapv second)
+                          (reduce +))]
+    (let [weight-perc (->> weights
+                           (take num-display)
+                           (mapv (fn [weight-pair]
+                                   (update weight-pair
+                                           1
+                                           #(* 100
+                                               (/ %
+                                                  total-weight))))))]
+      (let [first-two (take 2 weight-perc)
+            the-rest  (drop 2 weight-perc)]
+        (-> weight-perc
+            (quickthing/primary-axis  {:width       width
+                                       :height      height
+                                       :margin-frac 0.05})
+            (assoc :grid ;; turn off grid
+                   nil)
+            (assoc-in [:x-axis
+                       :major]
+                      [])
+            (assoc-in [:x-axis
+                       :minor]
+                      [])
+            (update :data
+                    #(into %
+                           (quickthing/hist first-two
+                                            {:attribs {:stroke "red"}})))
+                      (update :data
+                              #(into %
+                                     (quickthing/hist the-rest)))
+                      viz/svg-plot2d-cartesian
+                      (quickthing/svg-wrap [width
+                                            height]
+                                           width))))))
 #_
 (let [width   1000
       height  500
@@ -259,6 +270,7 @@
                   matrix/singular-values-stats)]
   (spit "out/test-weights.svg"
         (-> (plot/sv-weights weights
+                             6
                              stats
                              width
                              height)
