@@ -59,7 +59,8 @@
                             #_:rift-valley-small
                             ;;;;;;;;;;;;;;;;;;;;;;;
                             :mouse-click       nil
-                            :datafile-idxs     []
+                            :datafile-idxs     [0]
+                            :sv-selected-idxs [0]
                             :noise-idxs     []}
                            #(cache/lru-cache-factory % :threshold 1000))))
 
@@ -451,6 +452,38 @@
          0.1
          0.1))))
 
+
+(defn
+  sv-strs
+  "Gets listing of all possible SVs"
+  [context]
+  (let [num-of-svs (-> context
+                       (fx/sub-ctx datafile-strs)
+                       count)]
+    (let [svs (-> num-of-svs
+                  range)
+          max-digits (-> num-of-svs
+                         clojure.math/log10
+                         clojure.math/ceil
+                         int)]
+      (mapv (fn [svindex]
+              (str "SV "
+                   (format (str "%0"
+                                max-digits
+                                "d")
+                           svindex)))
+            svs))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/sv-strs))
+#_
+(-> @state/*selections
+    (fx/sub-ctx datafile-strs)
+    count
+    clojure.math/log10
+    clojure.math/ceil
+    int)
+
 (defn
   region-geogrid-params
   "This is a bit of a convoluted way to calculate the parameters,
@@ -679,6 +712,28 @@
 (fx/sub-ctx @state/*selections
             first-datafile-idx)
 
+(defn
+  sv-selected-idxs
+  "Indeces of the data that's been selected"
+  [context]
+  (fx/sub-val context
+              :sv-selected-idxs))
+#_
+(fx/sub-ctx @state/*selections
+            datafile-idxs)
+
+(defn
+  first-sv-selected-idx
+  "Get the first selected data index
+  Which in effect meaning the ~earliest~ in the list
+  Or the lowest value"
+  [context]
+  (first (fx/sub-ctx context
+                     sv-selected-idxs)))
+#_
+(fx/sub-ctx @state/*selections
+            first-datafile-idx)
+
 (defn-
   datafile-geogrid
   [context
@@ -841,6 +896,22 @@
 #_
 (-> @state/*selections
     (fx/sub-ctx state/second-sv-svg))
+
+(defn
+  first-sv-selected-svg
+  ""
+  [context]
+  (let [first-selections-idx (fx/sub-ctx context
+                                         first-sv-selected-idx)]
+    (if (nil? first-selections-idx)
+      (fx/sub-ctx context
+                  contour-map-svg)
+      (fx/sub-ctx context
+                  singular-vector-svg
+                  first-selections-idx))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/first-datafile-svg))
 
 (defn
   singular-vector-mixture

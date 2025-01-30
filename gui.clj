@@ -231,6 +231,45 @@
                                      state/region-to-display-scale-y)}]})
 
 (defn
+  svlist
+  "Lists have to be wrapped in an `extension lifecycle`..
+  (I don't understand why)
+  see: `cljfx/examples/e27_selection_models.clj`
+  for details.."
+  [{:keys [fx/context]}]
+  (let [select-file-effect {:effect (fn [snapshot
+                                         event]
+                                      (-> snapshot
+                                          (fx/swap-context assoc
+                                                           :sv-selected-idxs
+                                                           (:fx/event event))))}]
+    {:fx/type fx.ext.list-view/with-selection-props
+     :props   {:selection-mode              :multiple
+               :on-selected-indices-changed select-file-effect}
+     :desc    {:fx/type      :list-view
+               #_#_
+               :cell-factory {:fx/cell-type :list-cell
+                              :describe     (fn [path]
+                                              {:text path})}
+               :items       (->> (fx/sub-ctx context
+                                             state/sv-strs))}}))
+
+(defn
+  svpreview
+  "The display of the selected SV"
+  [{:keys [fx/context]}]
+  {:fx/type   :v-box
+   :alignment :center
+   :children  [{:fx/type svg2jfx/xml
+                :svg     (-> (fx/sub-ctx context
+                                         state/first-sv-selected-svg)
+                             quickthing/svg2xml)
+                :scale-x (fx/sub-ctx context
+                                     state/region-to-display-scale-x)
+                :scale-y (fx/sub-ctx context
+                                     state/region-to-display-scale-y)}]})
+
+(defn
   sv
   "Diplay of the Singular Vector of index `:sv-num`
   Index is ZERO indexed.. (so PC1 is `{:sv-num 0}`)"
@@ -429,32 +468,22 @@
                                      :sv-num           1
                                      :grid-pane/row    2
                                      :grid-pane/column 1}
-                                    {:fx/type          sv
-                                     :sv-num           2
+                                    {:fx/type          svlist
                                      :grid-pane/row    3
                                      :grid-pane/column 0}
-                                    {:fx/type          sv
-                                     :sv-num           3
+                                    {:fx/type          svpreview
                                      :grid-pane/row    3
                                      :grid-pane/column 1}
-                                    {:fx/type          sv
-                                     :sv-num           4
-                                     :grid-pane/row    4
-                                     :grid-pane/column 0}
-                                    {:fx/type          sv
-                                     :sv-num           5
-                                     :grid-pane/row    4
-                                     :grid-pane/column 1}
+                                    {:fx/type               sv-weights
+                                     :grid-pane/row         4
+                                     :grid-pane/row-span    1
+                                     :grid-pane/column      0
+                                     :grid-pane/column-span 2}
                                     {:fx/type               sv-projections
                                      :grid-pane/row         5
                                      :grid-pane/row-span    2
                                      :grid-pane/column      0
-                                     :grid-pane/column-span 1}
-                                    {:fx/type               sv-weights
-                                     :grid-pane/row         5
-                                     :grid-pane/row-span    2
-                                     :grid-pane/column      1
-                                     :grid-pane/column-span 1}
+                                     :grid-pane/column-span 2}
                                     {:fx/type          sv-mix-one
                                      :grid-pane/row    7
                                      :grid-pane/column 0}
