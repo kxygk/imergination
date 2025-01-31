@@ -403,6 +403,42 @@
    :scale-x     1.0
    :scale-y     1.0})
 
+
+(defn
+  noiselist
+  "Lists have to be wrapped in an `extension lifecycle`..
+  (I don't understand why)
+  see: `cljfx/examples/e27_selection_models.clj`
+  for details.."
+  [{:keys [fx/context]}]
+  (let [select-file-effect {:effect (fn [snapshot
+                                         event]
+                                      (-> snapshot
+                                          (fx/swap-context assoc
+                                                           :noise-selected-idxs
+                                                           (:fx/event event))))}]
+    {:fx/type fx.ext.list-view/with-selection-props
+     :props   {:selection-mode              :multiple
+               :on-selected-indices-changed select-file-effect}
+     :desc    {:fx/type      :list-view
+               :items       (->> (fx/sub-ctx context
+                                             state/datafile-strs))}}))
+
+(defn
+  noisepreview
+  "The display of the selected SV"
+  [{:keys [fx/context]}]
+  {:fx/type   :v-box
+   :alignment :center
+   :children  [{:fx/type svg2jfx/xml
+                :svg     (-> (fx/sub-ctx context
+                                         state/first-noise-selected-svg)
+                             quickthing/svg2xml)
+                :scale-x (fx/sub-ctx context
+                                     state/region-to-display-scale-x)
+                :scale-y (fx/sub-ctx context
+                                     state/region-to-display-scale-y)}]})
+
 (defn
   main-vertical-display
   "Tha main vertical window"
@@ -464,6 +500,13 @@
                                      :grid-pane/row-span    1
                                      :grid-pane/column      0
                                      :grid-pane/column-span 2}
+                                    {:fx/type          noiselist
+                                     :grid-pane/row    9
+                                     :grid-pane/column 0}
+                                    {:fx/type          noisepreview
+                                     :grid-pane/row    9
+                                     :grid-pane/column 1}
+                                    #_#_
                                     {:fx/type          svg
                                      :grid-pane/row    9
                                      :grid-pane/column 0

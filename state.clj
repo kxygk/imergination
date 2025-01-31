@@ -61,7 +61,7 @@
                             :mouse-click       nil
                             :datafile-idxs     [0]
                             :sv-selected-idxs [0]
-                            :noise-idxs     []}
+                            :noise-selected-idxs [0]}
                            #(cache/lru-cache-factory % :threshold 1000))))
 
 (defn
@@ -487,6 +487,29 @@
     clojure.math/ceil
     int)
 
+#_
+(defn
+  sv-strs
+  "Gets listing of all possible SVs"
+  [context]
+  (let [num-of-svs (-> context
+                       (fx/sub-ctx datafile-strs)
+                       count)]
+    (let [svs (-> num-of-svs
+                  range)
+          max-digits (-> num-of-svs
+                         clojure.math/log10
+                         clojure.math/ceil
+                         int)]
+      (mapv (fn [svindex]
+              (str "SV "
+                   (format (str "%0"
+                                max-digits
+                                "d")
+                           svindex)))
+            svs))))
+
+
 (defn
   region-geogrid-params
   "This is a bit of a convoluted way to calculate the parameters,
@@ -737,6 +760,28 @@
 (fx/sub-ctx @state/*selections
             first-datafile-idx)
 
+(defn
+  noise-selected-idxs
+  "Indeces of the data that's been selected"
+  [context]
+  (fx/sub-val context
+              :noise-selected-idxs))
+#_
+(fx/sub-ctx @state/*selections
+            noise-selected-idxs)
+
+(defn
+  first-noise-selected-idx
+  "Get the first selected data index
+  Which in effect meaning the ~earliest~ in the list
+  Or the lowest value"
+  [context]
+  (first (fx/sub-ctx context
+                     noise-selected-idxs)))
+#_
+(fx/sub-ctx @state/*selections
+            first-noise-selected-idx)
+
 (defn-
   datafile-geogrid
   [context
@@ -914,6 +959,21 @@
 (-> @state/*selections
     (fx/sub-ctx state/first-datafile-svg))
 
+(defn
+  first-noise-selected-svg
+  ""
+  [context]
+  (let [first-selections-idx (fx/sub-ctx context
+                                         first-noise-selected-idx)]
+    (if (nil? first-selections-idx)
+      (fx/sub-ctx context
+                  contour-map-svg)
+      (fx/sub-ctx context
+                  noise-svg
+                  first-selections-idx))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/first-noise-selected-svg))
 
 (defn
   singular-vector-mixture
