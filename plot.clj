@@ -150,8 +150,8 @@
                                                region)
                    (map-label region
                               label-top-right
-                              (merge label-attribs
-                                     {:fill (quickthing/color-cycle cycle-frac)})))
+                              (merge {:fill (quickthing/color-cycle cycle-frac)}
+                                     label-attribs)))
         (quickthing/svg-wrap (dimension region)
                              360))))
 

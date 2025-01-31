@@ -311,31 +311,14 @@
   [{:keys [fx/context]}]
   {:fx/type   :v-box
    :alignment :top-center
-   ;;   :style     {:-fx-background-color :blue}
-   :children  [#_{:fx/type   :h-box
-                  :alignment :top-left
-                  :children  [{:fx/type :label
-                               :text    " Contour File: "}
-                              {:fx/type     :text-field
-                               :disable     true
-                               :h-box/hgrow :always
-                               ;;:pref-width Double/MAX_VALUE
-                               :text        (->> context
-                                                 state/shoreline-filestr
-                                                 (str " "))} ;;..spacer
-                              {:fx/type :button
-                               :text    "Select"}]}
-               {:fx/type     svg
+   :children  [{:fx/type     svg
                 :v-box/hgrow :always
                 :svg-hiccup  (fx/sub-ctx context
                                          state/first-sv-svg)
                 :scale-x     (fx/sub-ctx context
                                          state/region-to-display-scale-x)
                 :scale-y     (fx/sub-ctx context
-                                         state/region-to-display-scale-y)}
-               #_{:fx/type     :label
-                  :v-box/vgrow :always
-                  :text        "Preview Map!!"}]})
+                                         state/region-to-display-scale-y)}]})
 
 (defn
   sv-two
@@ -344,60 +327,46 @@
   [{:keys [fx/context]}]
   {:fx/type   :v-box
    :alignment :top-center
-   ;;   :style     {:-fx-background-color :blue}
-   :children  [#_{:fx/type   :h-box
-                  :alignment :top-left
-                  :children  [{:fx/type :label
-                               :text    " Contour File: "}
-                              {:fx/type     :text-field
-                               :disable     true
-                               :h-box/hgrow :always
-                               ;;:pref-width Double/MAX_VALUE
-                               :text        (->> context
-                                                 state/shoreline-filestr
-                                                 (str " "))} ;;..spacer
-                              {:fx/type :button
-                               :text    "Select"}]}
-               {:fx/type     svg
+   :children  [{:fx/type     svg
                 :v-box/hgrow :always
                 :svg-hiccup  (fx/sub-ctx context
                                          state/second-sv-svg)
                 :scale-x     (fx/sub-ctx context
                                          state/region-to-display-scale-x)
                 :scale-y     (fx/sub-ctx context
-                                         state/region-to-display-scale-y)}
-               #_
-               {:fx/type     :label
-                :v-box/vgrow :always
-                :text        "Preview Map!!"}]})
+                                         state/region-to-display-scale-y)}]})
 
 (defn
   sv-mix-one
   "Where we select the data to read in..
   We can inspect how it looks in our region"
   [{:keys [fx/context]}]
-  {:fx/type     svg
-   :v-box/hgrow :always
-   :svg-hiccup  (fx/sub-ctx context
-                            state/first-pattern-svg)
-   :scale-x     (fx/sub-ctx context
-                            state/region-to-display-scale-x)
-   :scale-y     (fx/sub-ctx context
-                            state/region-to-display-scale-y)})
+  {:fx/type   :v-box
+   :alignment :top-center
+   :children  [{:fx/type     svg
+                :v-box/hgrow :always
+                :svg-hiccup  (fx/sub-ctx context
+                                         state/first-pattern-svg)
+                :scale-x     (fx/sub-ctx context
+                                         state/region-to-display-scale-x)
+                :scale-y     (fx/sub-ctx context
+                                         state/region-to-display-scale-y)}]})
 
 (defn
   sv-mix-two
   "Where we select the data to read in..
   We can inspect how it looks in our region"
   [{:keys [fx/context]}]
-  {:fx/type     svg
-   :v-box/hgrow :always
-   :svg-hiccup  (fx/sub-ctx context
-                            state/second-pattern-svg)
-   :scale-x     (fx/sub-ctx context
-                            state/region-to-display-scale-x)
-   :scale-y     (fx/sub-ctx context
-                            state/region-to-display-scale-y)})
+  {:fx/type   :v-box
+   :alignment :top-center
+   :children  [{:fx/type     svg
+                :v-box/hgrow :always
+                :svg-hiccup  (fx/sub-ctx context
+                                         state/second-pattern-svg)
+                :scale-x     (fx/sub-ctx context
+                                         state/region-to-display-scale-x)
+                :scale-y     (fx/sub-ctx context
+                                         state/region-to-display-scale-y)}]})
 
 (defn
   sv-projections

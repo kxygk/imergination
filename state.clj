@@ -1073,7 +1073,9 @@
                               (-> context
                                   (fx/sub-ctx first-pattern)))
       (plot/grid-map (fx/sub-ctx context
-                                 region-svg-hiccup))
+                                 region-svg-hiccup)
+                     {:label-top-right "Bottom Pattern"
+                      :label-attribs   {:fill "#aa8800"}})
       (spitsvgstream "first-pattern.svg")))
 #_
 (-> @state/*selections
@@ -1139,17 +1141,6 @@
                        (fx/sub-ctx state/sv-weight 1))
           [x-coord
            y-coord] centroid-b]
-      (println (str "\nSecond Pattern Centroid: \n"
-                    centroid-b
-                    "\n"
-                    "\nWeight 1: "
-                    sval-one
-                    "\nWeight 2: "
-                    sval-two
-                    "\nCoords: "
-                    x-coord
-                    "  "
-                    y-coord))
       (fx/sub-ctx context
                   singular-vector-mixture
                   x-coord
@@ -1160,7 +1151,6 @@
 (-> @state/*selections
     (fx/sub-ctx state/second-pattern))
 
-
 (defn
   second-pattern-svg
   [context]
@@ -1169,7 +1159,9 @@
                               (-> context
                                   (fx/sub-ctx second-pattern)))
       (plot/grid-map (fx/sub-ctx context
-                                 region-svg-hiccup))
+                                 region-svg-hiccup)
+                     {:label-top-right "Top Pattern"
+                      :label-attribs   {:fill "#00aa88"}})
       (spitsvgstream "second-pattern.svg")))
 #_
 (-> @state/*selections
