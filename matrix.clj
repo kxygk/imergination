@@ -644,8 +644,9 @@
   caluclate it's variance
   ..
   Assumes a mean of zero"
-  [somematrix]
-  (->> somematrix
+  [noisematrix]
+  (->> noisematrix
+       :matrix
        ncore/cols
        (mapv vecvar)))
 
