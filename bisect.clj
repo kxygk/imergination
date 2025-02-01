@@ -135,24 +135,43 @@
   above-angle?
   [point
    angle]
-  (let [line-angle (mod angle
-                        (* 1.0
-                           PI))
-        point-angle (-> point
-                        to-polar
-                        :angle)]
-    (and (> point-angle
-            (mod line-angle
-                 (* 2.0
-                    PI)))
-         (< point-angle
-            (mod (+ line-angle
-                    PI)
-                 (* 2.0
-                    PI))))))
+  (let [TWOPI         (* 2.0
+                         PI)
+        divisor-angle (mod angle
+                           PI)
+        point-angle   (-> point
+                          to-polar
+                          :angle
+                          (mod TWOPI))
+        delta-angle   (mod (- point-angle
+                              divisor-angle)
+                           TWOPI)]
+    (if (> divisor-angle
+           (/ PI
+              2.0))
+      (if (< delta-angle
+             PI)
+        false
+        true)
+      (if (< delta-angle
+             PI)
+        true
+        false))))
 #_
 (above-angle? [1.2, 1.6]
-              3.2)
+              3.1)
+;; => true
+
+#_
+(let [angle 2.8157669920508726
+      data  [[-0.024578662253719318, 0.05558278260624202]
+             [-0.014193761143782346, 0.005703712447101661]
+             [-0.16131258565448184,  0.2633602438965861]
+             [-0.031774789528481416, -0.005571887118227592]
+             [-0.07212716828092831, -0.004997627405708711]]]
+  (->> data
+       (mapv #(above-angle? %
+                            angle))))
 
 (defn-
   points-along-angle
@@ -170,8 +189,14 @@
 (-> [[2.2,  1.5]
      [1.1, -2.4]
      [-1.2, 1.6]
-     [-0.5, -2.7]]
-    (points-along-angle 0.0))
+     [-0.5, -2.7]
+     [-0.5, 2.7]]
+    (points-along-angle PI))
+;; => [[2.2 1.5 {:above? true}]
+;;     [1.1 -2.4 {:above? false}]
+;;     [-1.2 1.6 {:above? true}]
+;;     [-0.5 -2.7 {:above? false}]
+;;     [-0.5 2.7 {:above? true}]]
 
 (defn-
   angle-dichotomies
@@ -434,8 +459,7 @@
   min-var
   "return a map with
   {:angle      that-splits-the-plane-to-minimize-variance
-   :points-a   vector-of-points-in-one-half
-   :points-b   vector-of-points-in-other-half
+   :points   vector-of-point with a `:classified` key
    :centroid-a centroid-of-one-half
    :centroid-b centroid-of-the-other-half}"
   [points]
@@ -507,4 +531,37 @@
              thi.ng.geom.viz.core/svg-plot2d-cartesian
              quickthing/svg-wrap
              quickthing/svg2xml)
-         (spit "out/test-dots.svg"))))
+         (spit "out/test-dots.svg"))
+    (min-var data)))
+;; => {:angle 3.157817958919284,
+;;     :points
+;;     [[-2.45 1.55 {:above? true}]
+;;      [-2.33 1.25 {:above? true}]
+;;      [-2.05 1.63 {:above? true}]
+;;      [-2.88 1.32 {:above? true}]
+;;      [-2.22 -1.52 {:above? false}]
+;;      [-2.14 -1.24 {:above? false}]
+;;      [-2.06 -1.66 {:above? false}]
+;;      [-2.79 -1.39 {:above? false}]],
+;;     :centroid-a [-0.8604498292678083 0.509535171811524],
+;;     :centroid-b [-0.8457724626884987 -0.5335437576786294]}
+
+
+
+
+(let [angle 2.8157669920508726
+      data  [[-0.024578662253719318, 0.05558278260624202]
+             [-0.014193761143782346, 0.005703712447101661]
+             [-0.16131258565448184,  0.2633602438965861]
+             [-0.031774789528481416, -0.005571887118227592]
+             [-0.07212716828092831, -0.004997627405708711]]]
+      (min-var data))
+;; => {:angle 2.985133363250391,
+;;     :points
+;;     [[-0.024578662253719318 0.05558278260624202 {:above? false}]
+;;      [-0.014193761143782346 0.005703712447101661 {:above? false}]
+;;      [-0.16131258565448184 0.2633602438965861 {:above? false}]
+;;      [-0.031774789528481416 -0.005571887118227592 {:above? true}]
+;;      [-0.07212716828092831 -0.004997627405708711 {:above? true}]],
+;;     :centroid-a [-0.9948657395406916 -0.10120355867336382],
+;;     :centroid-b [-0.5246724638803938 0.8513041792718258]}
