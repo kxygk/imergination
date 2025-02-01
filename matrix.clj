@@ -652,10 +652,13 @@
 (defn
   from-vecofvecs
   "Take a vector of vector of values and turn it into a matrix"
-  [vecofvecs]
-  (neand/dge (-> vecofvecs
-                 first
-                 count)
-             (-> vecofvecs
-                 count)
-             vecofvecs))
+  [data-matrix-for-meta-data
+   vecofvecs]
+  (-> data-matrix-for-meta-data
+      (assoc :matrix
+             (neand/dge (-> vecofvecs
+                            first
+                            count)
+                        (-> vecofvecs
+                            count)
+                        vecofvecs))))

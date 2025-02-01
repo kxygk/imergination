@@ -346,7 +346,7 @@
    :children  [{:fx/type     svg
                 :v-box/hgrow :always
                 :svg-hiccup  (fx/sub-ctx context
-                                         state/first-pattern-svg)
+                                         state/top-pattern-svg)
                 :scale-x     (fx/sub-ctx context
                                          state/region-to-display-scale-x)
                 :scale-y     (fx/sub-ctx context
@@ -362,7 +362,7 @@
    :children  [{:fx/type     svg
                 :v-box/hgrow :always
                 :svg-hiccup  (fx/sub-ctx context
-                                         state/second-pattern-svg)
+                                         state/bottom-pattern-svg)
                 :scale-x     (fx/sub-ctx context
                                          state/region-to-display-scale-x)
                 :scale-y     (fx/sub-ctx context

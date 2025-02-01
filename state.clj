@@ -1104,7 +1104,7 @@
 
 
 (defn
-  first-pattern
+  top-pattern
   [context]
   (let [{:keys [centroid-a]} (fx/sub-ctx context
                                          state/sv-bisection)]
@@ -1123,26 +1123,26 @@
       mixture)))) ;; TODO: Normalize? I think..
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/first-pattern))
+    (fx/sub-ctx state/top-pattern))
 
 (defn
-  first-pattern-svg
+  top-pattern-svg
   [context]
   (-> (geogrid4seq/build-grid (-> context
                                   (fx/sub-ctx region-geogrid-params))
                               (-> context
-                                  (fx/sub-ctx first-pattern)))
+                                  (fx/sub-ctx top-pattern)))
       (plot/grid-map (fx/sub-ctx context
                                  region-svg-hiccup)
-                     {:label-top-right "Bottom Pattern"
-                      :label-attribs   {:fill "#aa8800"}})
-      (spitsvgstream "first-pattern.svg")))
+                     {:label-top-right "Top Pattern"
+                      :label-attribs   {:fill "#00aa88"}})
+      (spitsvgstream "top-pattern.svg")))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/first-pattern-svg))
+    (fx/sub-ctx state/top-pattern-svg))
 
 (defn
-  first-pattern-weighted-noise
+  top-pattern-weighted-noise
   "Weight the remaining noise by the first pattern"
   [context
    index]
@@ -1152,23 +1152,23 @@
       :data-array
       (#(mapv *
              %
-             (fx/sub-ctx context first-pattern)))))
+             (fx/sub-ctx context top-pattern)))))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/first-pattern-weighted-noise 6))
+    (fx/sub-ctx state/top-pattern-weighted-noise 6))
 
 (defn
-  first-pattern-weighted-noise-svg
+  top-pattern-weighted-noise-svg
   [context
    index]
   (-> (geogrid4seq/build-grid (-> context
                                   (fx/sub-ctx region-geogrid-params))
                               (-> context
-                                  (fx/sub-ctx first-pattern-weighted-noise
+                                  (fx/sub-ctx top-pattern-weighted-noise
                                               index)))
       (plot/grid-map (fx/sub-ctx context
                                  region-svg-hiccup))
-      (spitsvgstream (str "first-pattern-weighted-noise-"
+      (spitsvgstream (str "top-pattern-weighted-noise-"
                           index
                           ".svg"))))
 #_
@@ -1179,7 +1179,7 @@
     (state/noise-svg 6))
 #_
 (-> @state/*selections
-    (state/first-pattern-weighted-noise-svg 6))
+    (state/top-pattern-weighted-noise-svg 6))
 #_
 (-> @state/*selections
     (state/datafile-svg 31))
@@ -1188,10 +1188,10 @@
     (state/noise-svg 31))
 #_
 (-> @state/*selections
-    (state/first-pattern-weighted-noise-svg 31))
+    (state/top-pattern-weighted-noise-svg 31))
 
 (defn
-  second-pattern
+  bottom-pattern
   [context]
   (let [{:keys [centroid-b]} (fx/sub-ctx context
                                          state/sv-bisection)]
@@ -1209,26 +1209,26 @@
                   sval-two))))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/second-pattern))
+    (fx/sub-ctx state/bottom-pattern))
 
 (defn
-  second-pattern-svg
+  bottom-pattern-svg
   [context]
   (-> (geogrid4seq/build-grid (-> context
                                   (fx/sub-ctx region-geogrid-params))
                               (-> context
-                                  (fx/sub-ctx second-pattern)))
+                                  (fx/sub-ctx bottom-pattern)))
       (plot/grid-map (fx/sub-ctx context
                                  region-svg-hiccup)
-                     {:label-top-right "Top Pattern"
-                      :label-attribs   {:fill "#00aa88"}})
-      (spitsvgstream "second-pattern.svg")))
+                     {:label-top-right "Bottom Pattern"
+                      :label-attribs   {:fill "#aa8800"}})
+      (spitsvgstream "bottom-pattern.svg")))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/second-pattern-svg))
+    (fx/sub-ctx state/bottom-pattern-svg))
 
 (defn
-  second-pattern-weighted-noise
+  bottom-pattern-weighted-noise
   "Weight the remaining noise by the first pattern"
   [context
    index]
@@ -1239,23 +1239,23 @@
       (#(mapv *
              %
              (fx/sub-ctx context
-                         second-pattern)))))
+                         bottom-pattern)))))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/second-pattern-weighted-noise 6))
+    (fx/sub-ctx state/bottom-pattern-weighted-noise 6))
 
 (defn
-  second-pattern-weighted-noise-svg
+  bottom-pattern-weighted-noise-svg
   [context
    index]
   (-> (geogrid4seq/build-grid (-> context
                                   (fx/sub-ctx region-geogrid-params))
                               (-> context
-                                  (fx/sub-ctx second-pattern-weighted-noise
+                                  (fx/sub-ctx bottom-pattern-weighted-noise
                                               index)))
       (plot/grid-map (fx/sub-ctx context
                                  region-svg-hiccup))
-      (spitsvgstream (str "second-pattern-weighted-noise-"
+      (spitsvgstream (str "bottom-pattern-weighted-noise-"
                           index
                           ".svg"))))
 #_
@@ -1266,7 +1266,7 @@
     (state/noise-svg 10))
 #_
 (-> @state/*selections
-    (state/second-pattern-weighted-noise-svg 10))
+    (state/bottom-pattern-weighted-noise-svg 10))
 #_
 (-> @state/*selections
     (state/datafile-svg 11))
@@ -1275,7 +1275,7 @@
     (state/noise-svg 11))
 #_
 (-> @state/*selections
-    (state/second-pattern-weighted-noise-svg 11))
+    (state/bottom-pattern-weighted-noise-svg 11))
 
 (defn
   pattern-proj
@@ -1303,7 +1303,7 @@
 (defn
   binary-index-vector
   "A vector of true/false values.
-  Indicating the given data index was labeled pattern1 or pattern2"
+  Indicating the given data index was labeled `above` or `below`"
   [context]
   (->> (fx/sub-ctx context
                    pattern-proj)
@@ -1322,32 +1322,34 @@
   As it can not skew the climate index in those areas
   NOTE: This could probably be rewritten in terms of matrix operations if it's slow"
   [context]
-  (let [binary-classifications  (fx/sub-ctx context
-                                            binary-index-vector)]
+  (let [binary-classifications (fx/sub-ctx context
+                                           binary-index-vector)]
     (->> binary-classifications
          (map-indexed (fn [index
                            is-top-pattern]
                         (if is-top-pattern
-                          (second-pattern-weighted-noise context
+                          (bottom-pattern-weighted-noise context
                                                          index)
-                          (first-pattern-weighted-noise context
-                                                        index))))
-         (matrix/from-vecofvecs))))
-#_
-(->> @state/*selections
-     climate-noise-2d-normalized)
-;;Validating the matric is built correctly row by row
+                          (top-pattern-weighted-noise context
+                                                      index))))
+         (matrix/from-vecofvecs (fx/sub-ctx context
+                                            region-matrix)))))
 #_
 (->> @state/*selections
      climate-noise-matrix-2d-normalized)
-;; => #RealGEMatrix[double, mxn:2840x119, layout:column]
+;;Validating the matric is built correctly row by row (on `:krabi-root2`)
+;; => {:matrix #RealGEMatrix[double, mxn:2840x119, layout:column]
 ;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
 ;;       →    2.34E+4 -9.23E+4   ⁙    -5.83E+41.69E+4         
 ;;       →    1.81E+4 -9.04E+4   ⁙    -4.47E+43.57E+4         
 ;;       →       ⁙       ⁙       ⁙       ⁙       ⁙            
 ;;       →    -2.83E+47.42E+4    ⁙    1.75E+4 -2.40E+4        
 ;;       →    -1.17E+41.46E+4    ⁙    -1.20E+4-6.52E+3        
-;;       ┗                                               ┛
+;;       ┗                                               ┛    
+;;    ,
+;;     :dimension [40 71],
+;;     :position {:eas 277.0, :sou 76.9},
+;;     :resolution [0.1 0.1]}
 ;; We repeat the projections/normalization manually
 #_
 (-> @state/*selections
@@ -1358,12 +1360,12 @@
 #_
 (take 2
       (-> @state/*selections
-          (first-pattern-weighted-noise 0)))
+          (top-pattern-weighted-noise 0)))
 ;; => (23429.16540445495 18104.86334445968)
 #_
 (take-last 2
-      (-> @state/*selections
-          (first-pattern-weighted-noise 0)))
+           (-> @state/*selections
+               (top-pattern-weighted-noise 0)))
 ;; => (-28273.311179534514 -11668.173447261712)
 
 (defn
