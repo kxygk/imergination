@@ -475,6 +475,17 @@
                                      state/region-to-display-scale-y)}]})
 
 (defn
+  noise-index
+  [{:keys [fx/context]}]
+  {:fx/type     svg
+   :v-box/hgrow :always
+   :svg-hiccup  (-> context
+                    (fx/sub-ctx state/climate-noise-var-svg))
+   :scale-x     1.0
+   :scale-y     1.0})
+
+
+(defn
   main-vertical-display
   "Tha main vertical window"
   [{:keys [fx/context]}]
@@ -547,6 +558,11 @@
                                     {:fx/type          normalizednoisepreview
                                      :grid-pane/row    10
                                      :grid-pane/column 1}
+                                    {:fx/type               noise-index
+                                     :grid-pane/row         11
+                                     :grid-pane/row-span    1
+                                     :grid-pane/column      0
+                                     :grid-pane/column-span 2}
                                     #_#_
                                     {:fx/type          svg
                                      :grid-pane/row    9
