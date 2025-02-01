@@ -1328,10 +1328,10 @@
          (map-indexed (fn [index
                            is-top-pattern]
                         (if is-top-pattern
-                          (bottom-pattern-weighted-noise context
-                                                         index)
                           (top-pattern-weighted-noise context
-                                                      index))))
+                                                      index)
+                          (bottom-pattern-weighted-noise context
+                                                         index))))
          (matrix/from-vecofvecs (fx/sub-ctx context
                                             region-matrix)))))
 #_
