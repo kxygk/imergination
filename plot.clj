@@ -363,11 +363,11 @@
                        [(quickthing/hist index-a
                                          {:attribs {;;:opacity "0.5"
                                                     :stroke-width 10 #_0.4
-                                                    :stroke       "#aa8800"}})
+                                                    :stroke       "#00aa88"}})
                         (quickthing/hist index-b
                                          {:attribs {;;:opacity "0.5"
                                                     :stroke-width 10 #_0.4
-                                                    :stroke       "#00aa88"}})]))
+                                                    :stroke       "#aa8800"}})]))
           viz/svg-plot2d-cartesian
           (quickthing/svg-wrap [width
                                 height]
