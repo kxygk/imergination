@@ -61,7 +61,8 @@
                             :mouse-click       nil
                             :datafile-idxs     [0]
                             :sv-selected-idxs [0]
-                            :noise-selected-idxs [0]}
+                            :noise-selected-idxs [0]
+                            :normalized-noise-selected-idxs [0]}
                            #(cache/lru-cache-factory % :threshold 1000))))
 
 (defn
@@ -782,6 +783,29 @@
 (fx/sub-ctx @state/*selections
             first-noise-selected-idx)
 
+(defn
+  normalized-noise-selected-idxs
+  "Indeces of the data that's been selected"
+  [context]
+  (fx/sub-val context
+              :normalized-noise-selected-idxs))
+#_
+(fx/sub-ctx @state/*selections
+            normalized-noise-selected-idxs)
+
+(defn
+  first-normalized-noise-selected-idx
+  "Get the first selected data index
+  Which in effect meaning the ~earliest~ in the list
+  Or the lowest value"
+  [context]
+  (first (fx/sub-ctx context
+                     normalized-noise-selected-idxs)))
+#_
+(fx/sub-ctx @state/*selections
+            first-normalized-noise-selected-idx)
+
+
 (defn-
   datafile-geogrid
   [context
@@ -1367,6 +1391,39 @@
            (-> @state/*selections
                (top-pattern-weighted-noise 0)))
 ;; => (-28273.311179534514 -11668.173447261712)
+
+(defn
+  climate-noise-svg
+  "Get the noise background of one data point"
+  [context
+   id]
+  (-> (matrix/extract-grid (fx/sub-ctx context
+                                       climate-noise-matrix-2d-normalized)
+                           id)
+      (plot/grid-map (fx/sub-ctx context
+                                 region-svg-hiccup))
+      (spitsvgstream (str "climate-noise-"
+                          id
+                          "file.svg"))))
+#_
+(-> @state/*selections
+    (state/climate-noise-svg 31))
+
+(defn
+  first-normalized-noise-selected-svg
+  ""
+  [context]
+  (let [first-selections-idx (fx/sub-ctx context
+                                         first-normalized-noise-selected-idx)]
+    (if (nil? first-selections-idx)
+      (fx/sub-ctx context
+                  contour-map-svg)
+      (fx/sub-ctx context
+                  climate-noise-svg
+                  first-selections-idx))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/first-normalized-noise-selected-svg))
 
 (defn
   climate-noise-vars
