@@ -57,7 +57,9 @@
   The world map goes EAS 0-360 and SOU 0-180
   TODO: Make something a bit more generic.."
   [world-map
-   region]
+   region
+   & [{:keys [display-width]
+       :or   {display-width 360}}]]
   (let [{:keys [norwes
                 soueas]} region
         x-start          (:eas norwes)
@@ -75,7 +77,8 @@
                            {:fill         "red"
                             :fill-opacity "0.25"}))
       [360.0
-       180.0])))
+       180.0]
+      display-width)))
 
 (defn
   map-label
@@ -120,11 +123,13 @@
    & [{:keys [pois
               label-top-right
               label-attribs
+              display-width
               cycle-frac
               axis-visible?]
        :or   {pois            []
               label-top-right ""
               label-attribs   nil
+              display-width   360
               cycle-frac      nil
               axis-visible?   false}}]]
   (let [region             (geogrid/covered-region input-grid)
@@ -153,7 +158,7 @@
                               (merge {:fill (quickthing/color-cycle cycle-frac)}
                                      label-attribs)))
         (quickthing/svg-wrap (dimension region)
-                             360))))
+                             display-width))))
 
 (defn
   sv-plot
@@ -250,13 +255,13 @@
                     #(into %
                            (quickthing/hist first-two
                                             {:attribs {:stroke "red"}})))
-                      (update :data
-                              #(into %
-                                     (quickthing/hist the-rest)))
-                      viz/svg-plot2d-cartesian
-                      (quickthing/svg-wrap [width
-                                            height]
-                                           width))))))
+            (update :data
+                    #(into %
+                           (quickthing/hist the-rest)))
+            viz/svg-plot2d-cartesian
+            (quickthing/svg-wrap [width
+                                  height]
+                                 width))))))
 #_
 (let [width   1000
       height  500
@@ -292,11 +297,12 @@
                     (count proj)
                     cycle-length))
     (let [axis (-> (quickthing/primary-axis indexed
-                                            {:width   width
-                                             :height  height
-                                             :x-ticks [1.0]
-                                             :y-ticks [1.0]
-                                             :color   "#0008"})
+                                            {:width       width
+                                             :height      height
+                                             :x-ticks     [1.0]
+                                             :y-ticks     [1.0]
+                                             :margin-frac 0.07
+                                             :color       "#0008"})
                    (assoc-in [:x-axis
                               :label]
                              (thi.ng.geom.viz.core/default-svg-label #(+ cycle-start-value
@@ -338,11 +344,12 @@
                              proj-b)]
     (let [axis (-> (quickthing/primary-axis (into index-a
                                                   index-b)
-                                            {:width   width
-                                             :height  height
-                                             :x-ticks [1.0]
-                                             :y-ticks [1.0]
-                                             :color   "#0008"})
+                                            {:width       width
+                                             :height      height
+                                             :x-ticks     [1.0]
+                                             :y-ticks     [1.0]
+                                             :margin-frac 0.07
+                                             :color       "#0008"})
                    (assoc-in [:x-axis
                               :label]
                              (thi.ng.geom.viz.core/default-svg-label #(+ cycle-start-value
@@ -361,12 +368,10 @@
                  (into []
                        cat
                        [(quickthing/hist index-a
-                                         {:attribs {;;:opacity "0.5"
-                                                    :stroke-width 10 #_0.4
+                                         {:attribs {:stroke-width 10
                                                     :stroke       "#00aa88"}})
                         (quickthing/hist index-b
-                                         {:attribs {;;:opacity "0.5"
-                                                    :stroke-width 10 #_0.4
+                                         {:attribs {:stroke-width 10
                                                     :stroke       "#aa8800"}})]))
           viz/svg-plot2d-cartesian
           (quickthing/svg-wrap [width
@@ -586,7 +591,7 @@
                                                                  seq
                                                                  vec)]
                                              (let [bin-size (inc (clojure.math/ceil (/ (clojure.math/log (count rain-vector))
-                                                                                        (clojure.math/log 2))))] ;; Sturges' rule
+                                                                                       (clojure.math/log 2))))] ;; Sturges' rule
                                                (->> (update-vals (->> (uncomplicate.neanderthal.core/col data-matrix
                                                                                                          time-index)
                                                                       seq

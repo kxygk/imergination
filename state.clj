@@ -19,10 +19,10 @@
 
 (def
   *selections
-  (atom (fx/create-context {:window-width      1080.0
-                            :row-height        360
-                            :shoreline-filestr "./data/shoreline-coarse.json"
-                            :contour-filestr   nil
+  (atom (fx/create-context {:window-width                   1080.0
+                            :row-height                     360
+                            :shoreline-filestr              "./data/shoreline-coarse.json"
+                            :contour-filestr                nil
                             :rain-dirstr
                             #_
                             "/home/kxygk/Projects/raingrid/out/"
@@ -30,11 +30,11 @@
                             "/home/kxygk/Data/imerg/daily/late/"
                             ;;#_
                             "/home/kxygk/Data/imerg/monthly/late/"
-                            :elevation-filestr "./data/World_e-Atlas-UCSD_SRTM30-plus_v8.tif"
-                            :cycle-length      12
-                            :cycle-phase       0
-                            :eas-res           0.1
-                            :sou-res           0.1
+                            :elevation-filestr              "./data/World_e-Atlas-UCSD_SRTM30-plus_v8.tif"
+                            :cycle-length                   12
+                            :cycle-phase                    0
+                            :eas-res                        0.1
+                            :sou-res                        0.1
                             ;; TODO Debug `krabi-region`. Axis labels float off from the map
                             :region-key
                             ;;;;;;;;;;;;;;;;;;;;;;;
@@ -58,10 +58,10 @@
                             #_:himalaya
                             #_:rift-valley-small
                             ;;;;;;;;;;;;;;;;;;;;;;;
-                            :mouse-click       nil
-                            :datafile-idxs     [0]
-                            :sv-selected-idxs [0]
-                            :noise-selected-idxs [0]
+                            :mouse-click                    nil
+                            :datafile-idxs                  [0]
+                            :sv-selected-idxs               [0]
+                            :noise-selected-idxs            [0]
                             :normalized-noise-selected-idxs [0]}
                            #(cache/lru-cache-factory % :threshold 1000))))
 
@@ -101,8 +101,8 @@
   "Other data attached to the region"
   [context]
   (get locations/regions
-                (fx/sub-ctx context
-                            region-key)))#_
+       (fx/sub-ctx context
+                   region-key)))#_
 (-> @state/*selections
     (fx/sub-ctx state/region-meta))
 
@@ -170,10 +170,10 @@
   [cycle-length
    cycle-phase
    idx]
-    (/ (mod (+ idx
-               cycle-phase)
-            cycle-length)
-       cycle-length))
+  (/ (mod (+ idx
+             cycle-phase)
+          cycle-length)
+     cycle-length))
 
 (defn
   window-width
@@ -184,9 +184,12 @@
 (defn
   display-width
   [context]
-  (* 0.9
+  (* 1
      (fx/sub-ctx context
                  window-width)))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/display-width))
 
 (defn
   region-xy-ratio
@@ -216,6 +219,9 @@
       half-window
       (* image-ratio
          max-image-height))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/region-display-width))
 
 (defn region-display-height
   [context]
@@ -223,6 +229,9 @@
                  region-display-width)
      (fx/sub-ctx context
                  region-xy-ratio)))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/region-display-height))
 
 (defn
   region-to-display-scale-x
@@ -270,7 +279,9 @@
                                                         shoreline-filestr)
                                             [])
                         (-> context
-                            (fx/sub-ctx region))))
+                            (fx/sub-ctx region))
+                        {:display-width (fx/sub-ctx context
+                                                    display-width)}))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/world-svg-hiccup))
@@ -464,8 +475,8 @@
   (let [num-of-svs (-> context
                        (fx/sub-ctx datafile-strs)
                        count)]
-    (let [svs (-> num-of-svs
-                  range)
+    (let [svs        (-> num-of-svs
+                         range)
           max-digits (-> num-of-svs
                          clojure.math/log10
                          clojure.math/ceil
@@ -496,8 +507,8 @@
   (let [num-of-svs (-> context
                        (fx/sub-ctx datafile-strs)
                        count)]
-    (let [svs (-> num-of-svs
-                  range)
+    (let [svs        (-> num-of-svs
+                         range)
           max-digits (-> num-of-svs
                          clojure.math/log10
                          clojure.math/ceil
@@ -523,16 +534,16 @@
            first)
        vector
        (map #(str (fx/sub-ctx context
-                               data-dirstr)
-                   %))
+                              data-dirstr)
+                  %))
        (map #(geogrid4image/read-file %
-                                       (fx/sub-ctx context
-                                                   eas-res)
-                                       (fx/sub-ctx context
-                                                   sou-res)))
+                                      (fx/sub-ctx context
+                                                  eas-res)
+                                      (fx/sub-ctx context
+                                                  sou-res)))
        (map #(geogrid/subregion %
-                                 (fx/sub-ctx context
-                                             region)))
+                                (fx/sub-ctx context
+                                            region)))
        first
        geogrid/params))
 #_
@@ -672,10 +683,12 @@
                                        noise-matrix-2d)
                            id)
       (plot/grid-map (fx/sub-ctx context
-                                 region-svg-hiccup))
+                                 region-svg-hiccup)
+                     {:display-width (fx/sub-ctx context
+                                                 region-display-width)})
       (spitsvgstream (str "noise-"
-                       id
-                       "file.svg"))))
+                          id
+                          "file.svg"))))
 #_
 (-> @state/*selections
     (state/noise-svg 31))
@@ -831,7 +844,9 @@
                   datafile-geogrid
                   id)
       (plot/grid-map (fx/sub-ctx context
-                                 region-svg-hiccup))
+                                 region-svg-hiccup)
+                     {:display-width (fx/sub-ctx context
+                                                 region-display-width)})
       (spitsvgstream (str "data-file-"
                           id
                           ".svg"))))
@@ -879,7 +894,7 @@
       second))
 #_
 (state/sv-weight @state/*selections
-                       1)
+                 1)
 ;; => 9247.099897276306
 
 (defn
@@ -940,10 +955,12 @@
                     singular-vector-geogrid
                     sv-index)
         (plot/grid-map (fx/sub-ctx context
-                                   region-svg-hiccup))
+                                   region-svg-hiccup)
+                       {:display-width (fx/sub-ctx context
+                                                   region-display-width)})
         (spitsvgstream (str "sv-"
-                         sv-index
-                         ".svg")))))
+                            sv-index
+                            ".svg")))))
 
 (defn
   first-sv-svg
@@ -1017,11 +1034,11 @@
                 "\nsval-two"
                 sval-two))
   (let [svec1 (fx/sub-ctx context
-                        singular-vector
-                        0)
+                          singular-vector
+                          0)
         svec2 (fx/sub-ctx context
-                        singular-vector
-                        1)]
+                          singular-vector
+                          1)]
     (let [mixture (mapv (fn [svec1-point
                              svec2-point]
                           (/ (+ (* svec1-point
@@ -1048,8 +1065,8 @@
                                       singular-vector-mixture
                                       sv-one
                                       sv-two
-   sval-one
-   sval-two)))
+                                      sval-one
+                                      sval-two)))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/singular-vector-mixture-geogrid
@@ -1072,7 +1089,9 @@
                   sval-one
                   sval-two)
       (plot/grid-map (fx/sub-ctx context
-                                 region-svg-hiccup))))
+                                 region-svg-hiccup)
+                     {:display-width (fx/sub-ctx context
+                                                 region-display-width)})))
 #_
 (spit (str "out/"
            (-> @state/*selections
@@ -1094,14 +1113,14 @@
                                             cycle-length)
                                 (fx/sub-ctx context
                                             cycle-phase))]
-  (->> (-> context
-           (fx/sub-ctx region-matrix)
-           matrix/svd
-           matrix/svd-to-2d-sv-space)
-       (map-indexed (fn add-cycle-frac
-                      [idx point]
-                      (conj point
-                            {:cycle-frac (frac-generator idx)}))))))
+    (->> (-> context
+             (fx/sub-ctx region-matrix)
+             matrix/svd
+             matrix/svd-to-2d-sv-space)
+         (map-indexed (fn add-cycle-frac
+                        [idx point]
+                        (conj point
+                              {:cycle-frac (frac-generator idx)}))))))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/sv-proj))
@@ -1132,10 +1151,10 @@
   [context]
   (let [{:keys [centroid-a]} (fx/sub-ctx context
                                          state/sv-bisection)]
-    (let [sval-one (-> context
-                          (fx/sub-ctx state/sv-weight 0))
-          sval-two (-> context
-                          (fx/sub-ctx state/sv-weight 1))
+    (let [sval-one  (-> context
+                        (fx/sub-ctx state/sv-weight 0))
+          sval-two  (-> context
+                        (fx/sub-ctx state/sv-weight 1))
           [x-coord
            y-coord] centroid-a]
       (let [mixture (fx/sub-ctx context
@@ -1144,7 +1163,7 @@
                                 y-coord
                                 sval-one
                                 sval-two)]
-      mixture)))) ;; TODO: Normalize? I think..
+        mixture)))) ;; TODO: Normalize? I think..
 #_
 (-> @state/*selections
     (fx/sub-ctx state/top-pattern))
@@ -1159,7 +1178,9 @@
       (plot/grid-map (fx/sub-ctx context
                                  region-svg-hiccup)
                      {:label-top-right "Top Pattern"
-                      :label-attribs   {:fill "#00aa88"}})
+                      :label-attribs   {:fill "#00aa88"}
+                      :display-width   (fx/sub-ctx context
+                                                   region-display-width)})
       (spitsvgstream "top-pattern.svg")))
 #_
 (-> @state/*selections
@@ -1175,8 +1196,8 @@
       (matrix/extract-grid index)
       :data-array
       (#(mapv *
-             %
-             (fx/sub-ctx context top-pattern)))))
+              %
+              (fx/sub-ctx context top-pattern)))))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/top-pattern-weighted-noise 6))
@@ -1191,7 +1212,9 @@
                                   (fx/sub-ctx top-pattern-weighted-noise
                                               index)))
       (plot/grid-map (fx/sub-ctx context
-                                 region-svg-hiccup))
+                                 region-svg-hiccup)
+                     {:display-width (fx/sub-ctx context
+                                                 region-display-width)})
       (spitsvgstream (str "top-pattern-weighted-noise-"
                           index
                           ".svg"))))
@@ -1219,10 +1242,10 @@
   [context]
   (let [{:keys [centroid-b]} (fx/sub-ctx context
                                          state/sv-bisection)]
-    (let [sval-one (-> context
-                          (fx/sub-ctx state/sv-weight 0))
-          sval-two (-> context
-                       (fx/sub-ctx state/sv-weight 1))
+    (let [sval-one  (-> context
+                        (fx/sub-ctx state/sv-weight 0))
+          sval-two  (-> context
+                        (fx/sub-ctx state/sv-weight 1))
           [x-coord
            y-coord] centroid-b]
       (fx/sub-ctx context
@@ -1245,7 +1268,9 @@
       (plot/grid-map (fx/sub-ctx context
                                  region-svg-hiccup)
                      {:label-top-right "Bottom Pattern"
-                      :label-attribs   {:fill "#aa8800"}})
+                      :label-attribs   {:fill "#aa8800"}
+                      :display-width   (fx/sub-ctx context
+                                                   region-display-width)})
       (spitsvgstream "bottom-pattern.svg")))
 #_
 (-> @state/*selections
@@ -1261,9 +1286,9 @@
       (matrix/extract-grid index)
       :data-array
       (#(mapv *
-             %
-             (fx/sub-ctx context
-                         bottom-pattern)))))
+              %
+              (fx/sub-ctx context
+                          bottom-pattern)))))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/bottom-pattern-weighted-noise 6))
@@ -1278,7 +1303,9 @@
                                   (fx/sub-ctx bottom-pattern-weighted-noise
                                               index)))
       (plot/grid-map (fx/sub-ctx context
-                                 region-svg-hiccup))
+                                 region-svg-hiccup)
+                     {:display-width (fx/sub-ctx context
+                                                 region-display-width)})
       (spitsvgstream (str "bottom-pattern-weighted-noise-"
                           index
                           ".svg"))))
@@ -1316,7 +1343,7 @@
                                                      centroid-b
                                                      points)]
       projections)))
-    #_
+#_
 (-> @state/*selections
     (fx/sub-ctx state/pattern-proj)
     first)
@@ -1401,7 +1428,9 @@
                                        climate-noise-matrix-2d-normalized)
                            id)
       (plot/grid-map (fx/sub-ctx context
-                                 region-svg-hiccup))
+                                 region-svg-hiccup)
+                     {:display-width (fx/sub-ctx context
+                                                 region-display-width)})
       (spitsvgstream (str "climate-noise-"
                           id
                           "file.svg"))))
@@ -1464,33 +1493,33 @@
   [context]
   (let [projections (fx/sub-ctx context
                                 pattern-proj)
-        proj-a (->> projections
-                    (mapv (fn [proj]
-                            (if (-> proj
-                                    (get 2)
-                                    :above?
-                                    #_not)
-                              (first proj)
-                              0)))
-                    (mapv (fn [proj]
-                            (if (pos? proj)
-                              proj
-                              0.0))))
-        proj-b (->> projections
-                    (mapv (fn [proj]
-                            (if (-> proj
-                                    (get 2)
-                                    :above?
-                                    not)
-                              (second proj)
-                              0)))
-                    (mapv (fn [proj]
-                            (if (pos? proj)
-                              proj
-                              0.0))))]
+        proj-a      (->> projections
+                         (mapv (fn [proj]
+                                 (if (-> proj
+                                         (get 2)
+                                         :above?
+                                         #_not)
+                                   (first proj)
+                                   0)))
+                         (mapv (fn [proj]
+                                 (if (pos? proj)
+                                   proj
+                                   0.0))))
+        proj-b      (->> projections
+                         (mapv (fn [proj]
+                                 (if (-> proj
+                                         (get 2)
+                                         :above?
+                                         not)
+                                   (second proj)
+                                   0)))
+                         (mapv (fn [proj]
+                                 (if (pos? proj)
+                                   proj
+                                   0.0))))]
     [proj-a
      proj-b]))
-    #_
+#_
 (-> @state/*selections
     (fx/sub-ctx state/pattern-proj-partitioned))
 
@@ -1595,7 +1624,10 @@
                                                            region-svg-hiccup)
                                                {:label-top-right (str (inc idx))
                                                 :cycle-frac      (/ idx
-                                                                    12.0)})))
+                                                                    12.0)
+                                                #_#_
+                                                :display-width   (fx/sub-ctx context
+                                                                             region-display-width)})))
                  (into []))
             (plot/cyclic (clojure.math/ceil (clojure.math/pow cycle-length
                                                               0.5)))
@@ -1645,14 +1677,17 @@
                                                            region-svg-hiccup)
                                                {:label-top-right (get month-map
                                                                       (inc idx))
-                                                :label-attribs {:font-size 1.5}
+                                                :label-attribs   {:font-size 1.5}
                                                 :cycle-frac      (/ idx
-                                                                    12.0)})))
+                                                                    12.0)
+                                                :display-width   (/ (fx/sub-ctx context
+                                                                                region-display-width)
+                                                                    4)})))
                  (into []))
             plot/annual-12-month-ring
             (spitsvgstream (str "year"
-                             year-idx
-                             ".svg")))))))
+                                year-idx
+                                ".svg")))))))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/annual-cycle
@@ -1677,10 +1712,10 @@
 #_
 (geogrid4image/read-file (str "/home/kxygk/Projects/imergination/data/"
                               "World_e-Atlas-UCSD_SRTM30-plus_v8.tif")
-                          (fx/sub-ctx @state/*selections
-                                      eas-res)
-                          (fx/sub-ctx @state/*selections
-                                      sou-res))
+                         (fx/sub-ctx @state/*selections
+                                     eas-res)
+                         (fx/sub-ctx @state/*selections
+                                     sou-res))
 #_
 (.getType (fx/sub-ctx @state/*selections
-            elevation-geogrid))
+                      elevation-geogrid))

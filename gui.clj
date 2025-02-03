@@ -23,18 +23,11 @@
   This is addition Group that functions as a wrapper post-scaling
   This wrapped group is essential! Prevents spill out after scaling"
   [{:keys [fx/context
-           svg-hiccup
-           scale-x
-           scale-y]}]
-  {:fx/type  :group
-   :children [{:fx/type fx/ext-instance-factory
-               :create  (fn []
-                          (-> svg-hiccup
-                              quickthing/svg2xml
-                              svg2jfx/batik-load
-                              (svg2jfx/batik-scale
-                                scale-x
-                                scale-y)))}]})
+           svg]}]
+  {:fx/type :image-view
+   :image   (-> svg
+                quickthing/svg2xml
+                svg2jfx/jsvg-jxfimg)})
 
 (defn
   click-to-soueas
@@ -124,20 +117,15 @@
   - region limits"
   [{:keys [fx/context]}]
   {:fx/type           :v-box
+   #_#_
    :max-height        (/ (fx/sub-ctx context
                                      state/display-width)
                          2.0)
    :on-mouse-pressed  {:effect event-worldmap-mouse-press}
    :on-mouse-released {:effect event-worldmap-mouse-release}
-   :children          [{:fx/type    svg
-                        :svg-hiccup (fx/sub-ctx context
-                                                state/world-svg)
-                        :scale-x    (-> context
-                                        (fx/sub-ctx state/display-width)
-                                        (/ 360.0))
-                        :scale-y    (-> context
-                                        (fx/sub-ctx state/display-width)
-                                        (/ 360.0))}]})
+   :children          [{:fx/type svg
+                        :svg     (fx/sub-ctx context
+                                             state/world-svg)}]})
 
 (defn
   region
@@ -153,12 +141,8 @@
                 :v-box/vgrow :always
                 :children    [{:fx/type     svg
                                :v-box/hgrow :always
-                               :svg-hiccup  (fx/sub-ctx context
-                                                        state/region-svg)
-                               :scale-x     (fx/sub-ctx context
-                                                        state/region-to-display-scale-x)
-                               :scale-y     (fx/sub-ctx context
-                                                        state/region-to-display-scale-y)}]}]})
+                               :svg         (fx/sub-ctx context
+                                                        state/region-svg)}]}]})
 
 (defn
   datadir-list
@@ -184,17 +168,17 @@
                :cell-factory {:fx/cell-type :list-cell
                               :describe     (fn [path]
                                               {:text path})}
-               :items       (->> (fx/sub-ctx
-                                   context
-                                  state/datafile-strs)
-                                 (map-indexed (fn append-index
-                                                [index
-                                                 file-str]
-                                                (str "["
-                                                     index
-                                                     "]"
-                                                     file-str)))
-                                 vec)}}))
+               :items        (->> (fx/sub-ctx
+                                    context
+                                    state/datafile-strs)
+                                  (map-indexed (fn append-index
+                                                 [index
+                                                  file-str]
+                                                 (str "["
+                                                      index
+                                                      "]"
+                                                      file-str)))
+                                  vec)}}))
 
 (defn
   datadir
@@ -221,14 +205,9 @@
   [{:keys [fx/context]}]
   {:fx/type   :v-box
    :alignment :center
-   :children  [{:fx/type svg2jfx/xml
-                :svg     (-> (fx/sub-ctx context
-                                         state/first-datafile-svg)
-                             quickthing/svg2xml)
-                :scale-x (fx/sub-ctx context
-                                     state/region-to-display-scale-x)
-                :scale-y (fx/sub-ctx context
-                                     state/region-to-display-scale-y)}]})
+   :children  [{:fx/type svg
+                :svg     (fx/sub-ctx context
+                                     state/first-datafile-svg)}]})
 
 (defn
   svlist
@@ -251,8 +230,10 @@
                :cell-factory {:fx/cell-type :list-cell
                               :describe     (fn [path]
                                               {:text path})}
-               :items       (->> (fx/sub-ctx context
-                                             state/sv-strs))}}))
+               :max-height   (fx/sub-ctx context
+                                         state/region-display-height)
+               :items        (->> (fx/sub-ctx context
+                                              state/sv-strs))}}))
 
 (defn
   svpreview
@@ -260,14 +241,9 @@
   [{:keys [fx/context]}]
   {:fx/type   :v-box
    :alignment :center
-   :children  [{:fx/type svg2jfx/xml
-                :svg     (-> (fx/sub-ctx context
-                                         state/first-sv-selected-svg)
-                             quickthing/svg2xml)
-                :scale-x (fx/sub-ctx context
-                                     state/region-to-display-scale-x)
-                :scale-y (fx/sub-ctx context
-                                     state/region-to-display-scale-y)}]})
+   :children  [{:fx/type svg
+                :svg     (fx/sub-ctx context
+                                     state/first-sv-selected-svg)}]})
 
 (defn
   sv
@@ -293,13 +269,9 @@
                                :text    "Select"}]}
                {:fx/type     svg
                 :v-box/hgrow :always
-                :svg-hiccup  (fx/sub-ctx context
+                :svg         (fx/sub-ctx context
                                          state/singular-vector-svg
-                                         sv-num)
-                :scale-x     (fx/sub-ctx context
-                                         state/region-to-display-scale-x)
-                :scale-y     (fx/sub-ctx context
-                                         state/region-to-display-scale-y)}
+                                         sv-num)}
                #_{:fx/type     :label
                   :v-box/vgrow :always
                   :text        "Preview Map!!"}]})
@@ -313,12 +285,8 @@
    :alignment :top-center
    :children  [{:fx/type     svg
                 :v-box/hgrow :always
-                :svg-hiccup  (fx/sub-ctx context
-                                         state/first-sv-svg)
-                :scale-x     (fx/sub-ctx context
-                                         state/region-to-display-scale-x)
-                :scale-y     (fx/sub-ctx context
-                                         state/region-to-display-scale-y)}]})
+                :svg         (fx/sub-ctx context
+                                         state/first-sv-svg)}]})
 
 (defn
   sv-two
@@ -329,12 +297,8 @@
    :alignment :top-center
    :children  [{:fx/type     svg
                 :v-box/hgrow :always
-                :svg-hiccup  (fx/sub-ctx context
-                                         state/second-sv-svg)
-                :scale-x     (fx/sub-ctx context
-                                         state/region-to-display-scale-x)
-                :scale-y     (fx/sub-ctx context
-                                         state/region-to-display-scale-y)}]})
+                :svg         (fx/sub-ctx context
+                                         state/second-sv-svg)}]})
 
 (defn
   sv-mix-one
@@ -345,12 +309,8 @@
    :alignment :top-center
    :children  [{:fx/type     svg
                 :v-box/hgrow :always
-                :svg-hiccup  (fx/sub-ctx context
-                                         state/top-pattern-svg)
-                :scale-x     (fx/sub-ctx context
-                                         state/region-to-display-scale-x)
-                :scale-y     (fx/sub-ctx context
-                                         state/region-to-display-scale-y)}]})
+                :svg         (fx/sub-ctx context
+                                         state/top-pattern-svg)}]})
 
 (defn
   sv-mix-two
@@ -361,12 +321,8 @@
    :alignment :top-center
    :children  [{:fx/type     svg
                 :v-box/hgrow :always
-                :svg-hiccup  (fx/sub-ctx context
-                                         state/bottom-pattern-svg)
-                :scale-x     (fx/sub-ctx context
-                                         state/region-to-display-scale-x)
-                :scale-y     (fx/sub-ctx context
-                                         state/region-to-display-scale-y)}]})
+                :svg         (fx/sub-ctx context
+                                         state/bottom-pattern-svg)}]})
 
 (defn
   sv-projections
@@ -375,10 +331,8 @@
   [{:keys [fx/context]}]
   {:fx/type     svg
    :v-box/hgrow :always
-   :svg-hiccup  (-> context
-                    (fx/sub-ctx state/sv-proj-svg))
-   :scale-x     1.0
-   :scale-y     1.0})
+   :svg         (fx/sub-ctx context
+                            state/sv-proj-svg)})
 
 
 (defn
@@ -388,20 +342,16 @@
   [{:keys [fx/context]}]
   {:fx/type     svg
    :v-box/hgrow :always
-   :svg-hiccup  (-> context
-                    (fx/sub-ctx state/sv-weights-svg))
-   :scale-x     1.0
-   :scale-y     1.0})
+   :svg         (fx/sub-ctx context
+                            state/sv-weights-svg)})
 
 (defn
   climate-index
   [{:keys [fx/context]}]
   {:fx/type     svg
    :v-box/hgrow :always
-   :svg-hiccup  (-> context
-                    (fx/sub-ctx state/pattern-proj-svg))
-   :scale-x     1.0
-   :scale-y     1.0})
+   :svg         (fx/sub-ctx context
+                            state/pattern-proj-svg)})
 
 
 (defn
@@ -420,9 +370,11 @@
     {:fx/type fx.ext.list-view/with-selection-props
      :props   {:selection-mode              :multiple
                :on-selected-indices-changed select-file-effect}
-     :desc    {:fx/type      :list-view
-               :items       (->> (fx/sub-ctx context
-                                             state/datafile-strs))}}))
+     :desc    {:fx/type    :list-view
+               :max-height (fx/sub-ctx context
+                                       state/region-display-height)
+               :items      (->> (fx/sub-ctx context
+                                            state/datafile-strs))}}))
 
 (defn
   normalizednoisepreview
@@ -430,14 +382,9 @@
   [{:keys [fx/context]}]
   {:fx/type   :v-box
    :alignment :center
-   :children  [{:fx/type svg2jfx/xml
-                :svg     (-> (fx/sub-ctx context
-                                         state/first-normalized-noise-selected-svg)
-                             quickthing/svg2xml)
-                :scale-x (fx/sub-ctx context
-                                     state/region-to-display-scale-x)
-                :scale-y (fx/sub-ctx context
-                                     state/region-to-display-scale-y)}]})
+   :children  [{:fx/type svg
+                :svg     (fx/sub-ctx context
+                                     state/first-normalized-noise-selected-svg)}]})
 
 (defn
   normalizednoiselist
@@ -455,9 +402,11 @@
     {:fx/type fx.ext.list-view/with-selection-props
      :props   {:selection-mode              :multiple
                :on-selected-indices-changed select-file-effect}
-     :desc    {:fx/type      :list-view
-               :items       (->> (fx/sub-ctx context
-                                             state/datafile-strs))}}))
+     :desc    {:fx/type    :list-view
+               :max-height (fx/sub-ctx context
+                                       state/region-display-height)
+               :items      (->> (fx/sub-ctx context
+                                            state/datafile-strs))}}))
 
 (defn
   noisepreview
@@ -465,24 +414,17 @@
   [{:keys [fx/context]}]
   {:fx/type   :v-box
    :alignment :center
-   :children  [{:fx/type svg2jfx/xml
-                :svg     (-> (fx/sub-ctx context
-                                         state/first-noise-selected-svg)
-                             quickthing/svg2xml)
-                :scale-x (fx/sub-ctx context
-                                     state/region-to-display-scale-x)
-                :scale-y (fx/sub-ctx context
-                                     state/region-to-display-scale-y)}]})
+   :children  [{:fx/type svg
+                :svg     (fx/sub-ctx context
+                                     state/first-noise-selected-svg)}]})
 
 (defn
   noise-index
   [{:keys [fx/context]}]
   {:fx/type     svg
    :v-box/hgrow :always
-   :svg-hiccup  (-> context
-                    (fx/sub-ctx state/climate-noise-var-svg))
-   :scale-x     1.0
-   :scale-y     1.0})
+   :svg         (fx/sub-ctx context
+                            state/climate-noise-var-svg)})
 
 
 (defn
@@ -562,30 +504,7 @@
                                      :grid-pane/row         11
                                      :grid-pane/row-span    1
                                      :grid-pane/column      0
-                                     :grid-pane/column-span 2}
-                                    #_#_
-                                    {:fx/type          svg
-                                     :grid-pane/row    9
-                                     :grid-pane/column 0
-                                     :v-box/hgrow      :always
-                                     :svg-hiccup       (fx/sub-ctx context
-                                                                   state/noise-svg
-                                                                   3)
-                                     :scale-x          (fx/sub-ctx context
-                                                                   state/region-to-display-scale-x)
-                                     :scale-y          (fx/sub-ctx context
-                                                                   state/region-to-display-scale-y)}
-                                    {:fx/type          svg
-                                     :grid-pane/row    9
-                                     :grid-pane/column 1
-                                     :v-box/hgrow      :always
-                                     :svg-hiccup       (fx/sub-ctx context
-                                                                   state/noise-svg
-                                                                   8)
-                                     :scale-x          (fx/sub-ctx context
-                                                                   state/region-to-display-scale-x)
-                                     :scale-y          (fx/sub-ctx context
-                                                                   state/region-to-display-scale-y)}]}]})
+                                     :grid-pane/column-span 2}]}]})
 
 
 (defn

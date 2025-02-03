@@ -4,22 +4,24 @@
   (:require [cljfx.api            :as fx]
             [cljfx.composite      :as com]
             [thi.ng.geom.svg.core :as svgthing])
-  (:import #_[javafx.embed.swing JFXPanel]
-           com.kitfox.svg.SVGCache
-           [afester.javafx.svg SvgLoader]
-           [org.girod.javafx.svgimage
-            SVGImage
-            SVGLoader
-            LoaderParameters]))
+  (:import com.github.weisj.jsvg.parser.SVGLoader
+           java.net.URI
+           java.awt.image.BufferedImage
+           java.io.File
+           javax.imageio.ImageIO
+           com.github.weisj.jsvg.parser.LoaderContext
+           com.github.weisj.jsvg.parser.DocumentLimits
+           java.awt.Color
+           [javafx.embed.swing JFXPanel]
+           com.kitfox.svg.SVGCache))
 
-(set! *warn-on-reflection* true)
-
+#_
 (defn
   file
   [^String filestr]
   (->
     (java.io.File. filestr)
-    SVGLoader/load))
+    afester.javafx.svg.SVGLoader/load))
 
 (defn
   girod2jfx-fn
@@ -28,21 +30,20 @@
   [^String svg
    width]
   (fn []
-    (let [params (LoaderParameters.)]
+    (let [params (org.girod.javafx.svgimage.LoaderParameters.)]
       #_(set!
           (.
             params
             scale)
           width)
-      (let [svgimg (SVGLoader/load
+      (let [svgimg (org.girod.javafx.svgimage.SVGLoader/load
                      ^String svg
                      #_params)]
         (if (nil?
               width)
           svgimg
-          (SVGImage/.scaleTo
-            svgimg
-            width))))))
+          (org.girod.javafx.svgimage.SVGImage/.scaleTo svgimg
+                                                       width))))))
 
 ;; ## Converting SVGs to JavaFX objects
 ;; Takes a string and turns it into an input stream
@@ -73,7 +74,7 @@
     []
     (let [^javafx.scene.Group
           img (.loadSvg
-                (SvgLoader.)
+                (afester.javafx.svg.SvgLoader.)
                 ^java.io.ByteArrayInputStream
                 (string->stream
                   svg-xml-string))]
@@ -89,7 +90,7 @@
   batik-load
   [svg-string]
   (.loadSvg
-    (SvgLoader.)
+    (afester.javafx.svg.SvgLoader.)
     ^java.io.ByteArrayInputStream
     (string->stream
       svg-string)))
@@ -124,9 +125,9 @@
               svg
               scale-x
               scale-y)
-   #_(girod2jfx-fn
-       svg
-       width)})
+   #_       (girod2jfx-fn
+              svg
+              width)})
 #_#_params (LoaderParameters.) ;; seemingly unused
 
 
@@ -211,7 +212,7 @@
   Uses `fxsvgimage`"
   [svg-xml-str
    width]
-  (let [^SVGImage image ((girod2jfx-fn
+  (let [^org.girod.javafx.svgimage.SVGImage image ((girod2jfx-fn
                            svg-xml-str
                            width))]
     (.snapshot
@@ -294,3 +295,80 @@
                         :ctor []
                         :props props)
     :svg-path))
+
+
+
+
+;; I guess this is a static loader object thing?
+(def jsvg-loader
+  (SVGLoader.))
+
+(defn
+  jsvg-bufimg
+  [svg-str]
+  (let [svg-doc     (.load jsvg-loader
+                           (-> svg-str
+                               .getBytes
+                               clojure.java.io/input-stream)
+                           nil
+                           (.documentLimits (LoaderContext/builder) (DocumentLimits. 99 99 99999)))
+        doc-size    (-> svg-doc
+                        .size)
+        width       (-> doc-size
+                        .width
+                        int)
+        height      (-> doc-size
+                        .height
+                        int)
+        imgbuf      (BufferedImage. width
+                                    height
+                                    java.awt.image.BufferedImage/TYPE_INT_RGB)
+        graphics2d  (.createGraphics imgbuf)
+        output-file (File. "test" #_file-str)]
+    (.setColor graphics2d
+               Color/WHITE)
+    (.fillRect graphics2d
+               0
+               0
+               width
+               height)
+    (.render svg-doc
+             nil
+             graphics2d)
+    imgbuf))
+
+(defn
+  jsvg-jxfimg
+  [svg-str]
+  (-> svg-str
+      jsvg-bufimg
+      (javafx.embed.swing.SwingFXUtils/toFXImage
+        nil)))
+
+#_
+(defn
+  jsvg-test
+  [svg-str]
+  (-> svg-str
+      jsvg-bufimg
+      (javax.imageio.ImageIO/write "png"
+                                   (File. "jsvg-render-test.png"))))
+#_
+(->  "https://raw.githubusercontent.com/wiki/kxygk/imergination/krabi-root-2/indeces.svg"
+     slurp
+     jsvg-test)
+
+(defn
+  xml
+  "Converts an SVG string to a JavaFX Group-like object
+  `:svg` for the svg string
+  `:width` for an optional width parameter
+  NOTE: The library seems to work weird with widths
+  if you specify the display width with `:width`
+  then the `<svg>` tag shouldn't specify its own height/width"
+  [{:keys [fx/context
+           svg
+           scale-x
+           scale-y]}]
+  {:fx/type :image-view
+   :image   (jsvg-jxfimg svg)})
