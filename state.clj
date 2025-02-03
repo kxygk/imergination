@@ -521,34 +521,45 @@
                            svindex)))
             svs))))
 
-
 (defn
-  region-geogrid-params
-  "This is a bit of a convoluted way to calculate the parameters,
-  but it's the only way to ensure they're correct
-  b/c image reading and segmentation is complicated
-  and it's all done in `geogrid/subregion`"
+  world-geogrid-vec
+  "All the data..."
   [context]
   (->> (-> context
-           (fx/sub-ctx datafile-strs)
-           first)
-       vector
-       (map #(str (fx/sub-ctx context
-                              data-dirstr)
-                  %))
-       (map #(geogrid4image/read-file %
-                                      (fx/sub-ctx context
-                                                  eas-res)
-                                      (fx/sub-ctx context
-                                                  sou-res)))
-       (map #(geogrid/subregion %
-                                (fx/sub-ctx context
-                                            region)))
-       first
-       geogrid/params))
+           (fx/sub-ctx datafile-strs))
+       (mapv #(str (fx/sub-ctx context
+                               data-dirstr)
+                   % ))
+       (mapv #(do (println (str "Reading in .. "
+                                % ))
+                  (geogrid4image/read-file %
+                                           (fx/sub-ctx context
+                                                       eas-res)
+                                           (fx/sub-ctx context
+                                                       sou-res))))))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/region-geogrid-params))
+    (fx/sub-ctx state/world-geogrid-vec))
+
+(defn
+  region-geogrid-vec
+  "TODO: Ideally this could be removed entirely..
+  All this data is in the `region-matrix`
+  The problem is I used it in two places
+  `region-geogrid-params`
+  and
+  `region-matrix`
+  ..
+  It's be best if it was only a transient data structure in `region-matrix`
+  and params were deduces otherwise"
+  [context]
+  (->> (fx/sub-ctx context
+                   world-geogrid-vec)
+       (mapv #(geogrid/subregion %
+                                 (fx/sub-ctx context
+                                             region)))))#_
+(-> @state/*selections
+    (fx/sub-ctx state/region-geogrid-vec))
 
 (defn
   region-matrix
@@ -557,20 +568,7 @@
   So that the underlying library can be swapped"
   [context]
   (->> (fx/sub-ctx context
-                   datafile-strs)
-       (map #(str (fx/sub-ctx context
-                              data-dirstr)
-                  %))
-       (map #(do (println (str "READING: "
-                               %))
-                 (geogrid4image/read-file % ;; TODO: Trans
-                                          (fx/sub-ctx context
-                                                      eas-res)
-                                          (fx/sub-ctx context
-                                                      sou-res))))
-       (map #(geogrid/subregion %
-                                (fx/sub-ctx context
-                                            region)))
+                   region-geogrid-vec)
        matrix/from-geogrids))
 #_
 (-> @state/*selections
@@ -598,6 +596,21 @@
                                      eas-res)
                          (fx/sub-ctx @state/*selections
                                      sou-res))
+
+(defn
+  region-geogrid-params
+  "This is a bit of a convoluted way to calculate the parameters,
+  but it's the only way to ensure they're correct
+  b/c image reading and segmentation is complicated
+  and it's all done in `geogrid/subregion`"
+  [context]
+  (->> (fx/sub-ctx context
+                   region-matrix)
+       matrix/extract-params))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/region-geogrid-params))
+;; => [40 71 0.1 0.1 {:eas 277.0, :sou 76.9}]
 
 (defn
   region-svd

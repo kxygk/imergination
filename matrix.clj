@@ -361,6 +361,28 @@
                grid-params))
 
 (defn
+  extract-params
+  "Get the geogrid params from the matrix
+  The format matches the vector returned in `geogrid/params`
+  Not sure why I made it that way.. Probably should be a map of values"
+  [{:keys [matrix
+           dimension
+           position
+           resolution]
+    :as   grid-params}]
+   (let [[width
+          height] dimension
+         [eas-res
+          sou-res] resolution
+         norwes-point position]
+     ;; list from `geogrid/params`
+     [width
+      height
+      eas-res
+      sou-res
+      norwes-point]))
+
+(defn
   minus-1-sv
   "Take the SV matrices
   Zero out the first component
