@@ -407,7 +407,9 @@
                 region)
     (plot/shoreline-map (fx/sub-ctx context
                                     shoreline-filestr)
-                        {:axis-visible? true})
+                        {:axis-visible? true
+                         :display-width (fx/sub-ctx context
+                                                    region-display-width)})
     (spitsvgstream "contour.svg")))
 #_#_
 (defn

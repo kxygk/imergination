@@ -23,33 +23,36 @@
    shoreline-filestr
    & [{:keys [pois
               label-top-right
+              display-width
               cycle-frac
               axis-visible?]
        :or   {pois            nil
               label-top-right ""
+              display-width   nil
               cycle-frac      nil
               axis-visible?   false}}]]
-  (->
-    (svg/group
-      {}
-      (if axis-visible?
-        (svgmaps/latlon-axis ;; draws lat/lon axis
-          region)
-        (svg/group {}
-                   nil))
-      (geojson2svg/read-file
-        shoreline-filestr
-        region)
-      (if pois
-        (svgmaps/points-of-interest
-          pois
-          region)
-        (svg/group {}
-                   nil)))
-    (quickthing/svg-wrap
-      (dimension
-        region))
-    #_quickthing/serialize-with-line-breaks))
+  (let [svg-nodes (-> (svg/group
+                        {}
+                        (if axis-visible?
+                          (svgmaps/latlon-axis ;; draws lat/lon axis
+                            region)
+                          (svg/group {}
+                                     nil))
+                        (geojson2svg/read-file
+                          shoreline-filestr
+                          region)
+                        (if pois
+                          (svgmaps/points-of-interest
+                            pois
+                            region)
+                          (svg/group {}
+                                     nil))))]
+    (if (nil? display-width)
+      (quickthing/svg-wrap svg-nodes
+                           (dimension region))
+      (quickthing/svg-wrap svg-nodes
+                           (dimension region)
+                           display-width))))
 
 (defn
   worldmap-region
