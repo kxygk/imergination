@@ -93,22 +93,23 @@
   Also reset the mousepress to `nil`"
   [snapshot
    {:keys [fx/event]}]
+  (let [new-region (calc-new-region (fx/sub-val snapshot
+                                                :mouse-click)
+                                    (click-to-soueas event
+                                                     (fx/sub-ctx snapshot
+                                                                 state/display-width)))]
   (println "you released the mouse button..."
            "\n"
            "The new region: "
-           (calc-new-region (fx/sub-val snapshot
-                                        :mouse-click)
-                            (click-to-soueas event
-                                             (fx/sub-ctx snapshot
-                                                         state/display-width))))
+           new-region)
   (-> snapshot
       (fx/swap-context assoc
+                       :region-key
+                       nil)
+      (fx/swap-context assoc
                        :region
-                       (calc-new-region (fx/sub-val snapshot
-                                                    :mouse-click)
-                                        (click-to-soueas event
-                                                         (fx/sub-ctx snapshot
-                                                                     state/display-width))))))
+                       new-region))))
+
 (defn
   worldmap
   "A map of the world

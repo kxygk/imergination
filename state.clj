@@ -36,6 +36,7 @@
                             :eas-res                        0.1
                             :sou-res                        0.1
                             ;; TODO Debug `krabi-region`. Axis labels float off from the map
+                            :region nil
                             :region-key
                             ;;;;;;;;;;;;;;;;;;;;;;;
                             #_:ocean1large
@@ -88,13 +89,30 @@
   [context]
   (fx/sub-val context
               :region-key))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/region-key))
+;; => :krabi-root-2
 
 (defn
   region
   [context]
-  (:region (get locations/regions
-                (fx/sub-ctx context
-                            region-key))))
+  (if (nil? (fx/sub-ctx context
+                        region-key))
+    (fx/sub-val context
+                :region)
+    (:region (get locations/regions
+                  (fx/sub-ctx context
+                              region-key)))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/region))
+;; => {:norwes {:eas 298.57142857142856, :sou 62.857142857142854},
+;;     :soueas {:eas 303.4285714285714, :sou 69.14285714285714}}
+;; => {:norwes {:eas 277.0, :sou 76.92893218813452},
+;;     :soueas {:eas 281.0, :sou 84.0}}
+;; => {:norwes {:eas 277.0, :sou 76.92893218813452},
+;;     :soueas {:eas 281.0, :sou 84.0}}
 
 (defn
   region-meta
@@ -102,7 +120,8 @@
   [context]
   (get locations/regions
        (fx/sub-ctx context
-                   region-key)))#_
+                   region-key)))
+#_
 (-> @state/*selections
     (fx/sub-ctx state/region-meta))
 
@@ -118,16 +137,19 @@
    filename]
   (assert (instance? String
                      string))
+  (let [region-key (-> @state/*selections
+                       (fx/sub-ctx state/region-key))
+        subfolder (if (nil? region-key)
+                    "custom"
+                    (symbol region-key))]
   (if debug?
     (spit (str "../imergination.wiki/"
-               (-> @state/*selections
-                   (fx/sub-ctx state/region-key)
-                   symbol)
+               subfolder
                "/"
                filename)
           string)
     nil)
-  string)
+  string))
 
 (if debug?
   (->> (-> @state/*selections
@@ -270,6 +292,9 @@
   [context]
   (fx/sub-val context
               :sou-res))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/sou-res))
 
 (defn-
   world-svg-hiccup
