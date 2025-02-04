@@ -59,12 +59,22 @@
                             #_:himalaya
                             #_:rift-valley-small
                             ;;;;;;;;;;;;;;;;;;;;;;;
+                            :is-in-ram                      false
                             :mouse-click                    nil
                             :datafile-idxs                  [0]
                             :sv-selected-idxs               [0]
                             :noise-selected-idxs            [0]
                             :normalized-noise-selected-idxs [0]}
                            #(cache/lru-cache-factory % :threshold 1000))))
+
+(defn
+  is-in-ram
+  [context]
+  (fx/sub-val context
+              :is-in-ram))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/is-in-ram))
 
 (defn
   row-height
@@ -471,7 +481,7 @@
      vec)
 
 ;; TODO Test out with caching the whole dataset..
-;; see if the computer catches fire
+;; see if the computer catches fire.. EDIT: it did
 #_
 (defn
   all-images
@@ -548,25 +558,39 @@
                            svindex)))
             svs))))
 
+(defn-
+  lazy-world-reader
+  "Returns a lazy collection for reading in all the rainmaps"
+  [file-strs
+   datadir-str
+   easres
+   soures]
+  (map #(do #_(println (str "Reading in .. "
+                          % ))
+            (geogrid4image/read-file (str datadir-str
+                                          % )
+                                     easres
+                                     soures))
+       file-strs))
+
 (defn
   world-geogrid-vec
   "All the data..."
   [context]
-  (->> (-> context
-           (fx/sub-ctx datafile-strs))
-       (mapv #(str (fx/sub-ctx context
-                               data-dirstr)
-                   % ))
-       (mapv #(do (println (str "Reading in .. "
-                                % ))
-                  (geogrid4image/read-file %
-                                           (fx/sub-ctx context
-                                                       eas-res)
-                                           (fx/sub-ctx context
-                                                       sou-res))))))
+  (-> context
+      (fx/sub-ctx datafile-strs)
+      (lazy-world-reader (fx/sub-ctx context
+                                     data-dirstr)
+                         (fx/sub-ctx context
+                                     eas-res)
+                         (fx/sub-ctx context
+                                     sou-res))))
+#_
+(realized? (-> @state/*selections
+    (fx/sub-ctx state/world-geogrid-vec)))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/world-geogrid-vec))
+    (fx/sub-ctx is-in-ram))
 
 (defn
   region-geogrid-vec
@@ -580,11 +604,20 @@
   It's be best if it was only a transient data structure in `region-matrix`
   and params were deduces otherwise"
   [context]
-  (->> (fx/sub-ctx context
-                   world-geogrid-vec)
-       (mapv #(geogrid/subregion %
-                                 (fx/sub-ctx context
-                                             region)))))#_
+  (let [myregion (fx/sub-ctx context
+                             region)]
+    (if (fx/sub-ctx context
+                    is-in-ram)
+      (->> (fx/sub-ctx context
+                       world-geogrid-vec)
+           (map #(do #_(println "\nCutting out region ..")
+                     (geogrid/subregion %
+                                        myregion))))
+      (->> (world-geogrid-vec context)
+           (map #(do #_(println "\nCutting out region ..")
+                     (geogrid/subregion %
+                                        myregion)))))))
+#_
 (-> @state/*selections
     (fx/sub-ctx state/region-geogrid-vec))
 
