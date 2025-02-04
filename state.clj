@@ -143,11 +143,11 @@
                     "custom"
                     (symbol region-key))]
   (if debug?
-    (spit (str "../imergination.wiki/"
-               subfolder
-               "/"
-               filename)
-          string)
+    (future (spit (str "../imergination.wiki/"
+                       subfolder
+                       "/"
+                       filename)
+                  string))
     nil)
   string))
 
