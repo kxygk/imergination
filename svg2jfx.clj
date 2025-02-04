@@ -3,7 +3,8 @@
   "Make a GUI node from an SVG"
   (:require [cljfx.api            :as fx]
             [cljfx.composite      :as com]
-            [thi.ng.geom.svg.core :as svgthing])
+            [thi.ng.geom.svg.core :as svgthing]
+            quickthing)
   (:import com.github.weisj.jsvg.parser.SVGLoader
            java.net.URI
            java.awt.image.BufferedImage
@@ -306,27 +307,34 @@
 (defn
   jsvg-bufimg
   [svg-str]
-  (let [svg-doc     (.load jsvg-loader
-                           (-> svg-str
-                               .getBytes
-                               clojure.java.io/input-stream)
-                           nil
-                           (.documentLimits (LoaderContext/builder) (DocumentLimits. 99 99 99999)))
-        doc-size    (-> svg-doc
-                        .size)
-        width       (-> doc-size
-                        .width
-                        int)
-        height      (-> doc-size
-                        .height
-                        int)
-        imgbuf      (BufferedImage. width
-                                    height
-                                    java.awt.image.BufferedImage/TYPE_INT_RGB)
-        graphics2d  (.createGraphics imgbuf)
-        output-file (File. "test" #_file-str)]
+  (let [svg-doc       (.load jsvg-loader
+                             (-> svg-str
+                                 .getBytes
+                                 clojure.java.io/input-stream)
+                             nil
+                             (.documentLimits (LoaderContext/builder) (DocumentLimits. 99 99 99999)))
+        doc-size      (-> svg-doc
+                          .size)
+        width         (-> doc-size
+                          .width
+                          int)
+        height        (-> doc-size
+                          .height
+                          int)
+        imgbuf        (BufferedImage. width
+                                      height
+                                      java.awt.image.BufferedImage/TYPE_INT_RGB)
+        graphics2d    (.createGraphics imgbuf)
+        output-file   (File. "test" #_file-str)
+        rbspectrum    quickthing/red-blue-colors
+        neutral-white (get rbspectrum
+                           (/ (count rbspectrum)
+                              2))]
     (.setColor graphics2d
-               Color/WHITE)
+               (java.awt.Color. (float (:r neutral-white))
+                                (float (:g neutral-white))
+                                (float (:b neutral-white))
+                                #_Color/WHITE))
     (.fillRect graphics2d
                0
                0

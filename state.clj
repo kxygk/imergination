@@ -36,7 +36,7 @@
                             :eas-res                        0.1
                             :sou-res                        0.1
                             ;; TODO Debug `krabi-region`. Axis labels float off from the map
-                            :region nil
+                            :region                         nil
                             :region-key
                             ;;;;;;;;;;;;;;;;;;;;;;;
                             #_:ocean1large

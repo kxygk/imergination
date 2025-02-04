@@ -433,6 +433,7 @@
   "Tha main vertical window"
   [{:keys [fx/context]}]
   {:fx/type  :v-box
+   :style {:-fx-background-color "#eee7e9"}
    :children [{:fx/type               worldmap
                #_#_#_#_#_#_           :grid-pane/row 0
                :grid-pane/column      0
