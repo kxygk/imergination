@@ -685,3 +685,31 @@
                         (-> vecofvecs
                             count)
                         vecofvecs))))
+
+(defn
+  data-average-vec
+  [{:keys [matrix
+           dimension
+           position
+           resolution]}]
+  (let [ndata (ncore/ncols matrix)]
+    (ncore/ax (/ 1.0
+                 ndata)
+              (ncore/mv matrix
+                        (neand/dv (repeat ndata
+                                          1.0))))))
+#_
+(-> @state/*selections
+    (cljfx.api/sub-ctx state/region-matrix)
+    data-average-vec)
+
+(defn
+  data-average-geogrid
+  [grid-params]
+  (-> grid-params
+      data-average-vec
+      (col-to-grid grid-params)))
+#_
+(-> @state/*selections
+    (cljfx.api/sub-ctx state/region-matrix)
+    data-average-geogrid)

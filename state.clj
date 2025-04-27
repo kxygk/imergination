@@ -905,6 +905,23 @@
                 3))
 
 (defn
+  average-geogrid
+  [context]
+  (-> context
+      (fx/sub-ctx region-matrix)
+      matrix/data-average-geogrid
+      (plot/grid-map (fx/sub-ctx context
+                                 region-svg-hiccup)
+                     {:label-top-right "Average"
+                      :display-width (fx/sub-ctx context
+                                                 region-display-width)})
+      (spitsvgstream (str "average"
+                          ".svg"))))
+#_
+(-> @state/*selections
+    (state/average-geogrid))
+
+(defn
   datafile-svg
   "Get an SVG of a given datafile
   (ex: day, month)
