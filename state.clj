@@ -1195,18 +1195,24 @@
                       1.0
                       1.0)))
 
+(defn sv-proj-vec
+  [context]
+  (-> context
+      (fx/sub-ctx region-matrix)
+      matrix/svd
+      matrix/svd-to-2d-sv-space))
+
 (defn
   sv-proj
+  "adds cycle meta-data to `sv-proj-vec`"
   [context]
   (let [frac-generator (partial cycle-frac
                                 (fx/sub-ctx context
                                             cycle-length)
                                 (fx/sub-ctx context
                                             cycle-phase))]
-    (->> (-> context
-             (fx/sub-ctx region-matrix)
-             matrix/svd
-             matrix/svd-to-2d-sv-space)
+    (->> (fx/sub-ctx context
+                     sv-proj-vec)
          (map-indexed (fn add-cycle-frac
                         [idx point]
                         (conj point
