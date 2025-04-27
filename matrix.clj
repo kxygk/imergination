@@ -687,6 +687,45 @@
                         vecofvecs))))
 
 (defn
+  get-points-at-coord
+  [{:keys [matrix
+           dimension
+           position
+           resolution]}
+   my-point]
+  (let [[width-pix
+         height-pix] dimension
+        [eas-res
+         sou-res]    resolution]
+    (let [[eas sou] (geogrid/point-to-pix my-point
+                                          (geogrid4seq/build-grid [width-pix
+                                                                   height-pix
+                                                                   eas-res
+                                                                   sou-res
+                                                                   position]
+                                                                  nil))]
+      #_matrix
+      (println (str "\nDimensions: "
+                    dimension
+                    "\nPoint Coord: "
+                    eas
+                    " "
+                    sou))
+      (-> matrix
+          (ncore/row
+            (+ (int eas)
+               (* width-pix
+                  (int sou))))
+          seq))))
+#_
+(let [test-poi (geoprim/point 8.100833
+                              98.984722)]
+  (-> @state/*selections
+      (cljfx.api/sub-ctx state/region-matrix)
+      (get-points-at-coord test-poi)))
+
+
+(defn
   data-average-vec
   [{:keys [matrix
            dimension
