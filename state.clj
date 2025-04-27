@@ -467,7 +467,8 @@
        sort))
 #_
 (->> (fx/sub-ctx @state/*selections
-                 state/datafile-strs))
+                 state/datafile-strs)
+     count)
 #_
 (->> (fx/sub-ctx @state/*selections
                  state/datafile-strs)
@@ -900,9 +901,20 @@
                                    region-matrix)
                        id))
 #_
+(apply max
 (-> @state/*selections
     (fx/sub-ctx state/datafile-geogrid
-                3))
+                9)
+    :data-array
+    vec))
+
+;; => 30174.0
+;; => -32344.0
+#_
+(-> @state/*selections
+    (fx/sub-ctx region-matrix)
+    :matrix
+    uncomplicate.neanderthal.core/amax)
 
 (defn
   average-geogrid

@@ -297,7 +297,7 @@
     (mapv vector
           (ncore/row weight-matrix                          ;; data proj on sv1
                      0)
-          (ncore/row weight-matrix                          ;; data proj on sv1
+          (ncore/row weight-matrix                          ;; data proj on sv2
                      1))))
 #_
 (-> @state/*selections
