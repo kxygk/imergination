@@ -1689,6 +1689,32 @@
           (fx/sub-ctx state/sv-weights-svg)))
 
 (defn
+  all-row-by-row-svg
+  [context]
+  (let [cycle-length 12 #_(fx/sub-ctx context
+                                 cycle-length)]
+    (-> (->> (fx/sub-ctx context
+                         region-geogrid-vec)
+             (map-indexed (fn [idx
+                               grid]
+                            (plot/grid-map grid
+                                           (fx/sub-ctx context
+                                                       region-svg-hiccup)
+                                           {:label-top-right (str (inc idx))
+                                            :axis-visible? true
+                                            :cycle-frac      (/ idx
+                                                                12.0)}))))
+             (plot/cyclic 12)
+        (spitsvgstream "all-cycle.svg"))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/all-row-by-row-svg))
+
+(-> @state/*selections
+    (fx/sub-ctx region-geogrid-vec)
+    count)
+
+(defn
   cycle-group-svg
   [context
    cycle-idx]
