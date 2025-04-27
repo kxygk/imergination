@@ -1234,6 +1234,29 @@
     (fx/sub-ctx state/sv-proj))
 
 (defn
+  sv12-plot-svg
+  "Plot of SV1 and SV2 and how they chaneg over time"
+  [context]
+  (let [sv-projs (fx/sub-ctx context
+                             sv-proj-vec)]
+    (-> (plot/sv1sv2 (* 1.0
+                         (fx/sub-ctx context
+                                     state/window-width))
+                      (* 1.0
+                         (fx/sub-ctx context
+                                     state/row-height))
+                      sv-projs
+                      2011
+                      (fx/sub-ctx context
+                                  cycle-length)
+                      (fx/sub-ctx context
+                                  cycle-phase))
+        (spitsvgstream "sv1sv2.svg"))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/sv12-plot-svg))
+
+(defn
   sv-bisection
   [context]
   (-> context

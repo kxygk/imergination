@@ -382,6 +382,64 @@
                                width)))))
 
 (defn
+  sv1sv2
+  "Two line plots of SV1 and SV2"
+  [width
+   height
+   sv-projs
+   cycle-start-value
+   cycle-length ;; Maybe make these optional?
+   cycle-phase]
+  (let [proj-sv1 (->> sv-projs
+                      (map first)
+                      (map-indexed vector))
+        proj-sv2 (->> sv-projs
+                      (map second)
+                      (map-indexed vector))]
+    (let [axis (-> (quickthing/primary-axis (into proj-sv1
+                                                  proj-sv2)
+                                            {:width       width
+                                             :height      height
+                                             :legend      [["First Singular Vector"
+                                                            {:fill "#0000aa"}]
+                                                           ["Second Singular Vector"
+                                                            {:fill "#aa0000"}]]
+                                             :title       "SV1 SV2 evolution"
+                                             :x-name      "Data index"
+                                             ;; :x-ticks     [1.0]
+                                             ;; :y-ticks     [1.0]
+                                             #_#_:margin-frac 0.07
+                                             :color       "#0008"})
+                   (assoc-in [:x-axis
+                              :label]
+                             (thi.ng.geom.viz.core/default-svg-label #(+ cycle-start-value
+                                                                         (/ %
+                                                                            cycle-length))))
+                   (assoc-in [:x-axis
+                              :major]
+                             (range cycle-phase
+                                    (count sv-projs)
+                                    cycle-length))
+                   (assoc-in [:y-axis
+                              :major]
+                             []))]
+      (-> axis
+          (update :data
+                  #(into %
+                         (quickthing/solid-line proj-sv1
+                                                {:attribs {:stroke-width 10
+                                                           :stroke       "#0000aa"}})))
+          (update :data
+                  #(into %
+                         (quickthing/solid-line proj-sv2
+                                                {:attribs {:stroke-width 10
+                                                           :stroke       "#aa0000"}})))
+          viz/svg-plot2d-cartesian
+          (quickthing/svg-wrap [width
+                                height]
+                               width)))))
+
+(defn
   cyclic
   [maps
    cols]
