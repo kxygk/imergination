@@ -1754,12 +1754,12 @@
           (fx/sub-ctx state/sv-weights-svg)))
 
 (defn
-  all-row-by-row-svg
-  [context]
+  all-svg
+  [context
+   geogrid-vec]
   (let [cycle-length 12 #_(fx/sub-ctx context
                                  cycle-length)]
-    (-> (->> (fx/sub-ctx context
-                         region-geogrid-vec)
+    (-> (->> geogrid-vec
              (map-indexed (fn [idx
                                grid]
                             (plot/grid-map grid
@@ -1769,15 +1769,35 @@
                                             :axis-visible? true
                                             :cycle-frac      (/ idx
                                                                 12.0)}))))
-             (plot/cyclic 12)
-        (spitsvgstream "all-cycle.svg"))))
-#_
-(-> @state/*selections
-    (fx/sub-ctx state/all-row-by-row-svg))
+             (plot/cyclic 12))))
 
+(defn
+  precipitation-all-svg
+  [context]
+  (-> context
+      (all-svg (-> context
+                   (fx/sub-ctx region-matrix)
+                   matrix/to-geogrid-vec))
+      (spitsvgstream "precipitation-all.svg")))
+;;#_ ;;unused
 (-> @state/*selections
-    (fx/sub-ctx region-geogrid-vec)
-    count)
+    (fx/sub-ctx state/precipitation-all-svg))
+
+
+#_(fx/sub-ctx context
+              region-geogrid-vec)
+
+(defn
+  noise-all-svg
+  [context]
+  (-> context
+      (all-svg (-> context
+                   (fx/sub-ctx noise-matrix-2d)
+                   matrix/to-geogrid-vec))
+      (spitsvgstream "noise-all.svg")))
+;;#_ ;;unused
+(-> @state/*selections
+    (fx/sub-ctx state/noise-all-svg))
 
 (defn
   cycle-group-svg

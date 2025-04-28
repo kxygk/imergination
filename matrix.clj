@@ -361,6 +361,16 @@
                grid-params))
 
 (defn
+  to-geogrid-vec
+  [grid-params]
+  (->> grid-params
+       :matrix
+       ncore/ncols
+       range
+       (mapv #(extract-grid grid-params
+                            %))))
+
+(defn
   extract-params
   "Get the geogrid params from the matrix
   The format matches the vector returned in `geogrid/params`
