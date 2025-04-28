@@ -404,7 +404,7 @@
                                                                    {:fill "#0000aa"}]
                                                                   ["Second Singular Vector"
                                                                    {:fill "#aa0000"}]]
-                                                :title           "SV1 SV2 weights"
+                                                ;;:title           "SV1 SV2 weights"
                                                 ;;:x-name      "Data index"
                                                 ;; :x-ticks     [1.0]
                                                 ;; :y-ticks     [1.0]
@@ -456,15 +456,15 @@
     (let [sv1-axis (-> (quickthing/primary-axis proj-sv1
                                                 {:width           width
                                                  :height          height
-                                                 :legend          [["First Singular Vector"
+                                                 :legend          [["Singular Vec 1"
                                                                     {:fill "#0000aa"}]
-                                                                   ["Second Singular Vector"
+                                                                   ["Singular Vec 2"
                                                                     {:fill "#aa0000"}]]
-                                                 :title       "SV1 SV2 weights"
+                                                 ;;:title       "SV1 SV2 weights"
                                                  ;;:x-name      "Data index"
                                                  ;; :x-ticks     [1.0]
                                                  ;; :y-ticks     [1.0]
-                                                 #_#_:margin-frac 0.07
+                                                 :margin-frac 0.06
                                                  :color           "#0000aa"})
                        (assoc-in [:grid]
                                  nil)
@@ -481,7 +481,7 @@
           sv2-axis (-> (quickthing/secondary-axis proj-sv2
                                                   {:width           width
                                                    :height          height
-                                                   #_#_:margin-frac 0.07
+                                                   :margin-frac 0.06
                                                    :color           "#aa0000"})
                        (assoc-in [:grid]
                                  nil)
