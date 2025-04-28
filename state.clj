@@ -1239,22 +1239,46 @@
   [context]
   (let [sv-projs (fx/sub-ctx context
                              sv-proj-vec)]
-    (-> (plot/sv1sv2 (* 1.0
-                         (fx/sub-ctx context
-                                     state/window-width))
-                      (* 1.0
-                         (fx/sub-ctx context
-                                     state/row-height))
-                      sv-projs
-                      2011
-                      (fx/sub-ctx context
-                                  cycle-length)
-                      (fx/sub-ctx context
-                                  cycle-phase))
+    (-> (plot/sv1sv2-1scale (* 1.0
+                               (fx/sub-ctx context
+                                           state/window-width))
+                            (* 1.0
+                               (fx/sub-ctx context
+                                           state/row-height))
+                            sv-projs
+                            2011
+                            (fx/sub-ctx context
+                                        cycle-length)
+                            (fx/sub-ctx context
+                                        cycle-phase))
         (spitsvgstream "sv1sv2.svg"))))
-#_
+;;#_ ;;unused
 (-> @state/*selections
     (fx/sub-ctx state/sv12-plot-svg))
+
+(defn
+  sv12-plot-2scale-svg
+  "Plot of SV1 and SV2 and how they chaneg over time
+  This is an extra display with SV1 and SV2 with different Y axis"
+  [context]
+  (let [sv-projs (fx/sub-ctx context
+                             sv-proj-vec)]
+    (-> (plot/sv1sv2-2scale (* 1.0
+                               (fx/sub-ctx context
+                                           state/window-width))
+                            (* 1.0
+                               (fx/sub-ctx context
+                                           state/row-height))
+                            sv-projs
+                            2011
+                            (fx/sub-ctx context
+                                        cycle-length)
+                            (fx/sub-ctx context
+                                        cycle-phase))
+        (spitsvgstream "sv1sv2-2scale.svg"))))
+;;#_ ;;unused
+(-> @state/*selections
+    (fx/sub-ctx state/sv12-plot-2scale-svg))
 
 (defn
   sv-bisection
