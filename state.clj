@@ -782,15 +782,15 @@
     keys)
 
 (defn
-  eof1-weights
-  "Get the EOF1 component at each data point (ie. point in time)"
+  sv1-weights
+  "Get the SV1 component at each data point (ie. point in time)"
   [context]
   (-> context
       (fx/sub-ctx region-svd)
       (matrix/svd-to-weights 0)))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/eof1-weights)
+    (fx/sub-ctx state/sv1-weights)
     seq
     vec)
 
@@ -929,7 +929,7 @@
                                                  region-display-width)})
       (spitsvgstream (str "average"
                           ".svg"))))
-#_
+;;#_ ;;unused
 (-> @state/*selections
     (state/average-geogrid))
 
@@ -973,7 +973,7 @@
     (fx/sub-ctx state/first-datafile-svg))
 
 (defn
-  sv-weights
+  svd-weights
   [context]
   (-> context
       (fx/sub-ctx region-matrix)
@@ -981,21 +981,21 @@
       matrix/singular-values))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/sv-weights))
+    (fx/sub-ctx state/svd-weights))
 
 
 (defn
-  sv-weight
+  svd-weight
   "Get a particular singular vector
   Based on `index`"
   [context
    sv-index]
   (-> context
-      (fx/sub-ctx sv-weights)
+      (fx/sub-ctx svd-weights)
       (get sv-index)
       second))
 #_
-(state/sv-weight @state/*selections
+(state/svd-weight @state/*selections
                  1)
 ;; => 9247.099897276306
 
@@ -1307,9 +1307,9 @@
   (let [{:keys [centroid-a]} (fx/sub-ctx context
                                          state/sv-bisection)]
     (let [sval-one  (-> context
-                        (fx/sub-ctx state/sv-weight 0))
+                        (fx/sub-ctx state/svd-weight 0))
           sval-two  (-> context
-                        (fx/sub-ctx state/sv-weight 1))
+                        (fx/sub-ctx state/svd-weight 1))
           [x-coord
            y-coord] centroid-a]
       (let [mixture (fx/sub-ctx context
@@ -1398,9 +1398,9 @@
   (let [{:keys [centroid-b]} (fx/sub-ctx context
                                          state/sv-bisection)]
     (let [sval-one  (-> context
-                        (fx/sub-ctx state/sv-weight 0))
+                        (fx/sub-ctx state/svd-weight 0))
           sval-two  (-> context
-                        (fx/sub-ctx state/sv-weight 1))
+                        (fx/sub-ctx state/svd-weight 1))
           [x-coord
            y-coord] centroid-b]
       (fx/sub-ctx context
@@ -1720,30 +1720,30 @@
     (fx/sub-ctx state/sv-proj-svg))
 
 (defn
-  sv-weights-stats
+  svd-weights-stats
   [context]
   (-> context
-      (fx/sub-ctx sv-weights)
+      (fx/sub-ctx svd-weights)
       matrix/singular-values-stats))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/sv-weights-stats))
+    (fx/sub-ctx state/svd-weights-stats))
 
 (defn
-  sv-weights-svg
+  svd-weights-svg
   [context]
   (-> (plot/sv-weights (fx/sub-ctx context
-                                   sv-weights)
+                                   svd-weights)
                        50
                        (fx/sub-ctx context
-                                   sv-weights-stats)
+                                   svd-weights-stats)
                        (* 1.0
                           (fx/sub-ctx context
                                       state/window-width))
                        (* 1.0
                           (fx/sub-ctx context
                                       state/row-height)))
-      (spitsvgstream "sv-weights.svg")))
+      (spitsvgstream "svd-weights.svg")))
 #_
 (spit (str "out/"
            (-> @state/*selections
@@ -1751,7 +1751,7 @@
                symbol)
            "/test-weights-actual.svg")
       (-> @state/*selections
-          (fx/sub-ctx state/sv-weights-svg)))
+          (fx/sub-ctx state/svd-weights-svg)))
 
 (defn
   all-svg

@@ -337,14 +337,14 @@
 
 
 (defn
-  sv-weights
+  svd-weights
   "Where we select the data to read in..
   We can inspect how it looks in our region"
   [{:keys [fx/context]}]
   {:fx/type     svg
    :v-box/hgrow :always
    :svg         (fx/sub-ctx context
-                            state/sv-weights-svg)})
+                            state/svd-weights-svg)})
 
 (defn
   climate-index
@@ -469,7 +469,7 @@
                                     {:fx/type          svpreview
                                      :grid-pane/row    3
                                      :grid-pane/column 1}
-                                    {:fx/type               sv-weights
+                                    {:fx/type               svd-weights
                                      :grid-pane/row         4
                                      :grid-pane/row-span    1
                                      :grid-pane/column      0
