@@ -1215,21 +1215,29 @@
       matrix/svd
       matrix/svd-to-2d-sv-space))
 
-(defn
-  sv-proj
-  "adds cycle meta-data to `sv-proj-vec`"
-  [context]
+(defn-
+  add-plotting-meta-data
+  "add metadata to a vector that in the same order as the original data"
+  [context
+   input-vec]
   (let [frac-generator (partial cycle-frac
                                 (fx/sub-ctx context
                                             cycle-length)
                                 (fx/sub-ctx context
                                             cycle-phase))]
-    (->> (fx/sub-ctx context
-                     sv-proj-vec)
+    (->> input-vec
          (map-indexed (fn add-cycle-frac
                         [idx point]
                         (conj point
                               {:cycle-frac (frac-generator idx)}))))))
+
+(defn
+  sv-proj
+  "adds cycle meta-data to `sv-proj-vec`"
+  [context]
+  (add-plotting-meta-data context
+                 (fx/sub-ctx context
+                             sv-proj-vec)))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/sv-proj))
