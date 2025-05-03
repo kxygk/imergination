@@ -790,7 +790,7 @@
    sv-index]
   (-> context
       (fx/sub-ctx region-svd)
-      (matrix/svd-to-weights 0)))
+      (matrix/svd-to-weights sv-index)))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/sv-weights 0))
