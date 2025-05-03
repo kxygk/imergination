@@ -192,6 +192,7 @@
                                                                                data-y
                                                                                nil ;; default radius
                                                                                {:stroke #_ "transparent" "#777"
+                                                                                ;; TODO thread the whole thing
                                                                                 :fill   (quickthing/color-cycle (-> attribs
                                                                                                                     :cycle-frac))}])))
                                                           {:scale 30})
@@ -582,73 +583,101 @@
       (quickthing/group-plots-grid map-matrix))))
 
 (defn
-  eof1-vs-var
-  "An [x y] scatter plot of eof1 vs variance"
-  [eof1weight-vs-variance
-   title-str
+  add-cycle-color
+  "if there is cycle data in the meta data,
+  add a `:fill` color"
+  [data-vec]
+  (->> data-vec
+       (mapv (fn [data-entry]
+               (let [cycle-frac (-> data-entry
+                                    last
+                                    :cycle-frac)]
+                 (if (nil? cycle-frac)
+                   data-entry
+                   (update data-entry
+                           (-> data-entry
+                               count
+                               dec)
+                           (fn [meta-data-map]
+                             (assoc meta-data-map
+                                    :fill
+                                    (quickthing/color-cycle cycle-frac))))))))))
+
+(defn
+  scatter
+  "An [x y] scatter plot"
+  [xy-vec
    width
    height
-   & [{:keys [y-name
+   & [{:keys [title-str
+              x-name
+              y-name
               highlighted-idx-vec
               traced-id-vec
               fit-params]}]]
-  (let [data            (->> eof1weight-vs-variance
-                             (mapv #(-> % ;; small rounding errors will make small negative values I guess?
-                                        (update 1
-                                                abs))))
-        data-with-index (->> data
-                             (map-indexed (fn [index
-                                               data]
-                                            (conj data
-                                                  index)))
-                             vec)
-        axis            (-> (into [[0 0]]
-                                  data)
-                            (quickthing/primary-axis {:width     width
-                                                      :height    height
-                                                      :x-name    "EOF1 strength"
-                                                      :y-name    y-name
-                                                      :title     title-str
-                                                      #_#_:color "#0008"}))]
-    (-> axis
-        (update :data
-                #(into %
-                       (quickthing/polyline data
-                                            [(:offset fit-params)
-                                             (:slope fit-params)]
-                                            {:scale   50
-                                             :attribs {:dy -10.0}})))
-        #_
-        (update :data
-                #(into %
-                       (quickthing/adjustable-circles traced-id-vec
-                                                      {:scale   20
-                                                       :attribs {:stroke       "#0004"
-                                                                 :stroke-width 3
-                                                                 :fill         "none"}})))
-        (update :data
-                #(into %
-                       (quickthing/adjustable-text data-with-index
-                                                   {:scale   50
-                                                    :attribs {:dy -10.0}})))
-        (update :data
-                #(into %
-                       (quickthing/adjustable-circles (-> data
-                                                          (select-keys highlighted-idx-vec)
-                                                          vals
-                                                          vec)
-                                                      {:scale   70
-                                                       :attribs {:stroke       "#f004"
-                                                                 :stroke-width 8
-                                                                 :fill         "none"}})))
-        (update :data
-                #(into %
-                       (quickthing/adjustable-circles data
-                                                      {:scale 10})))
-        viz/svg-plot2d-cartesian
-        (quickthing/svg-wrap [width
-                              height]
-                             width))))
+  (let [xy-radius      (->> xy-vec
+                            (mapv (fn [xy-entry]
+                                    [(first xy-entry)
+                                     (second xy-entry)
+                                     nil
+                                     (last xy-entry)])))
+        xy-indexed-vec (->> xy-vec
+                            (map-indexed (fn [index
+                                              xy-entry]
+                                           [(first xy-entry)
+                                            (second xy-entry)
+                                            index]))
+                            vec)]
+    (let [axis (-> (into [[0 0]]
+                         xy-vec)
+                   (quickthing/primary-axis {:width     width
+                                             :height    height
+                                             :x-name    x-name
+                                             :y-name    y-name
+                                             :title     title-str
+                                             #_#_:color "#0008"}))]
+      (-> (cond-> axis
+            #_#_
+            (some? fit-params) (update :data
+                                       #(into %
+                                              (quickthing/polyline xy-vec
+                                                                   [(:offset fit-params)
+                                                                    (:slope fit-params)]
+                                                                   {:scale   50
+                                                                    :attribs {:dy -10.0}})))
+            #_
+            (update :data
+                    #(into %
+                           (quickthing/adjustable-circles traced-id-vec
+                                                          {:scale   20
+                                                           :attribs {:stroke       "#0004"
+                                                                     :stroke-width 3
+                                                                     :fill         "none"}})))
+            #_#_
+            true               (update :data
+                                       #(into %
+                                              (quickthing/adjustable-circles (-> xy-vec
+                                                                                 (select-keys highlighted-idx-vec)
+                                                                                 vals
+                                                                                 vec)
+                                                                             #_
+                                                                             {:scale   70
+                                                                              :attribs {:stroke       "#f004"
+                                                                                        :stroke-width 8
+                                                                                        :fill         "none"}})))
+            true               (update :data
+                                       #(into %
+                                              (quickthing/adjustable-circles xy-radius
+                                                                             {:attribs {:stroke "#777"}})))
+            true           (update :data
+                                       #(into %
+                                              (quickthing/index-text xy-radius
+                                                                     {:scale   40}))))
+          ;;#_#_
+          viz/svg-plot2d-cartesian
+          (quickthing/svg-wrap [width
+                                height]
+                               width)))))
 
 ;;(conj [1 2] 3)
 
