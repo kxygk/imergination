@@ -782,17 +782,18 @@
     keys)
 
 (defn
-  sv1-weights
-  "Get the SV1 component at each data point (ie. point in time)"
-  [context]
+  sv-weights
+  "Get the SV components at each data point (ie. point in time)
+  This is zero indexed
+  So SV1 is index 0"
+  [context
+   sv-index]
   (-> context
       (fx/sub-ctx region-svd)
       (matrix/svd-to-weights 0)))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/sv1-weights)
-    seq
-    vec)
+    (fx/sub-ctx state/sv-weights 0))
 
 (defn
   noise-1d-min-max
@@ -1920,3 +1921,50 @@
 #_
 (.getType (fx/sub-ctx @state/*selections
                       elevation-geogrid))
+
+(defn
+  power-of-sv-weights-scaled
+  "Return a pair of the eof1weight and variance
+   (relative to the EOF1 signal)
+  for a given INDEX (ie. time point)"
+  [context]
+  (let [num-of-svs  (-> context
+                        (fx/sub-ctx datafile-strs)
+                        count)
+        svd-weights (->> (fx/sub-ctx context
+                                     svd-weights)
+                         (mapv second))]
+    (->> num-of-svs
+         range
+         (mapv (fn [sv-index]
+                 (let [weight (get svd-weights
+                                   sv-index)]
+                   (->> (sv-weights context
+                                    sv-index)
+                        (mapv (partial *
+                                       weight))
+                        (mapv #(Math/pow %
+                                         2)))))))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx power-of-sv-weights-scaled))
+
+(defn
+  sv12-vs-other
+  [context]
+  (let [all-sv-weights-power (fx/sub-ctx context
+                                         power-of-sv-weights-scaled)]
+    (let [sv12 (mapv +
+                     (first all-sv-weights-power)
+                     (second all-sv-weights-power))
+          ;;#_#_
+          other-svs (apply (partial mapv
+                                   +)
+                          (drop 2
+                                all-sv-weights-power))]
+      (map vector
+           sv12
+           other-svs))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx sv12-vs-other))

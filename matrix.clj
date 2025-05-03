@@ -287,8 +287,10 @@
   [svd
    sv-index]
   (let [weight-matrix (:vt svd)]
-    (ncore/row weight-matrix                          ;; data proj on sv1
-               sv-index)))
+    (-> weight-matrix
+        (ncore/row sv-index)
+        seq
+        vec)))
 
 (defn
   svd-to-2d-sv-space
