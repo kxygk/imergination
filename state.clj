@@ -1963,9 +1963,11 @@
   [context]
   (let [all-sv-weights-power (fx/sub-ctx context
                                          power-of-sv-weights-scaled)]
-    (let [sv12 (mapv +
-                     (first all-sv-weights-power)
-                     (second all-sv-weights-power))
+    (let [sv1 (first all-sv-weights-power)
+          sv2 (second all-sv-weights-power)
+          sv12 (mapv +
+                     sv1
+                     sv2)
           ;;#_#_
           other-svs (apply (partial mapv
                                    +)
@@ -1975,5 +1977,28 @@
            sv12
            other-svs))))
 #_
+(->> (-> @state/*selections
+         (fx/sub-ctx sv12-vs-other))
+     (mapv (fn [pair]
+             (/ (first pair)
+                (second pair)))))
+
+
+
+(defn
+  sv12-vs-other-svg
+  [context]
+  (-> (add-cycle-data context
+                      (fx/sub-ctx context
+                                  sv12-vs-other))
+      (plot/add-cycle-color)
+      (plot/scatter 1000
+                    1000
+                    {:title-str "SV Power Plot"
+                     :x-name "SV1 and SV2"
+                     :y-name "Other SVs"})
+      (spitsvgstream (str "power-sv12-vs-other"
+                          ".svg"))))
+;;#_ ;;usused
 (-> @state/*selections
-    (fx/sub-ctx sv12-vs-other))
+    (fx/sub-ctx sv12-vs-other-svg))
