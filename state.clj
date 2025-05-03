@@ -974,7 +974,7 @@
     (fx/sub-ctx state/first-datafile-svg))
 
 (defn
-  svd-weights
+  singular-values
   [context]
   (-> context
       (fx/sub-ctx region-matrix)
@@ -982,22 +982,22 @@
       matrix/singular-values))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/svd-weights))
+    (fx/sub-ctx state/singular-values))
 
 
 (defn
-  svd-weight
+  singular-value
   "Get a particular singular vector
   Based on `index`"
   [context
    sv-index]
   (-> context
-      (fx/sub-ctx svd-weights)
+      (fx/sub-ctx singular-values)
       (get sv-index)
       second))
 #_
-(state/svd-weight @state/*selections
-                 1)
+(state/singular-value @state/*selections
+                      1)
 ;; => 9247.099897276306
 
 (defn
@@ -1308,9 +1308,9 @@
   (let [{:keys [centroid-a]} (fx/sub-ctx context
                                          state/sv-bisection)]
     (let [sval-one  (-> context
-                        (fx/sub-ctx state/svd-weight 0))
+                        (fx/sub-ctx state/singular-value 0))
           sval-two  (-> context
-                        (fx/sub-ctx state/svd-weight 1))
+                        (fx/sub-ctx state/singular-value 1))
           [x-coord
            y-coord] centroid-a]
       (let [mixture (fx/sub-ctx context
@@ -1399,9 +1399,9 @@
   (let [{:keys [centroid-b]} (fx/sub-ctx context
                                          state/sv-bisection)]
     (let [sval-one  (-> context
-                        (fx/sub-ctx state/svd-weight 0))
+                        (fx/sub-ctx state/singular-value 0))
           sval-two  (-> context
-                        (fx/sub-ctx state/svd-weight 1))
+                        (fx/sub-ctx state/singular-value 1))
           [x-coord
            y-coord] centroid-b]
       (fx/sub-ctx context
@@ -1721,38 +1721,38 @@
     (fx/sub-ctx state/sv-proj-svg))
 
 (defn
-  svd-weights-stats
+  singular-values-stats
   [context]
   (-> context
-      (fx/sub-ctx svd-weights)
+      (fx/sub-ctx singular-values)
       matrix/singular-values-stats))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/svd-weights-stats))
+    (fx/sub-ctx state/singular-valuesstats))
 
 (defn
-  svd-weights-svg
+  singular-values-svg
   [context]
   (-> (plot/sv-weights (fx/sub-ctx context
-                                   svd-weights)
+                                   singular-values)
                        50
                        (fx/sub-ctx context
-                                   svd-weights-stats)
+                                   singular-values-stats)
                        (* 1.0
                           (fx/sub-ctx context
                                       state/window-width))
                        (* 1.0
                           (fx/sub-ctx context
                                       state/row-height)))
-      (spitsvgstream "svd-weights.svg")))
+      (spitsvgstream "singular-values.svg")))
 #_
 (spit (str "out/"
            (-> @state/*selections
                (fx/sub-ctx state/region-key)
                symbol)
-           "/test-weights-actual.svg")
+           "/test-singular-values-actual.svg")
       (-> @state/*selections
-          (fx/sub-ctx state/svd-weights-svg)))
+          (fx/sub-ctx state/singular-valuess-svg)))
 
 (defn
   all-svg
@@ -1931,13 +1931,13 @@
   (let [num-of-svs  (-> context
                         (fx/sub-ctx datafile-strs)
                         count)
-        svd-weights (->> (fx/sub-ctx context
-                                     svd-weights)
+        singular-vals (->> (fx/sub-ctx context
+                                         singular-values)
                          (mapv second))]
     (->> num-of-svs
          range
          (mapv (fn [sv-index]
-                 (let [weight (get svd-weights
+                 (let [weight (get singular-vals
                                    sv-index)]
                    (->> (sv-weights context
                                     sv-index)

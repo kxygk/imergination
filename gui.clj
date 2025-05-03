@@ -337,14 +337,14 @@
 
 
 (defn
-  svd-weights
+  singular-values
   "Where we select the data to read in..
   We can inspect how it looks in our region"
   [{:keys [fx/context]}]
   {:fx/type     svg
    :v-box/hgrow :always
    :svg         (fx/sub-ctx context
-                            state/svd-weights-svg)})
+                            state/singular-values-svg)})
 
 (defn
   climate-index
