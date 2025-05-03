@@ -469,7 +469,7 @@
                                     {:fx/type          svpreview
                                      :grid-pane/row    3
                                      :grid-pane/column 1}
-                                    {:fx/type               svd-weights
+                                    {:fx/type               singular-values
                                      :grid-pane/row         4
                                      :grid-pane/row-span    1
                                      :grid-pane/column      0
