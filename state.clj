@@ -25,20 +25,37 @@
                             :contour-filestr                nil
                             :rain-dirstr
                             #_
+                            "/home/kxygk/Data/imerg/daily/late-more/"
+                            #_
+                            "/home/kxygk/Data/era5/hourly-201103/rot/"
+                            #_
+                            "/home/kxygk/Data/imerg/30min-subset/"
+                            #_
+                            "/home/kxygk/Data/era5/monthly/rot/"
+                            #_
                             "/home/kxygk/Projects/raingrid/out/"
+                            #_
+                            "/home/kxygk/Projects/raingrid/out-pat1/"
                             #_
                             "/home/kxygk/Data/imerg/daily/late/"
                             ;;#_
                             "/home/kxygk/Data/imerg/monthly/late/"
                             :elevation-filestr              "./data/World_e-Atlas-UCSD_SRTM30-plus_v8.tif"
-                            :cycle-length                   12
+                            :cycle-length                   12;;24 ;;48
                             :cycle-phase                    0
-                            :eas-res                        0.1
-                            :sou-res                        0.1
+                            :eas-res
+                            ;;0.25
+                            0.1
+                            :sou-res
+                            ;;0.25
+                            0.1
                             ;; TODO Debug `krabi-region`. Axis labels float off from the map
                             :region                         nil
                             :region-key
                             ;;;;;;;;;;;;;;;;;;;;;;;
+                            #_:world
+                            #_:ocean1small
+                            #_:ocean1small-1pat
                             #_:ocean1large
                             #_:ocean1largeextra
                             #_:ocean1largeextraextra
@@ -54,6 +71,11 @@
                             #_:marrah-big
                             #_:sichuan-wall
                             :krabi-root-2
+                            #_:krabi-root-2-era5
+                            #_:krabi-root-2-diurnal
+                            #_:java
+                            #_:java-era5
+                            #_:birdhead
                             #_krabi-skinny-region
                             #_eastern-korea
                             #_:himalaya
@@ -232,6 +254,16 @@
                   geoprim/dimension)]
     (/ lat
        lon)))
+#_
+(-> @state/*selections
+    (fx/sub-ctx region-xy-ratio))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/region))
+;; => {:norwes {:eas 297.66666666666663, :sou 136.33333333333331},
+;;     :soueas {:eas 297.66666666666663, :sou 136.33333333333331}}
+;;  geoprim/dimension)
+
 
 (defn
   region-display-width
@@ -605,6 +637,10 @@
   It's be best if it was only a transient data structure in `region-matrix`
   and params were deduces otherwise"
   [context]
+  #_ ;; TODO. This probably does the same thing...
+  (-> context
+      (fx/sub-ctx region-matrix)
+      matrix/to-geogrid-vec)
   (let [myregion (fx/sub-ctx context
                              region)]
     (if (fx/sub-ctx context
@@ -1955,8 +1991,9 @@
                         (mapv #(Math/pow %
                                          2)))))))))
 #_
-(-> @state/*selections
-    (fx/sub-ctx power-of-sv-weights-scaled))
+(->> (-> @state/*selections
+         (fx/sub-ctx power-of-sv-weights-scaled))
+     (mapv (partial take 5)))
 
 (defn
   sv12-vs-other
