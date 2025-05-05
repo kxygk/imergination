@@ -455,18 +455,18 @@
                       (map second)
                       (map-indexed vector))]
     (let [sv1-axis (-> (quickthing/primary-axis proj-sv1
-                                                {:width           width
-                                                 :height          height
-                                                 :legend          [["Singular Vec 1"
-                                                                    {:fill "#0000aa"}]
-                                                                   ["Singular Vec 2"
-                                                                    {:fill "#aa0000"}]]
+                                                {:width       width
+                                                 :height      height
+                                                 :legend      [["Singular Vec 1"
+                                                                {:fill "#0000aa"}]
+                                                               ["Singular Vec 2"
+                                                                {:fill "#aa0000"}]]
                                                  ;;:title       "SV1 SV2 weights"
                                                  ;;:x-name      "Data index"
                                                  ;; :x-ticks     [1.0]
                                                  ;; :y-ticks     [1.0]
                                                  :margin-frac 0.06
-                                                 :color           "#0000aa"})
+                                                 :color       "#0000aa"})
                        (assoc-in [:grid]
                                  nil)
                        (assoc-in [:x-axis
@@ -480,10 +480,10 @@
                                         (count sv-projs)
                                         cycle-length)))
           sv2-axis (-> (quickthing/secondary-axis proj-sv2
-                                                  {:width           width
-                                                   :height          height
+                                                  {:width       width
+                                                   :height      height
                                                    :margin-frac 0.06
-                                                   :color           "#aa0000"})
+                                                   :color       "#aa0000"})
                        (assoc-in [:grid]
                                  nil)
                        (assoc-in [:x-axis
@@ -522,7 +522,7 @@
                                         (quickthing/solid-line proj-sv2
                                                                {:attribs {:stroke-width 7
                                                                           :stroke       "#aa0000"}})))
-                        viz/svg-plot2d-cartesian))
+                         viz/svg-plot2d-cartesian))
           (quickthing/svg-wrap [width
                                 height]
                                width)))))
@@ -669,10 +669,10 @@
                                        #(into %
                                               (quickthing/adjustable-circles xy-radius
                                                                              {:attribs {:stroke "#777"}})))
-            true           (update :data
+            true               (update :data
                                        #(into %
                                               (quickthing/index-text xy-radius
-                                                                     {:scale   40}))))
+                                                                     {:scale 40}))))
           ;;#_#_
           viz/svg-plot2d-cartesian
           (quickthing/svg-wrap [width

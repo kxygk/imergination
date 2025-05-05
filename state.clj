@@ -171,17 +171,17 @@
                      string))
   (let [region-key (-> @state/*selections
                        (fx/sub-ctx state/region-key))
-        subfolder (if (nil? region-key)
-                    "custom"
-                    (symbol region-key))]
-  (if debug?
-    (future (spit (str "../imergination.wiki/"
-                       subfolder
-                       "/"
-                       filename)
-                  string))
-    nil)
-  string))
+        subfolder  (if (nil? region-key)
+                     "custom"
+                     (symbol region-key))]
+    (if debug?
+      (future (spit (str "../imergination.wiki/"
+                         subfolder
+                         "/"
+                         filename)
+                    string))
+      nil)
+    string))
 
 (if debug?
   (->> (-> @state/*selections
@@ -599,7 +599,7 @@
    easres
    soures]
   (map #(do #_(println (str "Reading in .. "
-                          % ))
+                            % ))
             (geogrid4image/read-file (str datadir-str
                                           % )
                                      easres
@@ -620,7 +620,7 @@
                                      sou-res))))
 #_
 (realized? (-> @state/*selections
-    (fx/sub-ctx state/world-geogrid-vec)))
+               (fx/sub-ctx state/world-geogrid-vec)))
 #_
 (-> @state/*selections
     (fx/sub-ctx is-in-ram))
@@ -939,11 +939,11 @@
                        id))
 #_
 (apply max
-(-> @state/*selections
-    (fx/sub-ctx state/datafile-geogrid
-                9)
-    :data-array
-    vec))
+       (-> @state/*selections
+           (fx/sub-ctx state/datafile-geogrid
+                       9)
+           :data-array
+           vec))
 
 ;; => 30174.0
 ;; => -32344.0
@@ -962,8 +962,8 @@
       (plot/grid-map (fx/sub-ctx context
                                  region-svg-hiccup)
                      {:label-top-right "Average"
-                      :display-width (fx/sub-ctx context
-                                                 region-display-width)})
+                      :display-width   (fx/sub-ctx context
+                                                   region-display-width)})
       (spitsvgstream (str "average"
                           ".svg"))))
 ;;#_ ;;unused
@@ -1273,8 +1273,8 @@
   "adds cycle meta-data to `sv-proj-vec`"
   [context]
   (add-cycle-data context
-                 (fx/sub-ctx context
-                             sv-proj-vec)))
+                  (fx/sub-ctx context
+                              sv-proj-vec)))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/sv-proj))
@@ -1803,8 +1803,8 @@
   all-svg
   [context
    geogrid-vec]
-  (let [cycle-length 12 #_(fx/sub-ctx context
-                                 cycle-length)]
+  (let [cycle-length 12 #_ (fx/sub-ctx context
+                                       cycle-length)]
     (-> (->> geogrid-vec
              (map-indexed (fn [idx
                                grid]
@@ -1812,10 +1812,10 @@
                                            (fx/sub-ctx context
                                                        region-svg-hiccup)
                                            {:label-top-right (str (inc idx))
-                                            :axis-visible? true
+                                            :axis-visible?   true
                                             :cycle-frac      (/ idx
                                                                 12.0)}))))
-             (plot/cyclic 12))))
+        (plot/cyclic 12))))
 
 (defn
   precipitation-all-svg
@@ -1973,12 +1973,12 @@
    (relative to the EOF1 signal)
   for a given INDEX (ie. time point)"
   [context]
-  (let [num-of-svs  (-> context
-                        (fx/sub-ctx datafile-strs)
-                        count)
+  (let [num-of-svs    (-> context
+                          (fx/sub-ctx datafile-strs)
+                          count)
         singular-vals (->> (fx/sub-ctx context
-                                         singular-values)
-                         (mapv second))]
+                                       singular-values)
+                           (mapv second))]
     (->> num-of-svs
          range
          (mapv (fn [sv-index]
@@ -2000,16 +2000,16 @@
   [context]
   (let [all-sv-weights-power (fx/sub-ctx context
                                          power-of-sv-weights-scaled)]
-    (let [sv1 (first all-sv-weights-power)
-          sv2 (second all-sv-weights-power)
-          sv12 (mapv +
-                     sv1
-                     sv2)
+    (let [sv1       (first all-sv-weights-power)
+          sv2       (second all-sv-weights-power)
+          sv12      (mapv +
+                          sv1
+                          sv2)
           ;;#_#_
           other-svs (apply (partial mapv
-                                   +)
-                          (drop 2
-                                all-sv-weights-power))]
+                                    +)
+                           (drop 2
+                                 all-sv-weights-power))]
       (map vector
            sv12
            other-svs))))
@@ -2032,8 +2032,8 @@
       (plot/scatter 1000
                     1000
                     {:title-str "SV Power Plot"
-                     :x-name "SV1 and SV2"
-                     :y-name "Other SVs"})
+                     :x-name    "SV1 and SV2"
+                     :y-name    "Other SVs"})
       (spitsvgstream (str "power-sv12-vs-other"
                           ".svg"))))
 ;;#_ ;;usused
