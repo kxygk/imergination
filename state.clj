@@ -71,6 +71,7 @@
                             #_:marrah-big
                             #_:sichuan-wall
                             :krabi-root-2
+                            #_:krabi-root-2-daily
                             #_:krabi-root-2-era5
                             #_:krabi-root-2-diurnal
                             #_:java

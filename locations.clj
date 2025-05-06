@@ -91,6 +91,14 @@
                                                            (point 6
                                                                   101))
                                 :interesting-times [38, 22, 71, 89, 65, 101, 85, 24]}
+   :krabi-root-2-daily               {:region            (region (point (+ 6.0
+                                                                     (* 5.0
+                                                                        (pow 2.0
+                                                                             0.5)))
+                                                                  97.0)
+                                                           (point 6
+                                                                  101))
+                                :interesting-times [38, 22, 71, 89, 65, 101, 85, 24]}
    :krabi-root-2-diurnal       {:region            (region (point (+ 6.0
                                                                      (* 5.0
                                                                         (pow 2.0
