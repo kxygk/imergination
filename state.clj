@@ -1827,8 +1827,12 @@
                    matrix/to-geogrid-vec))
       (spitsvgstream "precipitation-all.svg")))
 ;;#_ ;;unused
-(-> @state/*selections
-    (fx/sub-ctx state/precipitation-all-svg))
+(if (-> @state/*selections
+        (fx/sub-ctx datafile-strs)
+        count
+        (< 200))
+  (-> @state/*selections
+      (fx/sub-ctx state/precipitation-all-svg)))
 
 
 #_(fx/sub-ctx context
@@ -1843,8 +1847,12 @@
                    matrix/to-geogrid-vec))
       (spitsvgstream "noise-all.svg")))
 ;;#_ ;;unused
-(-> @state/*selections
-    (fx/sub-ctx state/noise-all-svg))
+(if (-> @state/*selections
+        (fx/sub-ctx datafile-strs)
+        count
+        (< 200))
+  (-> @state/*selections
+      (fx/sub-ctx state/noise-all-svg)))
 
 (defn
   cycle-group-svg
