@@ -170,7 +170,9 @@
   if the `:cycle-frac` is missing, it will be colored black"
   [data
    width
-   height]
+   height
+   & [{:keys [errors]
+       :or   {errors []}}]]
   (let [{:keys [angle
                 points-a
                 points-b
@@ -180,43 +182,55 @@
                                    {:width       width
                                     :height      height
                                     :margin-frac 0.0})
-             (assoc :data
-                    (into []
-                          cat
-                          [(quickthing/adjustable-circles (->> data
-                                                               (map-indexed (fn [index
-                                                                                 [data-x
-                                                                                  data-y
-                                                                                  attribs]]
-                                                                              [data-x
-                                                                               data-y
-                                                                               nil ;; default radius
-                                                                               {:stroke #_ "transparent" "#777"
-                                                                                ;; TODO thread the whole thing
-                                                                                :fill   (quickthing/color-cycle (-> attribs
-                                                                                                                    :cycle-frac))}])))
-                                                          {:scale 30})
-                           (quickthing/index-text data
-                                                  {:scale 40})
-                           (quickthing/line-through-point data
+             (update :data
+                     #(into %
+                            (quickthing/adjustable-circles (->> data
+                                                                (map-indexed (fn [index
+                                                                                  [data-x
+                                                                                   data-y
+                                                                                   attribs]]
+                                                                               [data-x
+                                                                                data-y
+                                                                                nil ;; default radius
+                                                                                {:stroke #_ "transparent" "#777"
+                                                                                 ;; TODO thread the whole thing
+                                                                                 :fill   (-> attribs
+                                                                                             :cycle-frac
+                                                                                             quickthing/color-cycle)}])))
+                                                           {:scale 30})))
+             (update :data
+                     #(into %
+                            (flatten (quickthing/error-bars errors))))
+             #_
+             (update :data
+                     #(into %
+                            (quickthing/index-text data
+                                                   {:scale 40})))
+             (update :data
+                     #(into %
+                             (quickthing/line-through-point data
                                                           (->> angle
                                                                bisect/angle-to-unitvector)
                                                           {:attribs {:stroke           "red"
                                                                      :stroke-dasharray (str 50.0
                                                                                             " "
-                                                                                            50.0)}})
+                                                                                            50.0)}})))
+             (update :data
+                     #(into %
                            (quickthing/line-through-point data
                                                           centroid-a
                                                           {:attribs {:stroke           "black"
                                                                      :stroke-dasharray (str 7.0
                                                                                             " "
-                                                                                            7.0)}})
-                           (quickthing/line-through-point data
+                                                                                            7.0)}})))
+             (update :data
+                     #(into %
+                            (quickthing/line-through-point data
                                                           centroid-b
                                                           {:attribs {:stroke           "black"
                                                                      :stroke-dasharray (str 7.0
                                                                                             " "
-                                                                                            7.0)}})]))
+                                                                                            7.0)}})))
              (assoc :grid ;; turn off grid
                     nil))
          (viz/svg-plot2d-cartesian)
