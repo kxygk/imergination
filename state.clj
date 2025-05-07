@@ -753,8 +753,11 @@
 #_
 (-> @state/*selections
     (fx/sub-ctx state/noise-matrix-2d)
-    keys)
-;; => (:sigma :u :vt :master :matrix :dimension :position :resolution)
+    :matrix)
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/region-matrix)
+    :matrix)
 
 (defn
   noise-vars
@@ -1760,7 +1763,9 @@
                                    window-width))
                     (* 4.0
                        (fx/sub-ctx context
-                                   row-height)))
+                                   row-height))
+                    {:errors (fx/sub-ctx context
+                                         sv-proj-with-errors)})
       (spitsvgstream "sv-projs.svg")))
 #_
 (-> @state/*selections
