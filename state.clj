@@ -1284,6 +1284,140 @@
     (fx/sub-ctx state/sv-proj))
 
 (defn
+  noise-matrix-scaled-to-sv1
+  [context]
+  (let [sv (fx/sub-ctx context
+                        singular-vector
+                        0)]
+    (matrix/scaled-to-vec (fx/sub-ctx context
+                                      noise-matrix-2d)
+                          sv)))
+#_
+(fx/sub-ctx @state/*selections
+            noise-matrix-scaled-to-sv1)
+
+(defn
+  noise-scaled-to-sv1-svg
+  "Get the noise background of one data point"
+  [context
+   id]
+  (-> (matrix/extract-grid (fx/sub-ctx context
+                                       noise-matrix-scaled-to-sv1)
+                           id)
+      (plot/grid-map (fx/sub-ctx context
+                                 region-svg-hiccup)
+                     {:display-width (fx/sub-ctx context
+                                                 region-display-width)})
+      (spitsvgstream (str "noise-sv1-"
+                          id
+                          "file.svg"))))
+#_
+(-> @state/*selections
+    (state/noise-svg 31))
+
+(defn
+  noise-matrix-scaled-to-sv2
+  [context]
+  (let [sv (fx/sub-ctx context
+                        singular-vector
+                        1)]
+    (matrix/scaled-to-vec (fx/sub-ctx context
+                                      noise-matrix-2d)
+                          sv)))
+#_
+(fx/sub-ctx @state/*selections
+            noise-matrix-scaled-to-sv2)
+
+(defn
+  noise-scaled-to-sv2-svg
+  "Get the noise background of one data point"
+  [context
+   id]
+  (-> (matrix/extract-grid (fx/sub-ctx context
+                                       noise-matrix-scaled-to-sv2)
+                           id)
+      (plot/grid-map (fx/sub-ctx context
+                                 region-svg-hiccup)
+                     {:display-width (fx/sub-ctx context
+                                                 region-display-width)})
+      (spitsvgstream (str "noise-sv2-"
+                          id
+                          "file.svg"))))
+#_
+(-> @state/*selections
+    (state/noise-svg 31))
+
+(defn
+  errors-in-sv1-proj
+  [context]
+  (let [singular-val (fx/sub-ctx context
+                                 singular-value
+                                 0)]
+    (->> (fx/sub-ctx context
+                     noise-matrix-scaled-to-sv2)
+         matrix/self-inner-prod-of-cols
+         (mapv (fn [sum-of-squares]
+                 (-> sum-of-squares
+                     Math/sqrt)))
+         (map-indexed (fn [sv-index
+                           scaled-error]
+                        (/ scaled-error
+                           singular-val)))
+         vec)))
+#_
+(fx/sub-ctx @state/*selections
+            errors-in-sv1-proj)
+
+(defn
+  errors-in-sv2-proj
+  [context]
+  (let [singular-val (fx/sub-ctx context
+                                 singular-value
+                                 1)]
+    (->> (fx/sub-ctx context
+                     noise-matrix-scaled-to-sv2)
+         matrix/self-inner-prod-of-cols
+         (mapv (fn [sum-of-squares]
+                 (-> sum-of-squares
+                     Math/sqrt)))
+         (map-indexed (fn [sv-index
+                           scaled-error]
+                        (/ scaled-error
+                           singular-val)))
+         vec)))
+#_
+(fx/sub-ctx @state/*selections
+            errors-in-sv2-proj)
+
+
+(defn
+  sv-proj-with-errors
+  [context]
+  (let [sv12-projections (fx/sub-ctx context
+                                     state/sv-proj)
+        errors-x (fx/sub-ctx context
+                             errors-in-sv1-proj)
+        errors-y (fx/sub-ctx context
+                             errors-in-sv2-proj)]
+    (mapv (fn [[x
+                y
+                attribs]
+               err-x
+               err-y]
+            [x
+             y
+             err-x
+             err-y])
+          sv12-projections
+          errors-x
+          errors-y)))
+#_
+(quickthing/error-bars
+  (fx/sub-ctx @state/*selections
+              sv-proj-with-errors))
+
+
+(defn
   sv12-plot-svg
   "Plot of SV1 and SV2 and how they chaneg over time"
   [context]

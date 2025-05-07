@@ -764,3 +764,53 @@
 (-> @state/*selections
     (cljfx.api/sub-ctx state/region-matrix)
     data-average-geogrid)
+
+;; NOTE:
+;; The `vect-math/mu` function allows element-by-element multiplication
+#_
+(vect-math/mul (neand/dge 2 2 [2 2 2 2])
+               (neand/dge 2 2 [3 2 4 2]))
+;; => #RealGEMatrix[double, mxn:2x2, layout:column]
+;;       ▥       ↓       ↓       ┓    
+;;       →       6.00    8.00         
+;;       →       4.00    4.00         
+;;       ┗                       ┛
+
+(defn
+  scaled-to-vec
+  "Scale the columns in a matrix to by the values in a data-vec"
+  [data-matrix
+   data-vec]
+  (let [num-datapoints (-> data-matrix
+                           :matrix
+                           ncore/ncols)
+        num-pixels     (-> data-matrix
+                           :matrix
+                           ncore/mrows)]
+    (let [mat-of-data-vecs (->> data-vec
+                                (repeat num-datapoints)
+                                (neand/dge num-pixels
+                                           num-datapoints) #_
+                                ncore/trans)]
+      (-> data-matrix
+          (assoc :matrix
+                 (vect-math/mul mat-of-data-vecs
+                                (:matrix data-matrix)))
+          (dissoc :sigma ;; remove any stale svd info
+                  :u
+                  :vt)))))
+
+(defn
+  self-inner-prod-of-cols
+  "Take each column of a matric.
+  Then have each column do a self-inner product.
+  Returns a vector of values.
+  One for each columns naturally"
+  [data-matrix]
+  (->> data-matrix
+       :matrix
+       ncore/cols
+       (mapv (fn [column]
+               (ncore/dot column
+                          column)))))
+
