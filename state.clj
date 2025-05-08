@@ -1407,7 +1407,8 @@
             [x
              y
              err-x
-             err-y])
+             err-y
+             attribs])
           sv12-projections
           errors-x
           errors-y)))
