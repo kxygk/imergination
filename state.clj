@@ -538,38 +538,6 @@
          0.1
          0.1))))
 
-
-(defn
-  sv-strs
-  "Gets listing of all possible SVs"
-  [context]
-  (let [num-of-svs (-> context
-                       (fx/sub-ctx datafile-strs)
-                       count)]
-    (let [svs        (-> num-of-svs
-                         range)
-          max-digits (-> num-of-svs
-                         clojure.math/log10
-                         clojure.math/ceil
-                         int)]
-      (mapv (fn [svindex]
-              (str "SV "
-                   (format (str "%0"
-                                max-digits
-                                "d")
-                           svindex)))
-            svs))))
-#_
-(-> @state/*selections
-    (fx/sub-ctx state/sv-strs))
-#_
-(-> @state/*selections
-    (fx/sub-ctx datafile-strs)
-    count
-    clojure.math/log10
-    clojure.math/ceil
-    int)
-
 #_
 (defn
   sv-strs
@@ -709,6 +677,46 @@
 (-> @state/*selections
     (fx/sub-ctx state/region-geogrid-params))
 ;; => [40 71 0.1 0.1 {:eas 277.0, :sou 76.9}]
+
+(defn
+  num-svs
+  "Number of Singular Vectors/Values.
+  This is either the number of data point,
+  or the number of pixels.
+  Whichever is smallest"
+  [context]
+  (-> context
+      (fx/sub-ctx region-matrix)
+      matrix/num-svs))
+
+(defn
+  sv-strs
+  "Gets listing of all possible SVs"
+  [context]
+  (let [num-of-svs (-> context
+                       (fx/sub-ctx num-svs))]
+    (let [svs        (-> num-of-svs
+                         range)
+          max-digits (-> num-of-svs
+                         clojure.math/log10
+                         clojure.math/ceil
+                         int)]
+      (mapv (fn [svindex]
+              (str "SV "
+                   (format (str "%0"
+                                max-digits
+                                "d")
+                           svindex)))
+            svs))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/sv-strs))
+#_
+(-> @state/*selections
+    (fx/sub-ctx num-svs)
+    clojure.math/log10
+    clojure.math/ceil
+    int)
 
 (defn
   region-svd
@@ -1982,8 +1990,7 @@
       (spitsvgstream "noise-all.svg")))
 ;;#_ ;;unused
 (if (-> @state/*selections
-        (fx/sub-ctx datafile-strs)
-        count
+        (fx/sub-ctx num-svs)
         (< 200))
   (-> @state/*selections
       (fx/sub-ctx state/noise-all-svg)))
@@ -2117,8 +2124,7 @@
   for a given INDEX (ie. time point)"
   [context]
   (let [num-of-svs    (-> context
-                          (fx/sub-ctx datafile-strs)
-                          count)
+                          (fx/sub-ctx num-svs))
         singular-vals (->> (fx/sub-ctx context
                                        singular-values)
                            (mapv second))]

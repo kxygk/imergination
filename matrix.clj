@@ -64,6 +64,18 @@
      (apply max data-vec)]))
 
 (defn
+  num-svs
+  "Number of Singular Vectors/Values.
+  This is either the number of data point,
+  or the number of pixels.
+  Whichever is smallest"
+  [data-matrix]
+  (let [matrix (-> data-matrix
+                   :matrix)]
+      (min (ncore/ncols matrix)
+           (ncore/mrows matrix))))
+
+(defn
   svd
   "Take a data matrix
   Returns
