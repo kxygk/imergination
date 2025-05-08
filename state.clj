@@ -988,7 +988,10 @@
                   id)
       (plot/grid-map (fx/sub-ctx context
                                  region-svg-hiccup)
-                     {:display-width (fx/sub-ctx context
+                     {:max-val       (->  context
+                                          (fx/sub-ctx region-min-max)
+                                          second)
+                      :display-width (fx/sub-ctx context
                                                  region-display-width)})
       (spitsvgstream (str "data-file-"
                           id
@@ -1952,6 +1955,9 @@
                                            (fx/sub-ctx context
                                                        region-svg-hiccup)
                                            {:label-top-right (str (inc idx))
+                                            :max-val         (->  context
+                                                                  (fx/sub-ctx region-min-max)
+                                                                  second)
                                             :axis-visible?   true
                                             :cycle-frac      (/ idx
                                                                 12.0)}))))

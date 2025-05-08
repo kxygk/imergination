@@ -124,12 +124,14 @@
   [input-grid
    contour-svg
    & [{:keys [pois
+              max-val
               label-top-right
               label-attribs
               display-width
               cycle-frac
               axis-visible?]
        :or   {pois            []
+              max-val         nil
               label-top-right ""
               label-attribs   nil
               display-width   360
@@ -143,7 +145,9 @@
     (-> (svg/group {}
                    (if input-grid ;; TODO: Make it work without a grid..
                      (geogrid2svg/to-heatmap local-rain-grid
-                                             overruns)
+                                             (assoc overruns
+                                                    :max-val
+                                                    max-val))
                      (svg/group {}
                                 nil))
                    (if axis-visible?
