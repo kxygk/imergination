@@ -1354,7 +1354,7 @@
                                  singular-value
                                  0)]
     (->> (fx/sub-ctx context
-                     noise-matrix-scaled-to-sv2)
+                     noise-matrix-scaled-to-sv1)
          matrix/self-inner-prod-of-cols
          (mapv (fn [sum-of-squares]
                  (-> sum-of-squares
