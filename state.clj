@@ -199,12 +199,17 @@
   And return the hiccup"
   [svg-hiccup
    filename]
-  (println (str "Writing out SVG: "
+  (println (str "Making SVG: "
                 filename))
-  (spitstream (-> svg-hiccup
-                  quickthing/svg2xml)
-              filename)
-  svg-hiccup)
+  (let [realized-hiccup (do (println "Generating Hiccup")
+                            (doall svg-hiccup))]
+    (let [xml (do (println "Generating XML")
+                  (quickthing/svg2xml realized-hiccup))]
+      #_xml
+      (println "Writing to File")
+      (spitstream xml
+                  filename)
+      svg-hiccup)))
 ;; ***************************************
 
 
