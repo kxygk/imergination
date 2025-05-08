@@ -241,6 +241,94 @@
          (svg/svg {:width  width
                    :height height}))))
 
+;; NOTE: This doesn't work b/c the ellipse errors aren't in the plotting units
+;; So you get circles but they're not properly scaled
+;; They look deceptively right...
+;; DON'T USE
+#_
+(defn
+  sv-ellipse-plot
+  "Data points should be in the form:
+  [x, y, err-x, err-y, {:cycle-frac 69}]
+  if the `:cycle-frac` is missing, it will be colored black"
+  [data-with-errors
+   width
+   height]
+  (let [{:keys [angle
+                points-a
+                points-b
+                centroid-a
+                centroid-b]} (bisect/min-var (->> data-with-errors
+                                                 (mapv (fn [[x y]]
+                                                         [x
+                                                          y]))))]
+    (->> (-> (quickthing/zero-axis data-with-errors
+                                   {:width       width
+                                    :height      height
+                                    :margin-frac 0.0})
+             (update :data
+                     #(into %
+                            (quickthing/adjustable-ellipses (->> data-with-errors
+                                                                 (map-indexed (fn [index
+                                                                                   [data-x
+                                                                                    data-y
+                                                                                    err-x
+                                                                                    err-y
+                                                                                    attribs]]
+                                                                               [data-x
+                                                                                data-y
+                                                                                err-x
+                                                                                err-y
+                                                                                {:stroke #_ "transparent" "#777"
+                                                                                 ;; TODO thread the whole thing
+                                                                                 :fill   (-> attribs
+                                                                                             :cycle-frac
+                                                                                             quickthing/color-cycle)}]))
+                                                                 doall)
+                                                           {:scale 30})))
+             #_
+             (update :data
+                     #(into %
+                            (flatten (quickthing/error-bars errors))))
+             #_
+             (update :data
+                     #(into %
+                            (quickthing/index-text data
+                                                   {:scale 40})))
+             (update :data
+                     #(into %
+                             (quickthing/line-through-point data-with-errors
+                                                          (->> angle
+                                                               bisect/angle-to-unitvector)
+                                                          {:attribs {:stroke           "red"
+                                                                     :stroke-dasharray (str 50.0
+                                                                                            " "
+                                                                                            50.0)}})))
+             (update :data
+                     #(into %
+                           (quickthing/line-through-point data-with-errors
+                                                          centroid-a
+                                                          {:attribs {:stroke           "black"
+                                                                     :stroke-dasharray (str 7.0
+                                                                                            " "
+                                                                                            7.0)}})))
+             (update :data
+                     #(into %
+                            (quickthing/line-through-point data-with-errors
+                                                          centroid-b
+                                                          {:attribs {:stroke           "black"
+                                                                     :stroke-dasharray (str 7.0
+                                                                                            " "
+                                                                                            7.0)}})))
+             (assoc :grid ;; turn off grid
+                    nil))
+         (viz/svg-plot2d-cartesian)
+         (svg/svg {:width  width
+                   :height height}))))
+
+
+
+
 (defn
   sv-weights
   [weights
