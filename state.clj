@@ -733,7 +733,7 @@
 #_
 (-> @state/*selections
     (fx/sub-ctx state/region-min-max))
-
+;; => [0.0 1802.0]
 #_
 (-> @state/*selections
     (fx/sub-ctx state/region-matrix)
@@ -981,8 +981,6 @@
   Selected with an ID index"
   [context
    id]
-  (println (str "svg of file: "
-                id))
   (-> (fx/sub-ctx context
                   datafile-geogrid
                   id)
@@ -1170,15 +1168,6 @@
    svec-two
    sval-one
    sval-two]
-  (println (str "\nin `singular-vector-mixture`"
-                "\nsvec-one"
-                svec-one
-                "\nsvec-two"
-                svec-two
-                "\nsval-one"
-                sval-one
-                "\nsval-two"
-                sval-two))
   (let [svec1 (fx/sub-ctx context
                           singular-vector
                           0)

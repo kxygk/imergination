@@ -315,9 +315,6 @@
    cycle-phase]
   (let [indexed (map-indexed vector
                              proj)]
-    (println (range cycle-phase
-                    (count proj)
-                    cycle-length))
     (let [axis (-> (quickthing/primary-axis indexed
                                             {:width       width
                                              :height      height

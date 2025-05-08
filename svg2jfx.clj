@@ -65,12 +65,6 @@
   [^java.lang.String svg-xml-string
    scale-x
    scale-y]
-  (println
-    "Yo"
-    " scale x: "
-    scale-x
-    " scale y: "
-    scale-y)
   (fn
     []
     (let [^javafx.scene.Group
