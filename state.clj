@@ -1389,7 +1389,6 @@
 (fx/sub-ctx @state/*selections
             errors-in-sv2-proj)
 
-
 (defn
   sv-proj-with-errors
   [context]
@@ -1412,6 +1411,9 @@
           sv12-projections
           errors-x
           errors-y)))
+#_
+(fx/sub-ctx @state/*selections
+            sv-proj-with-errors)
 #_
 (quickthing/error-bars
   (fx/sub-ctx @state/*selections
@@ -1892,7 +1894,7 @@
   sv-proj-svg
   [context]
   (-> context
-      (cljfx.api/sub-ctx sv-proj)
+      (fx/sub-ctx sv-proj)
       (plot/sv-plot (* 1.0
                        (fx/sub-ctx context
                                    window-width))
@@ -1901,10 +1903,11 @@
                                    row-height))
                     {:errors (fx/sub-ctx context
                                          sv-proj-with-errors)})
+      ;;      #_
       (spitsvgstream "sv-projs.svg")))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/sv-proj-svg))
+    (fx/sub-ctx sv-proj-svg))
 
 (defn
   singular-values-stats
@@ -2186,6 +2189,6 @@
                      :y-name    "Other SVs"})
       (spitsvgstream (str "power-sv12-vs-other"
                           ".svg"))))
-;;#_ ;;usused
+#_;;usused
 (-> @state/*selections
     (fx/sub-ctx sv12-vs-other-svg))
