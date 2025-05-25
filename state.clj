@@ -18,78 +18,123 @@
   true)
 
 (def
+  config-dir
+  (str "/home/kxygk/Projects/imergination.wiki/"
+       "krabins"
+       #_"haihai"))
+
+(def
   *selections
-  (atom (fx/create-context {:window-width                   1080.0
-                            :row-height                     360
-                            :shoreline-filestr              "./data/shoreline-coarse.json"
-                            :contour-filestr                nil
-                            :non-zero-min?                      true
-                            :rain-dirstr
-                            #_
-                            "/home/kxygk/Data/imerg/daily/late-more/"
-                            #_
-                            "/home/kxygk/Data/era5/hourly-201103/rot/"
-                            #_
-                            "/home/kxygk/Data/imerg/30min-subset/"
-                            #_
-                            "/home/kxygk/Data/era5/monthly/rot/"
-                            #_
-                            "/home/kxygk/Projects/raingrid/out/"
-                            #_
-                            "/home/kxygk/Projects/raingrid/out-pat1/"
-                            #_
-                            "/home/kxygk/Data/imerg/daily/late/"
-                            ;;#_
-                            "/home/kxygk/Data/imerg/monthly/late/"
-                            :elevation-filestr              "./data/World_e-Atlas-UCSD_SRTM30-plus_v8.tif"
-                            :cycle-length                   12;;24 ;;48
-                            :cycle-phase                    0
-                            :eas-res
-                            ;;0.25
-                            0.1
-                            :sou-res
-                            ;;0.25
-                            0.1
-                            ;; TODO Debug `krabi-region`. Axis labels float off from the map
-                            :region                         nil
-                            :region-key
+  (atom (fx/create-context (merge {;; Defaults
+                                   :window-width                   1080.0
+                                   :row-height                     360
+                                   :shoreline-filestr              "./data/shoreline-coarse.json"
+                                   :contour-filestr                nil
+                                   :non-zero-min?                  false
+                                   :rain-dirstr                    "/home/kxygk/Data/sst/monthly/geotiff-rot/"
+                                   :elevation-filestr              "./data/World_e-Atlas-UCSD_SRTM30-plus_v8.tif"
+                                   :bin-size                       1
+                                   :cycle-length                   12
+                                   :cycle-phase                    0
+                                   :eas-res                        0.1
+                                   :sou-res                        0.1
+                                   :region                         nil
+                                   :region-key                     :krabi-root-2
+                                   :is-in-ram                      false
+                                   :mouse-click                    nil
+                                   :datafile-idxs                  [0]
+                                   :sv-selected-idxs               [0]
+                                   :noise-selected-idxs            [0]
+                                   :normalized-noise-selected-idxs [0]}
+                                  (-> config-dir
+                                      (str "/config.edn")
+                                      slurp
+                                      clojure.edn/read-string))
+                                  #(cache/lru-cache-factory % :threshold 1000))))
+#_
+  {:window-width                   1080.0
+     :row-height                     360
+     :shoreline-filestr              "./data/shoreline-coarse.json"
+     :contour-filestr                nil
+     :non-zero-min?                  true
+     :rain-dirstr
+     #_
+     "/home/kxygk/Data/sst/monthly/geotiff-rot-subset/"
+     ;;#_
+     "/home/kxygk/Data/sst/monthly/geotiff-rot/"
+     #_
+     "/home/kxygk/Data/imerg/daily/late-more/"
+     #_
+     "/home/kxygk/Data/era5/hourly-201103/rot/"
+     #_
+     "/home/kxygk/Data/imerg/30min-subset/"
+     #_
+     "/home/kxygk/Data/era5/monthly/rot/"
+     #_
+     "/home/kxygk/Projects/raingrid/out/"
+     #_
+     "/home/kxygk/Projects/raingrid/out-pat1/"
+     #_
+     "/home/kxygk/Data/imerg/daily/late/"
+     #_
+     "/home/kxygk/Data/imerg/monthly/late/"
+     :elevation-filestr              "./data/World_e-Atlas-UCSD_SRTM30-plus_v8.tif"
+     :bin-size                       1
+     :cycle-length                   12 #_365 #_24 #_48
+     :cycle-phase                    0
+     :eas-res
+     0.25
+     #_0.1
+     :sou-res
+     0.25
+     #_0.1
+     ;; TODO Debug `krabi-region`. Axis labels float off from the map
+     :region                         nil
+     :region-key
                             ;;;;;;;;;;;;;;;;;;;;;;;
-                            #_:world
-                            #_:ocean1small
-                            #_:ocean1small-1pat
-                            #_:ocean1large
-                            #_:ocean1largeextra
-                            #_:ocean1largeextraextra
-                            #_extraextraextra
-                            #_:ocean2
-                            #_:ocean1
-                            #_:ghana-large
-                            #_:togo
-                            #_:jos
-                            #_:taipei-region
-                            #_:udaipur
-                            #_:marrah
-                            #_:marrah-big
-                            #_:sichuan-wall
-                            :krabi-root-2
-                            #_:krabi-root-2-daily
-                            #_:krabi-root-2-era5
-                            #_:krabi-root-2-diurnal
-                            #_:java
-                            #_:java-era5
-                            #_:birdhead
-                            #_krabi-skinny-region
-                            #_eastern-korea
-                            #_:himalaya
-                            #_:rift-valley-small
+     #_:world
+     #_:ocean1small
+     #_:ocean1small-1pat
+     #_:ocean1large
+     #_:ocean1largeextra
+     #_:ocean1largeextraextra
+     #_extraextraextra
+     #_:ocean2
+     #_:ocean1
+     #_:ghana-large
+     #_:togo
+     #_:jos
+     #_:taipei-region
+     #_:udaipur
+     #_:marrah
+     #_:marrah-big
+     #_:sichuan-wall
+     #_:krabi-root-2
+     #_:krabi-root-2-daily
+     #_:krabi-root-2-era5
+     #_:krabi-root-2-diurnal
+     #_:java
+     #_:java-era5
+     #_:birdhead
+     #_krabi-skinny-region
+     #_eastern-korea
+     #_:himalaya
+     #_:rift-valley-small
+     ;; Sea Surface Temp
+     #_:south-south-china-sea
+     #_:north-south-china-sea
+     #_:south-east-asia
+     #_:south-east-asia-crop
+     :hainan
                             ;;;;;;;;;;;;;;;;;;;;;;;
-                            :is-in-ram                      false
-                            :mouse-click                    nil
-                            :datafile-idxs                  [0]
-                            :sv-selected-idxs               [0]
-                            :noise-selected-idxs            [0]
-                            :normalized-noise-selected-idxs [0]}
-                           #(cache/lru-cache-factory % :threshold 1000))))
+     :is-in-ram                      false
+     :mouse-click                    nil
+     :datafile-idxs                  [0]
+     :sv-selected-idxs               [0]
+     :noise-selected-idxs            [0]
+     :normalized-noise-selected-idxs [0]}
+
+
 
 (defn
   is-in-ram
@@ -183,7 +228,10 @@
                      "custom"
                      (symbol region-key))]
     (if debug?
-      (future (spit (str "../imergination.wiki/"
+      (future (spit (str config-dir
+                         "/"
+                         filename)
+                    #_(str "../imergination.wiki/"
                          subfolder
                          "/"
                          filename)
@@ -191,6 +239,7 @@
       nil)
     string))
 
+#_
 (if debug?
   (->> (-> @state/*selections
            (fx/sub-ctx state/region-key))
