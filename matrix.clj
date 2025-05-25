@@ -63,6 +63,70 @@
     [(apply min data-vec)
      (apply max data-vec)]))
 
+
+(defn
+  rezero
+  "Removes the `min` value from all values"
+  [matrix]
+  (let [[min-pix
+         _] (get-min-max matrix)]
+  (-> matrix
+      (update :matrix
+              (fn [matrix]
+                (ncore/axpby! (neand/dge (ncore/mrows matrix)
+                                         (ncore/ncols matrix)
+                                         (repeat (- min-pix)))
+                              matrix))))))
+
+
+
+(defn
+  rezero-nonzero
+  "Removes the `min` value from all values
+  But skip zeros"
+  [matrix]
+  (let [min-pix (->> matrix
+                     :matrix
+                     seq
+                     vec
+                     flatten
+                     vec
+                     (filter pos?)
+                     (apply min))]
+    (-> matrix
+        (update :matrix
+                (fn [old-matrix]
+                  (ncore/axpby! (neand/dge (ncore/mrows old-matrix)
+                                           (ncore/ncols old-matrix)
+                                           (->> old-matrix
+                                                seq
+                                                vec
+                                                flatten
+                                                vec
+                                                (mapv (fn [pix]
+                                                        (if (zero? pix)
+                                                          0.0
+                                                          (- min-pix))))))
+                                old-matrix))))))
+
+#_
+(neand/dge 3 3 [0 0 4 5 6 7 8 9 10])
+;; => #RealGEMatrix[double, mxn:3x3, layout:column]
+;;       ▥       ↓       ↓       ↓       ┓    
+;;       →       0.00    5.00    8.00         
+;;       →       0.00    6.00    9.00         
+;;       →       4.00    7.00   10.00         
+;;       ┗                               ┛
+#_
+(rezero-nonzero {:matrix (neand/dge 3 3 [0 0 4 5 6 7 8 9 10])})
+;; => {:matrix #RealGEMatrix[double, mxn:3x3, layout:column]
+;;       ▥       ↓       ↓       ↓       ┓    
+;;       →       0.00    1.00    4.00         
+;;       →       0.00    2.00    5.00         
+;;       →       0.00    3.00    6.00         
+;;       ┗                               ┛    
+;;    }
+
 (defn
   num-svs
   "Number of Singular Vectors/Values.

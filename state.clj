@@ -23,6 +23,7 @@
                             :row-height                     360
                             :shoreline-filestr              "./data/shoreline-coarse.json"
                             :contour-filestr                nil
+                            :non-zero-min?                      true
                             :rain-dirstr
                             #_
                             "/home/kxygk/Data/imerg/daily/late-more/"
@@ -98,6 +99,12 @@
 #_
 (-> @state/*selections
     (fx/sub-ctx state/is-in-ram))
+
+(defn
+  non-zero-min?
+  [context]
+  (fx/sub-val context
+              :non-zero-min?))
 
 (defn
   row-height
@@ -971,6 +978,19 @@
     uncomplicate.neanderthal.core/amax)
 
 (defn
+  zero-point-mask
+  "Make a mask based on the first datafile where the pix are 0"
+  [context]
+  (mapv zero?
+        (-> context
+            (fx/sub-ctx state/datafile-geogrid
+                        0)
+            :data-array)))
+#_
+(-> @state/*selections
+    (fx/sub-ctx zero-point-mask))
+
+(defn
   average-geogrid
   [context]
   (-> context
@@ -1492,6 +1512,33 @@
        (+ x-coord
           y-coord))))
 
+(defn-
+  rezero-vec
+  "Remove the non-zero minimum value from the vector elements"
+  [input-vec
+   & {:keys [mask]
+      :or   {mask    (->> input-vec
+                          (mapv #(or (zero? %)
+                                     (neg? %))))}}]
+  (let [vec-min (->> (map (fn [pix
+                               mask]
+                            (if mask
+                              nil
+                              pix))
+                          input-vec
+                          mask)
+                     (filter some?)
+                     (apply min))]
+    (mapv (fn [pix
+             mask]
+          (if mask
+            0.0
+            (- pix
+               vec-min)))
+        input-vec
+        mask)))
+  #_
+(rezero-vec [ 0 3 4 5 5])
 
 (defn
   top-pattern
@@ -1504,13 +1551,18 @@
                         (fx/sub-ctx state/singular-value 1))
           [x-coord
            y-coord] centroid-a]
-      (let [mixture (fx/sub-ctx context
+      (let [patt (fx/sub-ctx context
                                 singular-vector-mixture
                                 x-coord
                                 y-coord
                                 sval-one
                                 sval-two)]
-        mixture)))) ;; TODO: Normalize? I think..
+      (if (fx/sub-ctx context
+                      non-zero-min?)
+          (rezero-vec patt
+                      {:mask (fx/sub-ctx context
+                                         zero-point-mask)})
+        patt))))) ;; TODO: Normalize? I think..
 #_
 (-> @state/*selections
     (fx/sub-ctx state/top-pattern))
@@ -1595,12 +1647,18 @@
                         (fx/sub-ctx state/singular-value 1))
           [x-coord
            y-coord] centroid-b]
-      (fx/sub-ctx context
-                  singular-vector-mixture
-                  x-coord
-                  y-coord
-                  sval-one
-                  sval-two))))
+      (let [patt (fx/sub-ctx context
+                             singular-vector-mixture
+                             x-coord
+                             y-coord
+                             sval-one
+                             sval-two)]
+      (if (fx/sub-ctx context
+                      non-zero-min?)
+          (rezero-vec patt
+                      {:mask (fx/sub-ctx context
+                                         zero-point-mask)})
+        patt)))))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/bottom-pattern))
