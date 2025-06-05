@@ -20,8 +20,14 @@
 (def
   config-dir
   (str "/home/kxygk/Projects/imergination.wiki/"
+       #_
+       "krabi-monthly"
+       #_
+       "scs-rainbow"
+       ;;#_
        "krabins"
-       #_"haihai"))
+       #_
+       "haihai"))
 
 (def
   *selections
@@ -636,7 +642,7 @@
                                      soures))
        file-strs))
 
-(defn
+(defn-
   world-geogrid-vec
   "All the data..."
   [context]
@@ -655,9 +661,10 @@
 (-> @state/*selections
     (fx/sub-ctx is-in-ram))
 
-(defn
+(defn-
   region-geogrid-vec
-  "TODO: Ideally this could be removed entirely..
+  "TODO: I think this can be folded into `region-matrix` now?
+  TODO: Ideally this could be removed entirely..
   All this data is in the `region-matrix`
   The problem is I used it in two places
   `region-geogrid-params`
@@ -1050,6 +1057,7 @@
                      {:label-top-right "Average"
                       :display-width   (fx/sub-ctx context
                                                    region-display-width)})
+      #_
       (spitsvgstream (str "average"
                           ".svg"))))
 ;;#_ ;;unused
@@ -1632,9 +1640,10 @@
                       :display-width   (fx/sub-ctx context
                                                    region-display-width)})
       (spitsvgstream "top-pattern.svg")))
-#_
+;;#_
 (-> @state/*selections
-    (fx/sub-ctx state/top-pattern-svg))
+    (fx/sub-ctx state/top-pattern-svg)
+    empty?)
 
 (defn
   top-pattern-weighted-noise
@@ -1714,6 +1723,16 @@
 (-> @state/*selections
     (fx/sub-ctx state/bottom-pattern))
 
+#_
+(->>
+  (-> @state/*selections
+      (fx/sub-ctx state/bottom-pattern))
+  (filter pos?)
+  (apply min))
+;; => 5.912743094506505E-16
+
+(into [1 2 3] [4 5 6])
+
 (defn
   bottom-pattern-svg
   [context]
@@ -1730,9 +1749,10 @@
                       :display-width   (fx/sub-ctx context
                                                    region-display-width)})
       (spitsvgstream "bottom-pattern.svg")))
-#_
+;;#_
 (-> @state/*selections
-    (fx/sub-ctx state/bottom-pattern-svg))
+    (fx/sub-ctx state/bottom-pattern-svg)
+    empty?)
 
 (defn
   bottom-pattern-weighted-noise
@@ -2002,7 +2022,7 @@
                       (fx/sub-ctx context
                                   cycle-phase))
         (spitsvgstream "indeces.svg"))))
-#_
+;;#_
 (-> @state/*selections
     (fx/sub-ctx state/pattern-proj-svg))
 
@@ -2021,7 +2041,7 @@
                                          sv-proj-with-errors)})
       ;;      #_
       (spitsvgstream "sv-projs.svg")))
-#_
+;;#_
 (-> @state/*selections
     (fx/sub-ctx sv-proj-svg))
 
@@ -2050,6 +2070,9 @@
                           (fx/sub-ctx context
                                       state/row-height)))
       (spitsvgstream "singular-values.svg")))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/singular-values-svg))
 #_
 (spit (str "out/"
            (-> @state/*selections
@@ -2096,10 +2119,6 @@
   (-> @state/*selections
       (fx/sub-ctx state/precipitation-all-svg)))
 
-
-#_(fx/sub-ctx context
-              region-geogrid-vec)
-
 (defn
   noise-all-svg
   [context]
@@ -2108,7 +2127,7 @@
                    (fx/sub-ctx noise-matrix-2d)
                    matrix/to-geogrid-vec))
       (spitsvgstream "noise-all.svg")))
-;;#_ ;;unused
+;;unused
 (if (-> @state/*selections
         (fx/sub-ctx num-svs)
         (< 200))

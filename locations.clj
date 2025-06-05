@@ -91,7 +91,7 @@
                                                            (point 6
                                                                   101))
                                 :interesting-times [38, 22, 71, 89, 65, 101, 85, 24]}
-   :krabi-root-2-daily               {:region            (region (point (+ 6.0
+   :krabi-root-2-daily         {:region            (region (point (+ 6.0
                                                                      (* 5.0
                                                                         (pow 2.0
                                                                              0.5)))
@@ -196,6 +196,31 @@
                                                        72.0)
                                                 (point 23.0 ;;12
                                                        74.0))}
+   ;; Sea Surface
+   :south-south-china-sea      {:region (region (point 13.0
+                                                       105.0)
+                                                (point 2.0
+                                                       120.0))}
+   :north-south-china-sea      {:region (region (point 25.0
+                                                       105.0)
+                                                (point 16.0 ;;12
+                                                       122))}
+   :south-china-sea {:region (region (point 13.0
+                                            105.0)
+                                     (point 2.0
+                                            120.0))}
+   :south-east-asia {:region (region (point 25.0
+                                            95.0)
+                                     (point 0.0
+                                            125.0))}
+   :south-east-asia-crop {:region (region (point 22.5
+                                                 95.0)
+                                          (point 0.0
+                                                 125.0))}
+   :hainan {:region (region (point 22.5
+                                   105.0)
+                            (point 17.0
+                                   113.5))}
    })
 
 

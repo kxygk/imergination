@@ -199,12 +199,13 @@
                                                                                [data-x
                                                                                 data-y
                                                                                 nil ;; default radius
-                                                                                {:stroke #_ "transparent" "#777"
+                                                                                {:stroke #_"transparent" "#777"
                                                                                  ;; TODO thread the whole thing
                                                                                  :fill   (-> attribs
                                                                                              :cycle-frac
                                                                                              quickthing/color-cycle)}])))
-                                                           {:scale 30})))
+                                                           {:scale 15})))
+             #_
              (update :data
                      #(into %
                             (flatten (quickthing/error-bars errors))))
