@@ -129,6 +129,7 @@
               label-attribs
               display-width
               cycle-frac
+              colormap
               axis-visible?]
        :or   {pois            []
               max-val         nil
@@ -145,9 +146,11 @@
     (-> (svg/group {}
                    (if input-grid ;; TODO: Make it work without a grid..
                      (geogrid2svg/to-heatmap local-rain-grid
-                                             (assoc overruns
-                                                    :max-val
-                                                    max-val))
+                                             (cond-> overruns
+                                               (some? max-val) (assoc :max-val
+                                                                      max-val)
+                                               (some? colormap) (assoc :colormap
+                                                                       colormap)))
                      (svg/group {}
                                 nil))
                    (if axis-visible?

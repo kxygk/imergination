@@ -1627,6 +1627,8 @@
                                  region-svg-hiccup)
                      {:label-top-right "Top Pattern"
                       :label-attribs   {:fill "#00aa88"}
+                      #_#_:colormap (into quickthing/rainbow
+                                      quickthing/rainbow)
                       :display-width   (fx/sub-ctx context
                                                    region-display-width)})
       (spitsvgstream "top-pattern.svg")))
@@ -1723,6 +1725,8 @@
                                  region-svg-hiccup)
                      {:label-top-right "Bottom Pattern"
                       :label-attribs   {:fill "#aa8800"}
+                      #_#_:colormap (into quickthing/rainbow
+                                      quickthing/rainbow)
                       :display-width   (fx/sub-ctx context
                                                    region-display-width)})
       (spitsvgstream "bottom-pattern.svg")))
