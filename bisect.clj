@@ -131,11 +131,18 @@
 ;;     2.214297435588181
 ;;     1.3876855095324123)
 
+(defn
+  to-angle
+  "Simple trig"
+  [point]
+  (-> point
+      to-polar
+      :angle
+      (mod (* 2.0
+              PI))))
 (defn-
   above-angle?
-  [point
-   angle]
-  (let [TWOPI         (* 2.0
+  "(let [TWOPI         (* 2.0
                          PI)
         divisor-angle (mod angle
                            PI)
@@ -145,20 +152,25 @@
                           (mod TWOPI))
         delta-angle   (mod (- point-angle
                               divisor-angle)
-                           TWOPI)]
-    (if (> divisor-angle
+                           TWOPI)]"
+  [divisor-angle
+   point-delta-angle]
+  (let [divisor-angle-normalized (mod divisor-angle
+                                      PI)]
+    (if (> divisor-angle-normalized
            (/ PI
               2.0))
-      (if (< delta-angle
+      (if (< point-delta-angle
              PI)
         false
         true)
-      (if (< delta-angle
+      (if (< point-delta-angle
              PI)
         true
         false))))
 #_
-(above-angle? [1.2, 1.6]
+(above-angle? (-> [1.2, 1.6]
+                  to-angle)
               3.1)
 ;; => true
 
@@ -170,21 +182,31 @@
              [-0.031774789528481416, -0.005571887118227592]
              [-0.07212716828092831, -0.004997627405708711]]]
   (->> data
-       (mapv #(above-angle? %
+       (mapv #(above-angle? (to-angle %)
                             angle))))
 
 (defn-
   points-along-angle
   [points
    angle]
-  (->> points
-       (mapv (fn update-point
-               [point]
-                (update point
-                        2     ;; typically will be `nil`
-                        #(merge %
-                                {:above? (above-angle? point
-                                                       angle)}))))))
+  (let [TWOPI         (* 2.0
+                         PI)
+        divisor-angle (mod angle
+                           PI)]
+    (->> points
+         (mapv (fn update-point
+                 [point]
+                 (let [point-angle (-> point
+                                       to-angle)
+                       delta-angle (mod (- point-angle
+                                           divisor-angle)
+                                        TWOPI)]
+                   (update point
+                           2     ;; typically will be `nil`
+                           #(merge %
+                                   {:delta-angle delta-angle
+                                    :above?      (above-angle? divisor-angle
+                                                               delta-angle)}))))))))
 #_
 (-> [[2.2,  1.5]
      [1.1, -2.4]
@@ -192,11 +214,11 @@
      [-0.5, -2.7]
      [-0.5, 2.7]]
     (points-along-angle PI))
-;; => [[2.2 1.5 {:above? true}]
-;;     [1.1 -2.4 {:above? false}]
-;;     [-1.2 1.6 {:above? true}]
-;;     [-0.5 -2.7 {:above? false}]
-;;     [-0.5 2.7 {:above? true}]]
+;; => [[2.2 1.5 {:delta-angle 0.5984188934785372, :above? true}]
+;;     [1.1 -2.4 {:delta-angle 5.142151259481378, :above? false}]
+;;     [-1.2 1.6 {:delta-angle 2.214297435588181, :above? true}]
+;;     [-0.5 -2.7 {:delta-angle 4.529278163122205, :above? false}]
+;;     [-0.5 2.7 {:delta-angle 1.7539071440573808, :above? true}]]
 
 (defn-
   angle-dichotomies
