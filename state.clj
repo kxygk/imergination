@@ -275,11 +275,34 @@
 ;; ***************************************
 
 
+;; TODO Make these checks on first run
+;;#_#_
+(if (not (zero? (mod (fx/sub-val @*selections
+                                  :cycle-length)
+                     (fx/sub-val @*selections
+                                 :bin-size))))
+  (println "ERROR: The `bin-size` doesn't cleanly divide the cycle length"))
+
+
+(if (not (zero? (mod (fx/sub-val @*selections
+                                  :cycle-length)
+                     (fx/sub-val @*selections
+                                 :bin-size))))
+  (println "ERROR: The `bin-size` doesn't cleanly divide the cycle length"))
+
+(defn
+  bin-size
+  [context]
+  (fx/sub-val context
+              :bin-size))
+
 (defn
   cycle-length
   [context]
-  (fx/sub-val context
-              :cycle-length))
+  (/ (fx/sub-val context
+                 :cycle-length)
+     (fx/sub-ctx context
+                 bin-size)))
 
 (defn
   cycle-phase
@@ -695,15 +718,45 @@
 (-> @state/*selections
     (fx/sub-ctx state/region-geogrid-vec))
 
+(defn-
+  bin-sum
+  "Build a new `geogrid`.
+  It'll be the sum of the given `geogrids`"
+  [geogrids]
+  (geogrid4seq/build-grid (-> geogrids
+                              first
+                              geogrid/params)
+                          (->> geogrids
+                               (mapv geogrid/data)
+                               (apply mapv +))))
+
+(defn-
+  bin-geogrids
+  [geogrids
+   bin-size]
+  (if (== bin-size
+          1)
+    geogrids
+    (->> geogrids
+         (partition bin-size)
+         (mapv bin-sum))))
+
 (defn
   region-matrix
   "Matrix of all the data over a region
   Implementation is hidden in `matrix.clj`
   So that the underlying library can be swapped"
   [context]
-  (->> (fx/sub-ctx context
-                   region-geogrid-vec)
-       matrix/from-geogrids))
+  (let [bin-size (fx/sub-ctx context
+                             bin-size)]
+    (cond-> (fx/sub-ctx context
+                        region-geogrid-vec)
+      (not= bin-size
+            1)                   (#(bin-geogrids %
+                                                 bin-size))
+      true                       matrix/from-geogrids
+      (fx/sub-ctx context
+                  non-zero-min?) matrix/rezero-nonzero)))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/region-matrix))
