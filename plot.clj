@@ -940,3 +940,232 @@
                       [(hists 7), eof1-vs-var-svg, (hists 3)]
                       [(hists 6),    (hists 5),    (hists 4)]]]
       (quickthing/group-plots-grid map-matrix))))
+
+(defn
+  sturges-group
+  "Given a seq of values,
+  group them in buckets as determined by Sturges' Rule
+  Data points should be in the form
+  [some-value ..]
+  The first value is used for the bucketting.
+  Metadata can be put in the other positions"
+  [data-vec]
+  (let [mini     (->> data-vec
+                      (mapv first)
+                      (apply min))
+        maxi     (->> data-vec
+                      (mapv first)
+                      (apply max))
+        num-bins (-> data-vec
+                     count
+                     clojure.math/log
+                     (/ (clojure.math/log 2))
+                     clojure.math/ceil
+                     inc)]
+    (let [bin-width (/ (- maxi
+                          mini)
+                       num-bins)]
+      (let [last-bin-is-off (->> data-vec
+                                  (group-by (fn [data-point]
+                                              (-> data-point
+                                                  first
+                                                  (- mini)
+                                                  (/ bin-width)
+                                                  int)))
+                                  (into (sorted-map-by <))
+                                  (into []))]
+           ;; the way I'm dividing.. I get an extra last bin with the last value
+           ;; Must be tired.. b/c can't find a less dumb way to fix this
+           ;; This last value should just go in to the last bin
+           (let [binned (->> (-> last-bin-is-off
+                                 (update (-> last-bin-is-off
+                                             count
+                                             dec
+                                             dec)
+                                         (fn [correct-last-bin]
+                                           (update correct-last-bin
+                                                   1
+                                                   #(into %
+                                                          (-> last-bin-is-off
+                                                              last
+                                                              last)))))
+                                 drop-last)
+                             (mapv (fn [[bin-index
+                                         bin-count]]
+                                     [(+ (* bin-index
+                                            bin-width)
+                                         mini
+                                         (/ bin-width ;; middle of bin..
+                                            2.0))
+                                      bin-count])))]
+             binned)))))
+
+(defn
+  angular-hist
+  "Make a simple histogram based on the angles of a set of points.
+  Points of the form
+  `points` have to have
+  [x
+  y
+  {:delta-angle  _
+   :cycle-frac   _
+   :above?       _ }]"
+  [points
+   [width, height]]
+  (let [angle-vec (->> points
+                       (mapv (fn [[x
+                                   y
+                                   meta]]
+                               [(:delta-angle meta)
+                                meta])))]
+    (let[above-angle-vec (->> angle-vec
+                              (filter (fn [point]
+                                        (-> point
+                                            second
+                                            :above?))))
+         below-angle-vec (->> angle-vec
+                              (filter (fn [point]
+                                        (-> point
+                                            second
+                                            :above?
+                                            not))))]
+      (let [above-angle-bins (-> above-angle-vec
+                                 sturges-group)
+            below-angle-bins (-> below-angle-vec
+                                 sturges-group)]
+        (let [above-angle-bin-counts (->> above-angle-bins
+                                          (mapv (fn [bin]
+                                                  [(first bin)
+                                                   (-> bin
+                                                       second
+                                                       count)])))
+              below-angle-bin-counts (->> below-angle-bins
+                                          (mapv (fn [bin]
+                                                  [(first bin)
+                                                   (-> bin
+                                                       second
+                                                       count)])))]
+          (let [plot-x-min (->> angle-vec
+                                (mapv first)
+                                (apply min))
+                plot-x-max (->> angle-vec
+                                (mapv first)
+                                (apply max))
+                plot-y-min 0
+                plot-y-max (->> (into (->> below-angle-bin-counts
+                                           (mapv second))
+                                      [])
+                                (apply max))]
+            (let [dummy-data    [[plot-x-min   ;; dummy data to set ranges
+                                  plot-y-min]
+                                 [plot-x-max
+                                  plot-y-max]]
+                  median-points [[(nth (->> above-angle-vec
+                                            (mapv first)
+                                            sort)
+                                       (-> above-angle-vec
+                                           count
+                                           (/ 2.0)
+                                           int))
+                                  (* 0.9
+                                     plot-y-max)]
+                                 [(nth (->> below-angle-vec
+                                            (mapv first)
+                                            sort)
+                                       (-> below-angle-vec
+                                           count
+                                           (/ 2.0)
+                                           int))
+                                  (* 0.9
+                                     plot-y-max)]]
+                  mean-points   [[(/ (->> above-angle-vec
+                                          (mapv first)
+                                          (apply +))
+                                     (->> above-angle-vec
+                                          count))
+                                  (* 0.8
+                                     plot-y-max)]
+                                 [(/ (->> below-angle-vec
+                                          (mapv first)
+                                          (apply +))
+                                     (->> below-angle-vec
+                                          count))
+                                  (* 0.8
+                                     plot-y-max)]]]
+              (println (str "Median points: "
+                            median-points
+                            " Mean points: "
+                            mean-points))
+              (-> dummy-data
+                  (quickthing/primary-axis {:width  width
+                                            :height height
+                                            :x-name "Angle in SV12 space"
+                                            :y-name "Bin Count"
+                                            :title  "Angular distributions"})
+                  (assoc :grid
+                         nil)
+                  (update :data
+                          #(into  %
+                                  (quickthing/hist below-angle-bin-counts
+                                                   {:attribs {;;:opacity "0.5"
+                                                              :stroke-width 20 #_0.4
+                                                              :stroke       "#aa880055"}})))
+                  (update :data
+                          #(into  %
+                                  (quickthing/hist above-angle-bin-counts
+                                                   {:attribs {;;:opacity "0.5"
+                                                              :stroke-width 20 #_0.4
+                                                              :stroke       "#00aa8855"}})))
+                  (update :data
+                          #(into  %
+                                  (quickthing/hist mean-points
+                                                   {:attribs {;;:opacity "0.5"
+                                                              :stroke-width 5 #_0.4
+                                                              :stroke       "#aaaaaa"}})))
+                  (update :data
+                          #(into  %
+                                  (quickthing/hist median-points
+                                                   {:attribs {;;:opacity "0.5"
+                                                              :stroke-width 5 #_0.4
+                                                              :stroke       "#999999"}})))
+                  (update :data
+                          #(into  %
+                                  (quickthing/adjustable-text (->> mean-points
+                                                                   (mapv (fn [point]
+                                                                           (merge point
+                                                                                  "MEAN"))))
+                                                              {:attribs {:dominant-baseline "text-bottom"}})))
+                  (update :data
+                          #(into  %
+                                  (quickthing/adjustable-text (->> median-points
+                                                                   (mapv (fn [point]
+                                                                           (merge point
+                                                                                  "MEDIAN"))))
+                                                              {:attribs {:dominant-baseline "text-bottom"}})))
+                  (update :data
+                          #(into  %
+                                  (quickthing/adjustable-circles (->> angle-vec
+                                                                      (mapv (fn [[angle
+                                                                                  meta]]
+                                                                              #_
+                                                                              (println (str "BOTTOM:"
+                                                                                            angle))
+                                                                              [angle
+                                                                               1.5
+                                                                               5.0
+                                                                               (dissoc meta ;; weird SVG thing..
+                                                                                       :above?)]))
+                                                                      add-cycle-color)
+                                                                 {:attribs {;;:opacity "0.5"
+                                                                            :stroke-width 0.4
+                                                                            :stroke       "black"}})))
+                  viz/svg-plot2d-cartesian
+                  (quickthing/svg-wrap [width
+                                        height]
+                                       width)))))))))
+#_
+(-> @state/*selections
+    state/sv-bisection
+    :points
+    (angular-hist [1000,500]))
+

@@ -1622,6 +1622,33 @@
        (+ x-coord
           y-coord))))
 
+(defn
+  angular-historgram
+  [context]
+  (let [{:keys [angle
+                points
+                centroid-a
+                centroid-b]} (-> context
+                                 (fx/sub-ctx sv-bisection))]
+    (-> points
+        (plot/angular-hist [(* 1.0
+                               (fx/sub-ctx context
+                                           window-width))
+                            (* 1.0
+                               (fx/sub-ctx context
+                                           row-height))])
+                                        ;#_
+        (spitsvgstream "test-hist.svg"))))
+;;#_
+(-> @state/*selections
+    (fx/sub-ctx state/angular-historgram))
+;; => ([4.066817326755436
+;;      {:cycle-frac 0, :delta-angle 4.066817326755436, :above? false}]
+;;     [3.979364672052008
+;;      {:cycle-frac 1/73, :delta-angle 3.979364672052008, :above? false}]
+;;     [2.9663820135949375
+;;      {:cycle-frac 2/73, :delta-angle 2.9663820135949375, :above? true}])
+
 (defn-
   rezero-vec
   "Remove the non-zero minimum value from the vector elements"
