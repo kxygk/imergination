@@ -445,14 +445,21 @@
   [points]
   (let [dichotomy-angles (->> points
                               angle-dichotomies)]
-    (->> dichotomy-angles
-         (map #(two-plane-variance points
-                                   %))
-         (map-indexed vector)
-         (apply min-key
-                second)
-         first
-         (get dichotomy-angles))))
+    (let [best-angle (->> dichotomy-angles
+                          (map #(two-plane-variance points
+                                                    %))
+                          (map-indexed vector)
+                          (apply min-key
+                                 second)
+                          first
+                          (get dichotomy-angles))]
+      (if (and (> best-angle
+                  (- PI))
+               (< best-angle
+                  PI))
+        (+ best-angle
+           PI)
+        best-angle))))
 #_
 (min-var-angle [[2.2,  1.5]
                  [1.1, -0.4]
