@@ -1009,9 +1009,13 @@
   y
   {:delta-angle  _
    :cycle-frac   _
-   :above?       _ }]"
+   :above?       _ }]
+  Notes are other points of the form
+  [value text]"
   [points
-   [width, height]]
+   [width, height]
+   & {:keys [notes]
+      :or   {notes []}}]
   (let [angle-vec (->> points
                        (mapv (fn [[x
                                    y
@@ -1082,8 +1086,6 @@
                                                                                     {:attribs notes-attribs}))))
                                           flatten
                                           vec)]
-              (println "notes: "
-                       notes-data)
               (-> dummy-data
                   (quickthing/primary-axis {:width  width
                                             :height height
