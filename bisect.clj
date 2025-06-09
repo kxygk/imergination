@@ -140,50 +140,16 @@
       :angle
       (mod (* 2.0
               PI))))
-(defn-
-  above-angle?
-  "(let [TWOPI         (* 2.0
-                         PI)
-        divisor-angle (mod angle
-                           PI)
-        point-angle   (-> point
-                          to-polar
-                          :angle
-                          (mod TWOPI))
-        delta-angle   (mod (- point-angle
-                              divisor-angle)
-                           TWOPI)]"
-  [divisor-angle
-   point-delta-angle]
-  (let [divisor-angle-normalized (mod divisor-angle
-                                      PI)]
-    (if (> divisor-angle-normalized
-           (/ PI
-              2.0))
-      (if (< point-delta-angle
-             PI)
-        false
-        true)
-      (if (< point-delta-angle
-             PI)
-        true
-        false))))
 #_
-(above-angle? (-> [1.2, 1.6]
-                  to-angle)
-              3.1)
-;; => true
-
-#_
-(let [angle 2.8157669920508726
-      data  [[-0.024578662253719318, 0.05558278260624202]
-             [-0.014193761143782346, 0.005703712447101661]
-             [-0.16131258565448184,  0.2633602438965861]
-             [-0.031774789528481416, -0.005571887118227592]
-             [-0.07212716828092831, -0.004997627405708711]]]
-  (->> data
-       (mapv #(above-angle? (to-angle %)
-                            angle))))
+(->> [[2.2,  1.5]
+      [1.1, -2.4]
+      [-1.2, 1.6]
+      [-0.5, -2.7]]
+     (mapv to-angle))
+;; => [0.5984188934785372
+;;     5.142151259481378
+;;     2.214297435588181
+;;     4.529278163122205]
 
 (defn-
   points-along-angle
@@ -191,34 +157,50 @@
    angle]
   (let [TWOPI         (* 2.0
                          PI)
-        divisor-angle (mod angle
-                           PI)]
+        a-mod-pi (mod angle
+                      PI)
+        divisor-angle  (if (> a-mod-pi
+                              (* 0.5
+                                 PI))
+                         a-mod-pi
+                         (+ a-mod-pi
+                            PI))]
     (->> points
          (mapv (fn update-point
                  [point]
                  (let [point-angle (-> point
-                                       to-angle)
-                       delta-angle (mod (- point-angle
-                                           divisor-angle)
-                                        TWOPI)]
-                   (update point
-                           2     ;; typically will be `nil`
-                           #(merge %
-                                   {:delta-angle delta-angle
-                                    :above?      (above-angle? divisor-angle
-                                                               delta-angle)}))))))))
+                                       to-angle
+                                       (mod TWOPI))
+                       delta-angle (- point-angle
+                                      divisor-angle)]
+                     (update point
+                             2     ;; typically will be `nil`
+                             #(merge %
+                                       ;; 0 to -PI
+                                     (if (and (> point-angle
+                                                 (- divisor-angle
+                                                    PI))
+                                              (< point-angle
+                                                 divisor-angle))
+                                       {:above? true
+                                        :delta-angle (- divisor-angle
+                                                        point-angle)}
+                                       {:above? false
+                                        :delta-angle (- divisor-angle
+                                                        point-angle)})))))))))
 #_
 (-> [[2.2,  1.5]
      [1.1, -2.4]
      [-1.2, 1.6]
      [-0.5, -2.7]
      [-0.5, 2.7]]
-    (points-along-angle PI))
-;; => [[2.2 1.5 {:delta-angle 0.5984188934785372, :above? true}]
-;;     [1.1 -2.4 {:delta-angle 5.142151259481378, :above? false}]
-;;     [-1.2 1.6 {:delta-angle 2.214297435588181, :above? true}]
-;;     [-0.5 -2.7 {:delta-angle 4.529278163122205, :above? false}]
-;;     [-0.5 2.7 {:delta-angle 1.7539071440573808, :above? true}]]
+    (points-along-angle  (* 0.75
+                            PI) ))
+;; => [[2.2 1.5 {:above? true, :delta-angle -1.7577755967138078}]
+;;     [1.1 -2.4 {:above? false, :delta-angle 2.785956769289033}]
+;;     [-1.2 1.6 {:above? true, :delta-angle -0.14189705460416402}]
+;;     [-0.5 -2.7 {:above? false, :delta-angle 2.1730836729298604}]
+;;     [-0.5 2.7 {:above? true, :delta-angle -0.602287346134964}]]
 
 (defn-
   angle-dichotomies
