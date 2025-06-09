@@ -1060,42 +1060,30 @@
                                   plot-y-min]
                                  [plot-x-max
                                   plot-y-max]]
-                  median-points [[(nth (->> above-angle-vec
-                                            (mapv first)
-                                            sort)
-                                       (-> above-angle-vec
-                                           count
-                                           (/ 2.0)
-                                           int))
-                                  (* 0.9
-                                     plot-y-max)]
-                                 [(nth (->> below-angle-vec
-                                            (mapv first)
-                                            sort)
-                                       (-> below-angle-vec
-                                           count
-                                           (/ 2.0)
-                                           int))
-                                  (* 0.9
-                                     plot-y-max)]]
-                  mean-points   [[(/ (->> above-angle-vec
-                                          (mapv first)
-                                          (apply +))
-                                     (->> above-angle-vec
-                                          count))
-                                  (* 0.8
-                                     plot-y-max)]
-                                 [(/ (->> below-angle-vec
-                                          (mapv first)
-                                          (apply +))
-                                     (->> below-angle-vec
-                                          count))
-                                  (* 0.8
-                                     plot-y-max)]]]
-              (println (str "Median points: "
-                            median-points
-                            " Mean points: "
-                            mean-points))
+                  notes-attribs  {:writing-mode      "vertical-rl"
+                                  :text-orientation  "mixed"
+                                  :dominant-baseline "text-bottom"
+                                  :fill "black"}
+                  notes-data         (->> notes
+                                          (mapv (fn [[value
+                                                      label]]
+                                                  (into (quickthing/hist [[value
+                                                                           (* 1.0
+                                                                              plot-y-max)]]
+                                                                         {:attribs {;;:opacity "0.5"
+                                                                                    :stroke-width 10 #_0.4
+                                                                                    :stroke       "#aaaaaa77"}})
+                                                        (quickthing/adjustable-text [[value
+                                                                                      (* 0.9
+                                                                                         plot-y-max)
+                                                                                      (if (nil? label)
+                                                                                        ""
+                                                                                        label)]]
+                                                                                    {:attribs notes-attribs}))))
+                                          flatten
+                                          vec)]
+              (println "notes: "
+                       notes-data)
               (-> dummy-data
                   (quickthing/primary-axis {:width  width
                                             :height height
@@ -1117,31 +1105,8 @@
                                                               :stroke-width 20 #_0.4
                                                               :stroke       "#00aa8855"}})))
                   (update :data
-                          #(into  %
-                                  (quickthing/hist mean-points
-                                                   {:attribs {;;:opacity "0.5"
-                                                              :stroke-width 5 #_0.4
-                                                              :stroke       "#aaaaaa"}})))
-                  (update :data
-                          #(into  %
-                                  (quickthing/hist median-points
-                                                   {:attribs {;;:opacity "0.5"
-                                                              :stroke-width 5 #_0.4
-                                                              :stroke       "#999999"}})))
-                  (update :data
-                          #(into  %
-                                  (quickthing/adjustable-text (->> mean-points
-                                                                   (mapv (fn [point]
-                                                                           (merge point
-                                                                                  "MEAN"))))
-                                                              {:attribs {:dominant-baseline "text-bottom"}})))
-                  (update :data
-                          #(into  %
-                                  (quickthing/adjustable-text (->> median-points
-                                                                   (mapv (fn [point]
-                                                                           (merge point
-                                                                                  "MEDIAN"))))
-                                                              {:attribs {:dominant-baseline "text-bottom"}})))
+                          #(into %
+                                 notes-data))
                   (update :data
                           #(into  %
                                   (quickthing/adjustable-circles (->> angle-vec

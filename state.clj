@@ -1630,15 +1630,55 @@
                 centroid-a
                 centroid-b]} (-> context
                                  (fx/sub-ctx sv-bisection))]
+(let [grouped (->> points
+                   (group-by #(-> %
+                                  (nth 2)
+                                  :above?)))]
+      (let [above-angles (->> (get grouped
+                                  true)
+                             (mapv #(-> %
+                                        (nth 2)
+                                        :delta-angle)))
+            below-angles  (->> (get grouped
+                                  false)
+                             (mapv #(-> %
+                                        (nth 2)
+                                        :delta-angle)))]
+        (let [above-mean (/ (->> above-angles
+                                 (apply +))
+                            (count above-angles))
+              below-mean (/ (->> below-angles
+                                 (apply +))
+                            (count below-angles))
+              above-median (-> above-angles
+                               sort
+                               (nth (-> above-angles
+                                        count
+                                        (/ 2.0)
+                                        int)))
+              below-median  (-> below-angles
+                               sort
+                               (nth (-> below-angles
+                                        count
+                                        (/ 2.0)
+                                        int)))]
+          [above-mean
+           below-mean
+           above-median
+           below-median]
     (-> points
         (plot/angular-hist [(* 1.0
                                (fx/sub-ctx context
                                            window-width))
                             (* 1.0
                                (fx/sub-ctx context
-                                           row-height))])
+                                           row-height))]
+                           {:notes [[above-mean "AMean"]
+                                    [below-mean "AMean"]
+                                    [above-median "Median"]
+                                    [below-median "Median"]]})
                                         ;#_
-        (spitsvgstream "test-hist.svg"))))
+        (spitsvgstream "angles-hist.svg")))))))
 ;;#_
 (-> @state/*selections
     (fx/sub-ctx state/angular-historgram))
