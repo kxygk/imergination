@@ -1672,6 +1672,12 @@
                                                (* 2
                                                   (/ below-num
                                                      4))))
+                above-centroid-angle     (-> centroid-a
+                                             bisect/to-angle
+                                             (- angle))
+                below-centroid-angle     (-> centroid-b
+                                             bisect/to-angle
+                                             (- angle))
                 above-median             (-> above-angles
                                              sort
                                              (nth (-> above-num
@@ -1701,13 +1707,9 @@
                                              "Median"]
                                             [below-median
                                              "Median"]
-                                            [(-> centroid-a
-                                                 bisect/to-angle
-                                                 (- angle))
+                                            [above-centroid-angle
                                              "Centroid"]
-                                            [(-> centroid-b
-                                                 bisect/to-angle
-                                                 (- angle))
+                                            [below-centroid-angle
                                              "Centroid"]]})
                                         ;#_
                 (spitsvgstream "angles-hist.svg"))))))))

@@ -454,9 +454,11 @@
                           first
                           (get dichotomy-angles))]
       (if (and (> best-angle
-                  (- PI))
+                  (- (/ PI
+                        2.0)))
                (< best-angle
-                  PI))
+                  (/ PI
+                     2.0)))
         (+ best-angle
            PI)
         best-angle))))
