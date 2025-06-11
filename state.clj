@@ -1644,53 +1644,77 @@
                               (mapv #(-> %
                                          (nth 2)
                                          :delta-angle)))]
-        (let [above-mean   (/ (->> above-angles
-                                   (apply +))
-                              (count above-angles))
-              below-mean   (/ (->> below-angles
-                                   (apply +))
-                              (count below-angles))
-              above-median (-> above-angles
-                               sort
-                               (nth (-> above-angles
-                                        count
-                                        (/ 2.0)
-                                        int)))
-              below-median (-> below-angles
-                               sort
-                               (nth (-> below-angles
-                                        count
-                                        (/ 2.0)
-                                        int)))]
-          (-> points
-              (plot/angular-hist [(* 1.0
-                                     (fx/sub-ctx context
-                                                 window-width))
-                                  (* 1.0
-                                     (fx/sub-ctx context
-                                                 row-height))]
-                                 {:notes [[above-mean
-                                           "AMean"]
-                                          [below-mean
-                                           "AMean"]
-                                          [above-median
-                                           "Median"]
-                                          [below-median
-                                           "Median"]
-                                          [(-> centroid-a
-                                               bisect/to-angle
-                                               (- angle))
-                                           "Centroid"]
-                                          [(-> centroid-b
-                                               bisect/to-angle
-                                               (- angle))
-                                           "Centroid"]]})
+        (let [above-num (count above-angles)
+              below-num (count below-angles)]
+          (let [above-mean               (/ (->> above-angles
+                                                 (apply +))
+                                            above-num)
+                below-mean               (/ (->> below-angles
+                                                 (apply +))
+                                            below-num)
+                above-interquartile-mean (/ (->> above-angles
+                                                 (drop (/ above-num
+                                                          4))
+                                                 (drop-last (/ above-num
+                                                               4))
+                                                 (apply +))
+                                            (- above-num
+                                               (* 2
+                                                  (/ above-num
+                                                     4))))
+                below-interquartile-mean (/ (->> below-angles
+                                                 (drop (/ below-num
+                                                          4))
+                                                 (drop-last (/ below-num
+                                                               4))
+                                                 (apply +))
+                                            (- below-num
+                                               (* 2
+                                                  (/ below-num
+                                                     4))))
+                above-median             (-> above-angles
+                                             sort
+                                             (nth (-> above-num
+                                                      (/ 2.0)
+                                                      int)))
+                below-median             (-> below-angles
+                                             sort
+                                             (nth (-> below-num
+                                                      (/ 2.0)
+                                                      int)))]
+            (-> points
+                (plot/angular-hist [(* 1.0
+                                       (fx/sub-ctx context
+                                                   window-width))
+                                    (* 1.0
+                                       (fx/sub-ctx context
+                                                   row-height))]
+                                   {:notes [[above-mean
+                                             "AMean"]
+                                            [below-mean
+                                             "AMean"]
+                                            [above-interquartile-mean
+                                             "InterMean"]
+                                            [below-interquartile-mean
+                                             "InterMean"]
+                                            [above-median
+                                             "Median"]
+                                            [below-median
+                                             "Median"]
+                                            [(-> centroid-a
+                                                 bisect/to-angle
+                                                 (- angle))
+                                             "Centroid"]
+                                            [(-> centroid-b
+                                                 bisect/to-angle
+                                                 (- angle))
+                                             "Centroid"]]})
                                         ;#_
-              (spitsvgstream "angles-hist.svg")))))))
-;;#_
-(-> @state/*selections
-    (fx/sub-ctx state/angular-historgram))
-;; => ([4.066817326755436
+                (spitsvgstream "angles-hist.svg"))))))))
+  ;;#_
+  (-> @state/*selections
+      (fx/sub-ctx state/angular-historgram))
+  ;; => ([4.066817326755436
 ;;      {:cycle-frac 0, :delta-angle 4.066817326755436, :above? false}]
 ;;     [3.979364672052008
 ;;      {:cycle-frac 1/73, :delta-angle 3.979364672052008, :above? false}]
