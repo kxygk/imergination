@@ -37,6 +37,7 @@
                                    :shoreline-filestr              "./data/shoreline-coarse.json"
                                    :contour-filestr                nil
                                    :non-zero-min?                  false
+                                   :normalize-data?                false
                                    :rain-dirstr                    "/home/kxygk/Data/sst/monthly/geotiff-rot/"
                                    :elevation-filestr              "./data/World_e-Atlas-UCSD_SRTM30-plus_v8.tif"
                                    :bin-size                       1
@@ -157,6 +158,11 @@
   (fx/sub-val context
               :non-zero-min?))
 
+(defn
+  normalize-data?
+  [context]
+  (fx/sub-val context
+              :normalize-data?))
 (defn
   row-height
   [context]
@@ -702,18 +708,26 @@
       (fx/sub-ctx region-matrix)
       matrix/to-geogrid-vec)
   (let [myregion (fx/sub-ctx context
-                             region)]
+                             region)
+        normalize? (fx/sub-ctx context
+                               normalize-data?) ]
     (if (fx/sub-ctx context
                     is-in-ram)
       (->> (fx/sub-ctx context
                        world-geogrid-vec)
            (map #(do #_(println "\nCutting out region ..")
                      (geogrid/subregion %
-                                        myregion))))
+                                        myregion)))
+           (map #(if normalize?
+                   (geogrid4seq/convert-to-normalized %)
+                   %)))
       (->> (world-geogrid-vec context)
            (map #(do #_(println "\nCutting out region ..")
                      (geogrid/subregion %
-                                        myregion)))))))
+                                        myregion)))
+           (map #(if normalize?
+                   (geogrid4seq/convert-to-normalized %)
+                   %))))))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/region-geogrid-vec))
