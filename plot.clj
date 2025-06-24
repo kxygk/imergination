@@ -479,10 +479,10 @@
                  (into []
                        cat
                        [(quickthing/hist index-a
-                                         {:attribs {:stroke-width 10
+                                         {:attribs {:stroke-width bar-width
                                                     :stroke       "#00aa88"}})
                         (quickthing/hist index-b
-                                         {:attribs {:stroke-width 10
+                                         {:attribs {:stroke-width bar-width
                                                     :stroke       "#aa8800"}})]))
           viz/svg-plot2d-cartesian
           (quickthing/svg-wrap [width

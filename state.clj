@@ -2168,6 +2168,16 @@
 #_
 (-> @state/*selections
     (fx/sub-ctx state/pattern-proj-partitioned))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/pattern-proj-partitioned)
+    first
+    count)
+;; => 826
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/window-width))
+;; => 1080.0
 
 (defn
   pattern-proj-svg
@@ -2175,20 +2185,23 @@
   [context]
   (let [[proj-a
          proj-b] (fx/sub-ctx context
-                             pattern-proj-partitioned)]
-    (-> (plot/indeces (* 1.0
-                         (fx/sub-ctx context
-                                     state/window-width))
-                      (* 1.0
-                         (fx/sub-ctx context
-                                     state/row-height))
+                             pattern-proj-partitioned)
+        width (fx/sub-ctx context
+                          state/window-width)
+        height (fx/sub-ctx context
+                           state/row-height)]
+    (-> (plot/indeces width
+                      height
                       proj-a
                       proj-b
                       2011
                       (fx/sub-ctx context
                                   cycle-length)
                       (fx/sub-ctx context
-                                  cycle-phase))
+                                  cycle-phase)
+                      {:bar-width (* 0.5
+                                     (/ width
+                                        (count proj-a)))})
         (spitsvgstream "indeces.svg"))))
 ;;#_
 (-> @state/*selections
