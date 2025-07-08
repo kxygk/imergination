@@ -147,8 +147,8 @@
                    (if input-grid ;; TODO: Make it work without a grid..
                      (geogrid2svg/to-heatmap local-rain-grid
                                              (cond-> overruns
-                                               (some? max-val) (assoc :max-val
-                                                                      max-val)
+                                               (some? max-val)  (assoc :max-val
+                                                                       max-val)
                                                (some? colormap) (assoc :colormap
                                                                        colormap)))
                      (svg/group {}
@@ -199,7 +199,7 @@
                                                                                [data-x
                                                                                 data-y
                                                                                 nil ;; default radius
-                                                                                {:stroke #_"transparent" "#777"
+                                                                                {:stroke #_ "transparent" "#777"
                                                                                  ;; TODO thread the whole thing
                                                                                  :fill   (-> attribs
                                                                                              :cycle-frac
@@ -216,29 +216,29 @@
                                                    {:scale 40})))
              (update :data
                      #(into %
-                             (quickthing/line-through-point data
-                                                          (->> angle
-                                                               bisect/angle-to-unitvector)
-                                                          {:attribs {:stroke           "red"
-                                                                     :stroke-dasharray (str 50.0
-                                                                                            " "
-                                                                                            50.0)}})))
-             (update :data
-                     #(into %
-                           (quickthing/line-through-point data
-                                                          centroid-a
-                                                          {:attribs {:stroke           "black"
-                                                                     :stroke-dasharray (str 7.0
-                                                                                            " "
-                                                                                            7.0)}})))
+                            (quickthing/line-through-point data
+                                                           (->> angle
+                                                                bisect/angle-to-unitvector)
+                                                           {:attribs {:stroke           "red"
+                                                                      :stroke-dasharray (str 50.0
+                                                                                             " "
+                                                                                             50.0)}})))
              (update :data
                      #(into %
                             (quickthing/line-through-point data
-                                                          centroid-b
-                                                          {:attribs {:stroke           "black"
-                                                                     :stroke-dasharray (str 7.0
-                                                                                            " "
-                                                                                            7.0)}})))
+                                                           centroid-a
+                                                           {:attribs {:stroke           "black"
+                                                                      :stroke-dasharray (str 7.0
+                                                                                             " "
+                                                                                             7.0)}})))
+             (update :data
+                     #(into %
+                            (quickthing/line-through-point data
+                                                           centroid-b
+                                                           {:attribs {:stroke           "black"
+                                                                      :stroke-dasharray (str 7.0
+                                                                                             " "
+                                                                                             7.0)}})))
              (assoc :grid ;; turn off grid
                     nil))
          (viz/svg-plot2d-cartesian)
@@ -263,9 +263,9 @@
                 points-b
                 centroid-a
                 centroid-b]} (bisect/min-var (->> data-with-errors
-                                                 (mapv (fn [[x y]]
-                                                         [x
-                                                          y]))))]
+                                                  (mapv (fn [[x y]]
+                                                          [x
+                                                           y]))))]
     (->> (-> (quickthing/zero-axis data-with-errors
                                    {:width       width
                                     :height      height
@@ -279,17 +279,17 @@
                                                                                     err-x
                                                                                     err-y
                                                                                     attribs]]
-                                                                               [data-x
-                                                                                data-y
-                                                                                err-x
-                                                                                err-y
-                                                                                {:stroke #_ "transparent" "#777"
-                                                                                 ;; TODO thread the whole thing
-                                                                                 :fill   (-> attribs
-                                                                                             :cycle-frac
-                                                                                             quickthing/color-cycle)}]))
+                                                                                [data-x
+                                                                                 data-y
+                                                                                 err-x
+                                                                                 err-y
+                                                                                 {:stroke #_ "transparent" "#777"
+                                                                                  ;; TODO thread the whole thing
+                                                                                  :fill   (-> attribs
+                                                                                              :cycle-frac
+                                                                                              quickthing/color-cycle)}]))
                                                                  doall)
-                                                           {:scale 30})))
+                                                            {:scale 30})))
              #_
              (update :data
                      #(into %
@@ -301,29 +301,29 @@
                                                    {:scale 40})))
              (update :data
                      #(into %
-                             (quickthing/line-through-point data-with-errors
-                                                          (->> angle
-                                                               bisect/angle-to-unitvector)
-                                                          {:attribs {:stroke           "red"
-                                                                     :stroke-dasharray (str 50.0
-                                                                                            " "
-                                                                                            50.0)}})))
-             (update :data
-                     #(into %
-                           (quickthing/line-through-point data-with-errors
-                                                          centroid-a
-                                                          {:attribs {:stroke           "black"
-                                                                     :stroke-dasharray (str 7.0
-                                                                                            " "
-                                                                                            7.0)}})))
+                            (quickthing/line-through-point data-with-errors
+                                                           (->> angle
+                                                                bisect/angle-to-unitvector)
+                                                           {:attribs {:stroke           "red"
+                                                                      :stroke-dasharray (str 50.0
+                                                                                             " "
+                                                                                             50.0)}})))
              (update :data
                      #(into %
                             (quickthing/line-through-point data-with-errors
-                                                          centroid-b
-                                                          {:attribs {:stroke           "black"
-                                                                     :stroke-dasharray (str 7.0
-                                                                                            " "
-                                                                                            7.0)}})))
+                                                           centroid-a
+                                                           {:attribs {:stroke           "black"
+                                                                      :stroke-dasharray (str 7.0
+                                                                                             " "
+                                                                                             7.0)}})))
+             (update :data
+                     #(into %
+                            (quickthing/line-through-point data-with-errors
+                                                           centroid-b
+                                                           {:attribs {:stroke           "black"
+                                                                      :stroke-dasharray (str 7.0
+                                                                                             " "
+                                                                                             7.0)}})))
              (assoc :grid ;; turn off grid
                     nil))
          (viz/svg-plot2d-cartesian)
@@ -450,9 +450,9 @@
    cycle-length ;; Maybe make these optional?
    cycle-phase
    &{:keys [bar-width]
-     :or {bar-width (* 0.5
-                       (/ width
-                          (count proj-a)))}}]
+     :or   {bar-width (* 0.5
+                         (/ width
+                            (count proj-a)))}}]
   (let [index-a (into [] (map-indexed vector
                                       proj-a))
         index-b (map-indexed vector
@@ -878,8 +878,12 @@
                                                                  (uncomplicate.neanderthal.core/col time-index)
                                                                  seq
                                                                  vec)]
-                                             (let [bin-size (inc (clojure.math/ceil (/ (clojure.math/log (count rain-vector))
-                                                                                       (clojure.math/log 2))))] ;; Sturges' rule
+                                             (let [bin-size (-> rain-vector
+                                                                count
+                                                                clojure.math/log
+                                                                (/ (clojure.math/log 2))
+                                                                clojure.math/ceil
+                                                                inc)] ;; Sturges' rule
                                                (->> (update-vals (->> (uncomplicate.neanderthal.core/col data-matrix
                                                                                                          time-index)
                                                                       seq
@@ -970,39 +974,39 @@
                           mini)
                        num-bins)]
       (let [last-bin-is-off (->> data-vec
-                                  (group-by (fn [data-point]
-                                              (-> data-point
-                                                  first
-                                                  (- mini)
-                                                  (/ bin-width)
-                                                  int)))
-                                  (into (sorted-map-by <))
-                                  (into []))]
-           ;; the way I'm dividing.. I get an extra last bin with the last value
-           ;; Must be tired.. b/c can't find a less dumb way to fix this
-           ;; This last value should just go in to the last bin
-           (let [binned (->> (-> last-bin-is-off
-                                 (update (-> last-bin-is-off
-                                             count
-                                             dec
-                                             dec)
-                                         (fn [correct-last-bin]
-                                           (update correct-last-bin
-                                                   1
-                                                   #(into %
-                                                          (-> last-bin-is-off
-                                                              last
-                                                              last)))))
-                                 drop-last)
-                             (mapv (fn [[bin-index
-                                         bin-count]]
-                                     [(+ (* bin-index
-                                            bin-width)
-                                         mini
-                                         (/ bin-width ;; middle of bin..
-                                            2.0))
-                                      bin-count])))]
-             binned)))))
+                                 (group-by (fn [data-point]
+                                             (-> data-point
+                                                 first
+                                                 (- mini)
+                                                 (/ bin-width)
+                                                 int)))
+                                 (into (sorted-map-by <))
+                                 (into []))]
+        ;; the way I'm dividing.. I get an extra last bin with the last value
+        ;; Must be tired.. b/c can't find a less dumb way to fix this
+        ;; This last value should just go in to the last bin
+        (let [binned (->> (-> last-bin-is-off
+                              (update (-> last-bin-is-off
+                                          count
+                                          dec
+                                          dec)
+                                      (fn [correct-last-bin]
+                                        (update correct-last-bin
+                                                1
+                                                #(into %
+                                                       (-> last-bin-is-off
+                                                           last
+                                                           last)))))
+                              drop-last)
+                          (mapv (fn [[bin-index
+                                      bin-count]]
+                                  [(+ (* bin-index
+                                         bin-width)
+                                      mini
+                                      (/ bin-width ;; middle of bin..
+                                         2.0))
+                                   bin-count])))]
+          binned)))))
 
 (defn
   points-to-ecdf
@@ -1058,11 +1062,11 @@
       (let [above-ecdf       (->> above-angle-vec
                                   (mapv first)
                                   (sort >)
-                                 points-to-ecdf)
+                                  points-to-ecdf)
             below-ecdf       (->> below-angle-vec
                                   (mapv first)
                                   (sort <)
-                                 points-to-ecdf)
+                                  points-to-ecdf)
             above-angle-bins (-> above-angle-vec
                                  sturges-group)
             below-angle-bins (-> below-angle-vec
@@ -1094,28 +1098,28 @@
                                   plot-y-min]
                                  [plot-x-max
                                   plot-y-max]]
-                  notes-attribs  {:writing-mode      "vertical-rl"
-                                  :text-orientation  "mixed"
-                                  :dominant-baseline "text-bottom"
-                                  :fill "black"}
-                  notes-data         (->> notes
-                                          (mapv (fn [[value
-                                                      label]]
-                                                  (into (quickthing/hist [[value
-                                                                           (* 1.0
-                                                                              plot-y-max)]]
-                                                                         {:attribs {;;:opacity "0.5"
-                                                                                    :stroke-width 10 #_0.4
-                                                                                    :stroke       "#aaaaaa77"}})
-                                                        (quickthing/adjustable-text [[value
-                                                                                      (* 0.9
-                                                                                         plot-y-max)
-                                                                                      (if (nil? label)
-                                                                                        ""
-                                                                                        label)]]
-                                                                                    {:attribs notes-attribs}))))
-                                          flatten
-                                          vec)]
+                  notes-attribs {:writing-mode      "vertical-rl"
+                                 :text-orientation  "mixed"
+                                 :dominant-baseline "text-bottom"
+                                 :fill              "black"}
+                  notes-data    (->> notes
+                                     (mapv (fn [[value
+                                                 label]]
+                                             (into (quickthing/hist [[value
+                                                                      (* 1.0
+                                                                         plot-y-max)]]
+                                                                    {:attribs {;;:opacity "0.5"
+                                                                               :stroke-width 10 #_0.4
+                                                                               :stroke       "#aaaaaa77"}})
+                                                   (quickthing/adjustable-text [[value
+                                                                                 (* 0.9
+                                                                                    plot-y-max)
+                                                                                 (if (nil? label)
+                                                                                   ""
+                                                                                   label)]]
+                                                                               {:attribs notes-attribs}))))
+                                     flatten
+                                     vec)]
               (-> dummy-data
                   (quickthing/primary-axis {:width  width
                                             :height height
@@ -1140,19 +1144,19 @@
                           #(into  %
                                   (->> below-ecdf
                                        (map (fn [[x
-                                                   y]]
-                                               [x
-                                                (* y
-                                                   plot-y-max)]))
+                                                  y]]
+                                              [x
+                                               (* y
+                                                  plot-y-max)]))
                                        quickthing/solid-line )))
                   (update :data
                           #(into  %
                                   (->> above-ecdf
                                        (map (fn [[x
-                                                   y]]
-                                               [x
-                                                (* y
-                                                   plot-y-max)]))
+                                                  y]]
+                                              [x
+                                               (* y
+                                                  plot-y-max)]))
                                        quickthing/solid-line )))
                   (update :data
                           #(into %
@@ -1184,3 +1188,99 @@
     :points
     (angular-hist [1000,500]))
 
+#_
+(defn
+  histogram-of-index-values
+  [index-values
+   [width, height]
+   & [{:keys [title]}]]
+  (let [max-index (->> index-values
+                       (apply max))]
+    (let [bin-size (/ max-index
+                      10.0)]
+      (let [hist-data (->> (update-vals (->> index-values
+                                             (mapv #(/ %
+                                                       bin-size))
+                                             (mapv clojure.math/round)
+                                             (group-by identity))
+                                        count)
+                           (into (sorted-map-by <))
+                           (into []))]
+        (let [axis (-> (into hist-data
+                             [[0, 0]]) ;; make sure 0,0 is included
+                       (quickthing/primary-axis {:width  width
+                                                 :height height
+                                                 :x-name "deviation from mean"
+                                                 :y-name "Counts"
+                                                 :title  title}))]
+          (-> axis
+              (update :data
+                      #(into  %
+                              (quickthing/hist hist-data
+                                               {:attribs {;;:opacity "0.5"
+                                                          :stroke-width 20 #_0.4
+                                                          :stroke       "black"}})))
+              viz/svg-plot2d-cartesian
+              (quickthing/svg-wrap [width
+                                    height]
+                                   width)))))))
+
+
+
+
+#_
+(defn
+  histograms-of-monthly-rain-amounts
+  [angles
+   [width,height]
+   title-prefix
+   indeces]
+  (let [counts-for-each-index (->> indeces
+                                   (mapv (fn [time-index]
+                                           (let [rain-vector (-> data-matrix
+                                                                 (uncomplicate.neanderthal.core/col time-index)
+                                                                 seq
+                                                                 vec)]
+                                             (let [bin-size (-> rain-vector
+                                                                count
+                                                                clojure.math/log
+                                                                (/ (clojure.math/log 2))
+                                                                clojure.math/ceil
+                                                                inc)] ;; Sturges' rule
+                                               (->> (update-vals (->> (uncomplicate.neanderthal.core/col data-matrix
+                                                                                                         time-index)
+                                                                      seq
+                                                                      vec
+                                                                      (mapv #(/ %
+                                                                                bin-size))
+                                                                      (mapv int )
+                                                                      (mapv (partial *
+                                                                                     bin-size))
+                                                                      (group-by identity))
+                                                                 count)
+                                                    (into (sorted-map-by <))))))))]
+    (let [max-count (->> counts-for-each-index
+                         (mapv vals)
+                         flatten
+                         (apply max))
+          x-bins    (->> counts-for-each-index
+                         (mapv keys)
+                         flatten)]
+      (println (str "Max Count: "
+                    max-count
+                    " Zero count: "
+                    (->> counts-for-each-index
+                         (mapv #(get %
+                                     0)))))
+      (mapv (fn [counts,
+                 index]
+              (histogram-of-monthly-rain-amounts counts
+                                                 [(apply min x-bins)
+                                                  (apply max x-bins)]
+                                                 [0.0, max-count]
+                                                 [width, height]
+                                                 {:title (str title-prefix
+                                                              "#"
+                                                              index)}))
+            counts-for-each-index
+            indeces))))
