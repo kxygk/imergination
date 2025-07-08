@@ -448,7 +448,11 @@
    proj-b
    cycle-start-value
    cycle-length ;; Maybe make these optional?
-   cycle-phase]
+   cycle-phase
+   &{:keys [bar-width]
+     :or {bar-width (* 0.5
+                       (/ width
+                          (count proj-a)))}}]
   (let [index-a (into [] (map-indexed vector
                                       proj-a))
         index-b (map-indexed vector
