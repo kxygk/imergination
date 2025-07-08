@@ -1001,6 +1001,24 @@
              binned)))))
 
 (defn
+  points-to-ecdf
+  "Take a 1D series of point
+  [a, b, c,  d, ...]
+  and convert them to a 2D eCDF
+  TODO: Probably should be at midpoints?
+  There is some off-by-one issue here"
+  [points]
+  (let [num-points (double (count points))]
+    (->> points
+         (map-indexed (fn [index
+                           point]
+                        [point
+                         (/ (inc index)
+                            num-points)])))))
+#_
+(points-to-ecdf [1 2 3 4 5])
+
+(defn
   angular-hist
   "Make a simple histogram based on the angles of a set of points.
   Points of the form
@@ -1033,7 +1051,15 @@
                                             second
                                             :above?
                                             not))))]
-      (let [above-angle-bins (-> above-angle-vec
+      (let [above-ecdf       (->> above-angle-vec
+                                  (mapv first)
+                                  (sort >)
+                                 points-to-ecdf)
+            below-ecdf       (->> below-angle-vec
+                                  (mapv first)
+                                  (sort <)
+                                 points-to-ecdf)
+            above-angle-bins (-> above-angle-vec
                                  sturges-group)
             below-angle-bins (-> below-angle-vec
                                  sturges-group)]
@@ -1106,6 +1132,24 @@
                                                    {:attribs {;;:opacity "0.5"
                                                               :stroke-width 20 #_0.4
                                                               :stroke       "#00aa8855"}})))
+                  (update :data
+                          #(into  %
+                                  (->> below-ecdf
+                                       (map (fn [[x
+                                                   y]]
+                                               [x
+                                                (* y
+                                                   plot-y-max)]))
+                                       quickthing/solid-line )))
+                  (update :data
+                          #(into  %
+                                  (->> above-ecdf
+                                       (map (fn [[x
+                                                   y]]
+                                               [x
+                                                (* y
+                                                   plot-y-max)]))
+                                       quickthing/solid-line )))
                   (update :data
                           #(into %
                                  notes-data))
