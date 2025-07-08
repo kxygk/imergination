@@ -2163,6 +2163,16 @@
                                  (if (pos? proj)
                                    proj
                                    0.0))))]
+    (with-open [writer (io/writer (str config-dir
+                                       "/climate-index.csv"))]
+      (println (str "Writing out climate index to CSV file .. "
+                    #_
+                    (str config-dir
+                         "/climate-index.csv")))
+      (csv/write-csv writer
+                     (mapv vector
+                           proj-a
+                           proj-b)))
     [proj-a
      proj-b]))
 #_
