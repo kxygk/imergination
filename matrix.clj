@@ -889,4 +889,67 @@
        (mapv (fn [column]
                (ncore/dot column
                           column)))))
+#_
+(->> @state/*selections
+     state/noise-matrix-scaled-to-sv1
+     self-inner-prod-of-cols
+     (mapv (fn [sum-of-squares]
+             (-> sum-of-squares
+                 Math/sqrt)))
+     (take 10))
+;; => (25.95740653462767
+;;     24.087339908058606
+;;     25.47331435497869
+;;     10.914960246318396
+;;     118.31429855040672
+;;     131.48134760159914
+;;     103.94066584890113
+;;     58.13503209623256
+;;     73.8519049869493
+;;     31.969072264154654)
+#_
+(state/singular-value @state/*selections
+                      0)
+(defn
+  abs-sums-of-cols
+  "Take each column of a matric.
+  Then have each column do a self-inner product.
+  Returns a vector of values.
+  One for each columns naturally"
+  [data-matrix]
+  (->> data-matrix
+       :matrix
+       ncore/cols
+       (mapv (fn [column]
+               (-> column
+                   ncore/asum) #_#_
+                   seq
+               (ncore/dot column
+                          (neand/dv (repeat (ncore/dim column)
+                                            1)))))))
+#_
+(->> @state/*selections
+     state/noise-matrix-scaled-to-sv1
+     self-inner-prod-of-cols
+     (take 10))
+;; => (673.7869540039312
+;;     580.1999438463528
+;;     648.8897442275634
+;;     119.13635717871094
+;;     13998.273241474773
+;;     17287.344767132538
+;;     10803.662017112922
+;;     3379.6819568299898
+;;     5454.103870201387
+;;     1022.0215814307423)
 
+(defn
+  scale-to-value
+  "Scaled a matrix by some value
+   I intended this to scale by the sinuglar value.."
+  [scale-factor
+   input-matrix]
+  (update input-matrix
+          :matrix
+          #(ncore/scal scale-factor
+                       %)))

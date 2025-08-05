@@ -886,85 +886,6 @@
     (matrix/from-svd))
 
 (defn
-  noise-matrix-2d
-  "Noise matrix when there are two climate systems
-  and the two leading SV are removed from the data"
-  [context]
-  (-> context
-      (fx/sub-ctx region-svd)
-      (matrix/minus-2-sv)))
-#_
-(-> @state/*selections
-    (fx/sub-ctx state/noise-matrix-2d)
-    :matrix)
-#_
-(-> @state/*selections
-    (fx/sub-ctx state/region-matrix)
-    :matrix)
-
-(defn
-  noise-vars
-  "Calculate the variances of the noise in the columns/datapoints"
-  [context]
-  (-> context
-      (fx/sub-ctx noise-matrix-2d)
-      :matrix
-      (matrix/colvars)))
-#_
-(take 12
-      (-> @state/*selections
-          (fx/sub-ctx state/noise-vars)))
-
-(defn
-  num-points
-  [context]
-  (let [num-pix (apply *
-                       (-> context
-                           (fx/sub-ctx noise-matrix-2d)
-                           :dimension))]
-    (->> noise-vars
-         (fx/sub-ctx context)
-         (map #(/ %
-                  num-pix)))))
-#_
-(take 12
-      (-> @state/*selections
-          (fx/sub-ctx state/num-points)))
-
-(defn
-  noise-svg
-  "Get the noise background of one data point"
-  [context
-   id]
-  (-> (matrix/extract-grid (fx/sub-ctx context
-                                       noise-matrix-2d)
-                           id)
-      (plot/grid-map (fx/sub-ctx context
-                                 region-svg-hiccup)
-                     {:display-width (fx/sub-ctx context
-                                                 region-display-width)})
-      (spitsvgstream (str "noise-"
-                          id
-                          "file.svg"))))
-#_
-(-> @state/*selections
-    (state/noise-svg 31))
-
-(defn
-  noise-1d-matrix
-  "This is a noise matric when only the first EOF is removed
-  This shouldn't be used normally..
-  b/c the code is designed to run on two climate regions"
-  [context]
-  (-> context
-      (fx/sub-ctx region-svd)
-      (matrix/minus-1-sv)))
-#_
-(-> @state/*selections
-    (fx/sub-ctx state/noise-matrix-1d)
-    keys)
-
-(defn
   sv-weights
   "Get the SV components at each data point (ie. point in time)
   This is zero indexed
@@ -977,16 +898,6 @@
 #_
 (-> @state/*selections
     (fx/sub-ctx state/sv-weights 0))
-
-(defn
-  noise-1d-min-max
-  [context]
-  (-> context
-      (fx/sub-ctx noise-1d-matrix)
-      matrix/get-min-max))
-#_
-(-> @state/*selections
-    (fx/sub-ctx state/noise-1d-min-max))
 
 (defn
   datafile-idxs
@@ -1031,50 +942,6 @@
 #_
 (fx/sub-ctx @state/*selections
             first-datafile-idx)
-
-(defn
-  noise-selected-idxs
-  "Indeces of the data that's been selected"
-  [context]
-  (fx/sub-val context
-              :noise-selected-idxs))
-#_
-(fx/sub-ctx @state/*selections
-            noise-selected-idxs)
-
-(defn
-  first-noise-selected-idx
-  "Get the first selected data index
-  Which in effect meaning the ~earliest~ in the list
-  Or the lowest value"
-  [context]
-  (first (fx/sub-ctx context
-                     noise-selected-idxs)))
-#_
-(fx/sub-ctx @state/*selections
-            first-noise-selected-idx)
-
-(defn
-  normalized-noise-selected-idxs
-  "Indeces of the data that's been selected"
-  [context]
-  (fx/sub-val context
-              :normalized-noise-selected-idxs))
-#_
-(fx/sub-ctx @state/*selections
-            normalized-noise-selected-idxs)
-
-(defn
-  first-normalized-noise-selected-idx
-  "Get the first selected data index
-  Which in effect meaning the ~earliest~ in the list
-  Or the lowest value"
-  [context]
-  (first (fx/sub-ctx context
-                     normalized-noise-selected-idxs)))
-#_
-(fx/sub-ctx @state/*selections
-            first-normalized-noise-selected-idx)
 
 
 (defn-
@@ -1270,7 +1137,7 @@
       (fx/sub-ctx singular-vector-svg
                   0)
       (spitsvgstream "first-sv.svg")))
-#_
+;;#_
 (-> @state/*selections
     (fx/sub-ctx state/first-sv-svg))
 
@@ -1281,7 +1148,7 @@
       (fx/sub-ctx singular-vector-svg
                   1)
       (spitsvgstream "second-sv.svg")))
-#_
+;;#_
 (-> @state/*selections
     (fx/sub-ctx state/second-sv-svg))
 
@@ -1301,21 +1168,6 @@
 (-> @state/*selections
     (fx/sub-ctx state/first-datafile-svg))
 
-(defn
-  first-noise-selected-svg
-  ""
-  [context]
-  (let [first-selections-idx (fx/sub-ctx context
-                                         first-noise-selected-idx)]
-    (if (nil? first-selections-idx)
-      (fx/sub-ctx context
-                  contour-map-svg)
-      (fx/sub-ctx context
-                  noise-svg
-                  first-selections-idx))))
-#_
-(-> @state/*selections
-    (fx/sub-ctx state/first-noise-selected-svg))
 
 (defn
   singular-vector-mixture
@@ -1397,13 +1249,18 @@
                       1.0
                       1.0)))
 
-(defn sv-proj-vec
+(defn
+  sv-proj-vec
+  "Get the projection vector for each point.
+  ie. the first two columns of the weight matrix.
+  These are NOT scaled by the singular value at all"
   [context]
   (-> context
       (fx/sub-ctx region-matrix)
       matrix/svd
       matrix/svd-to-2d-sv-space))
 
+#_
 (defn-
   add-cycle-data
   "add metadata to a vector that in the same order as the original data"
@@ -1420,153 +1277,6 @@
                         (conj point
                               {:cycle-frac (frac-generator idx)})))
          vec)))
-
-(defn
-  sv-proj
-  "adds cycle meta-data to `sv-proj-vec`"
-  [context]
-  (add-cycle-data context
-                  (fx/sub-ctx context
-                              sv-proj-vec)))
-#_
-(-> @state/*selections
-    (fx/sub-ctx state/sv-proj))
-
-(defn
-  noise-matrix-scaled-to-sv1
-  [context]
-  (let [sv (fx/sub-ctx context
-                        singular-vector
-                        0)]
-    (matrix/scaled-to-vec (fx/sub-ctx context
-                                      noise-matrix-2d)
-                          sv)))
-#_
-(fx/sub-ctx @state/*selections
-            noise-matrix-scaled-to-sv1)
-
-(defn
-  noise-scaled-to-sv1-svg
-  "Get the noise background of one data point"
-  [context
-   id]
-  (-> (matrix/extract-grid (fx/sub-ctx context
-                                       noise-matrix-scaled-to-sv1)
-                           id)
-      (plot/grid-map (fx/sub-ctx context
-                                 region-svg-hiccup)
-                     {:display-width (fx/sub-ctx context
-                                                 region-display-width)})
-      (spitsvgstream (str "noise-sv1-"
-                          id
-                          "file.svg"))))
-#_
-(-> @state/*selections
-    (state/noise-svg 31))
-
-(defn
-  noise-matrix-scaled-to-sv2
-  [context]
-  (let [sv (fx/sub-ctx context
-                        singular-vector
-                        1)]
-    (matrix/scaled-to-vec (fx/sub-ctx context
-                                      noise-matrix-2d)
-                          sv)))
-#_
-(fx/sub-ctx @state/*selections
-            noise-matrix-scaled-to-sv2)
-
-(defn
-  noise-scaled-to-sv2-svg
-  "Get the noise background of one data point"
-  [context
-   id]
-  (-> (matrix/extract-grid (fx/sub-ctx context
-                                       noise-matrix-scaled-to-sv2)
-                           id)
-      (plot/grid-map (fx/sub-ctx context
-                                 region-svg-hiccup)
-                     {:display-width (fx/sub-ctx context
-                                                 region-display-width)})
-      (spitsvgstream (str "noise-sv2-"
-                          id
-                          "file.svg"))))
-#_
-(-> @state/*selections
-    (state/noise-svg 31))
-
-(defn
-  errors-in-sv1-proj
-  [context]
-  (let [singular-val (fx/sub-ctx context
-                                 singular-value
-                                 0)]
-    (->> (fx/sub-ctx context
-                     noise-matrix-scaled-to-sv1)
-         matrix/self-inner-prod-of-cols
-         (mapv (fn [sum-of-squares]
-                 (-> sum-of-squares
-                     Math/sqrt)))
-         (map-indexed (fn [sv-index
-                           scaled-error]
-                        (/ scaled-error
-                           singular-val)))
-         vec)))
-#_
-(fx/sub-ctx @state/*selections
-            errors-in-sv1-proj)
-
-(defn
-  errors-in-sv2-proj
-  [context]
-  (let [singular-val (fx/sub-ctx context
-                                 singular-value
-                                 1)]
-    (->> (fx/sub-ctx context
-                     noise-matrix-scaled-to-sv2)
-         matrix/self-inner-prod-of-cols
-         (mapv (fn [sum-of-squares]
-                 (-> sum-of-squares
-                     Math/sqrt)))
-         (map-indexed (fn [sv-index
-                           scaled-error]
-                        (/ scaled-error
-                           singular-val)))
-         vec)))
-#_
-(fx/sub-ctx @state/*selections
-            errors-in-sv2-proj)
-
-(defn
-  sv-proj-with-errors
-  [context]
-  (let [sv12-projections (fx/sub-ctx context
-                                     state/sv-proj)
-        errors-x (fx/sub-ctx context
-                             errors-in-sv1-proj)
-        errors-y (fx/sub-ctx context
-                             errors-in-sv2-proj)]
-    (mapv (fn [[x
-                y
-                attribs]
-               err-x
-               err-y]
-            [x
-             y
-             err-x
-             err-y
-             attribs])
-          sv12-projections
-          errors-x
-          errors-y)))
-#_
-(fx/sub-ctx @state/*selections
-            sv-proj-with-errors)
-#_
-(quickthing/error-bars
-  (fx/sub-ctx @state/*selections
-              sv-proj-with-errors))
 
 
 (defn
@@ -1615,6 +1325,378 @@
 ;;#_ ;;unused
 (-> @state/*selections
     (fx/sub-ctx state/sv12-plot-2scale-svg))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;      NOISE 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn
+  noise-matrix-2d
+  "Noise matrix when there are two climate systems
+  and the two leading SV are removed from the data"
+  [context]
+  (-> context
+      (fx/sub-ctx region-svd)
+      (matrix/minus-2-sv)))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/noise-matrix-2d)
+    :matrix)
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/region-matrix)
+    :matrix)
+
+(defn
+  noise-vars
+  "Calculate the variances of the noise in the columns/datapoints"
+  [context]
+  (-> context
+      (fx/sub-ctx noise-matrix-2d)
+      :matrix
+      (matrix/colvars)))
+#_
+(take 12
+      (-> @state/*selections
+          (fx/sub-ctx state/noise-vars)))
+
+(defn
+  noise-svg
+  "Get the noise background of one data point"
+  [context
+   id]
+  (-> (matrix/extract-grid (fx/sub-ctx context
+                                       noise-matrix-2d)
+                           id)
+      (plot/grid-map (fx/sub-ctx context
+                                 region-svg-hiccup)
+                     {:display-width (fx/sub-ctx context
+                                                 region-display-width)})
+      (spitsvgstream (str "noise-"
+                          id
+                          "file.svg"))))
+#_
+(-> @state/*selections
+    (state/noise-svg 31))
+
+(defn
+  noise-selected-idxs
+  "Indeces of the data that's been selected"
+  [context]
+  (fx/sub-val context
+              :noise-selected-idxs))
+#_
+(fx/sub-ctx @state/*selections
+            noise-selected-idxs)
+
+(defn
+  first-noise-selected-idx
+  "Get the first selected data index
+  Which in effect meaning the ~earliest~ in the list
+  Or the lowest value"
+  [context]
+  (first (fx/sub-ctx context
+                     noise-selected-idxs)))
+#_
+(fx/sub-ctx @state/*selections
+            first-noise-selected-idx)
+
+(defn
+  normalized-noise-selected-idxs
+  "Indeces of the data that's been selected"
+  [context]
+  (fx/sub-val context
+              :normalized-noise-selected-idxs))
+#_
+(fx/sub-ctx @state/*selections
+            normalized-noise-selected-idxs)
+
+(defn
+  first-normalized-noise-selected-idx
+  "Get the first selected data index
+  Which in effect meaning the ~earliest~ in the list
+  Or the lowest value"
+  [context]
+  (first (fx/sub-ctx context
+                     normalized-noise-selected-idxs)))
+#_
+(fx/sub-ctx @state/*selections
+            first-normalized-noise-selected-idx)
+
+
+(defn
+  first-noise-selected-svg
+  ""
+  [context]
+  (let [first-selections-idx (fx/sub-ctx context
+                                         first-noise-selected-idx)]
+    (if (nil? first-selections-idx)
+      (fx/sub-ctx context
+                  contour-map-svg)
+      (fx/sub-ctx context
+                  noise-svg
+                  first-selections-idx))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/first-noise-selected-svg))
+
+
+(defn
+  noise-matrix-scaled-to-sv1
+  [context]
+  (let [sv (fx/sub-ctx context
+                       singular-vector
+                       0)]
+    (->  context
+         (fx/sub-ctx noise-matrix-2d)
+         (matrix/scaled-to-vec sv))))
+#_
+(fx/sub-ctx @state/*selections
+            noise-matrix-scaled-to-sv1)
+
+(defn
+  noise-scaled-to-sv1-svg
+  "Get the noise background of one data point"
+  [context
+   id]
+  (-> (matrix/extract-grid (fx/sub-ctx context
+                                       noise-matrix-scaled-to-sv1)
+                           id)
+      (plot/grid-map (fx/sub-ctx context
+                                 region-svg-hiccup)
+                     {:display-width (fx/sub-ctx context
+                                                 region-display-width)})
+      (spitsvgstream (str "noise-sv1-"
+                          id
+                          "file.svg"))))
+#_
+(-> @state/*selections
+    (state/noise-svg 31))
+
+(defn
+  noise-matrix-scaled-to-sv2
+  [context]
+  (let [sv (fx/sub-ctx context
+                       singular-vector
+                       1)]
+    (-> context
+        (fx/sub-ctx noise-matrix-2d)
+        (matrix/scaled-to-vec sv))))
+#_
+(fx/sub-ctx @state/*selections
+            noise-matrix-scaled-to-sv2)
+
+(defn
+  noise-scaled-to-sv2-svg
+  "Get the noise background of one data point"
+  [context
+   id]
+  (-> (matrix/extract-grid (fx/sub-ctx context
+                                       noise-matrix-scaled-to-sv2)
+                           id)
+      (plot/grid-map (fx/sub-ctx context
+                                 region-svg-hiccup)
+                     {:display-width (fx/sub-ctx context
+                                                 region-display-width)})
+      (spitsvgstream (str "noise-sv2-"
+                          id
+                          "file.svg"))))
+#_
+(-> @state/*selections
+    (state/noise-svg 31))
+
+(defn
+  errors-in-sv1-proj
+  [context]
+  (let [singular-val (fx/sub-ctx context
+                                 singular-value
+                                 0)]
+    (->> (fx/sub-ctx context
+                     noise-matrix-scaled-to-sv1)
+         (matrix/scale-to-value (/ 1.0
+                                   singular-val))
+         ;; pessimistic direct sum method
+         #_
+         matrix/abs-sums-of-cols
+         ;;quadrature sum method
+         ;;#_#_
+         matrix/self-inner-prod-of-cols
+         (mapv (fn [sum-of-squares]
+                 (-> sum-of-squares
+                     Math/sqrt)))
+         #_
+         (map-indexed (fn [sv-index
+                           scaled-error]
+                        (/ scaled-error
+                           singular-val)))
+         vec)))
+#_
+(fx/sub-ctx @state/*selections
+            errors-in-sv1-proj)
+
+(defn
+  errors-in-sv2-proj
+  [context]
+  (let [singular-val (fx/sub-ctx context
+                                 singular-value
+                                 1)]
+    (->> (fx/sub-ctx context
+                     noise-matrix-scaled-to-sv2)
+         (matrix/scale-to-value (/ 1.0
+                                   singular-val))
+         ;; pessimistic direct sum method
+         #_
+         matrix/abs-sums-of-cols
+         ;;quadrature sum method
+         ;;#_#_
+         matrix/self-inner-prod-of-cols
+         (mapv (fn [sum-of-squares]
+                 (-> sum-of-squares
+                     Math/sqrt)))
+         #_
+         (map-indexed (fn [sv-index
+                           scaled-error]
+                        (/ scaled-error
+                           singular-val)))
+         vec)))
+#_
+(fx/sub-ctx @state/*selections
+            errors-in-sv2-proj)
+
+#_
+(defn
+  noise-1d-matrix
+  "This is a noise matric when only the first EOF is removed
+  This shouldn't be used normally..
+  b/c the code is designed to run on two climate regions"
+  [context]
+  (-> context
+      (fx/sub-ctx region-svd)
+      (matrix/minus-1-sv)))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/noise-matrix-1d)
+    keys)
+
+#_
+(defn
+  noise-1d-min-max
+  [context]
+  (-> context
+      (fx/sub-ctx noise-1d-matrix)
+      matrix/get-min-max))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/noise-1d-min-max))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+(defn
+  sv-proj
+  "adds cycle meta-data to `sv-proj-vec`"
+  [context]
+  (let [projs (fx/sub-ctx context
+                          sv-proj-vec)]
+    (map (fn [projection
+              cycle-fraction
+              sv1-error
+              sv2-error]
+           (assoc projection
+                  2
+                 {:cycle-frac cycle-fraction
+                  :sv1-err sv1-error
+                  :sv2-err sv2-error}))
+         projs
+         (->> projs
+              count
+              range
+              (mapv #(cycle-frac (fx/sub-ctx context
+                                             cycle-length)
+                                 (fx/sub-ctx context
+                                             cycle-phase)
+                                 %)))
+         (fx/sub-ctx context
+                     errors-in-sv1-proj)
+         (fx/sub-ctx context
+                     errors-in-sv2-proj))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/sv-proj))
+
+#_
+(defn
+  sv-proj-with-errors
+  [context]
+  (let [sv12-projections (fx/sub-ctx context
+                                     state/sv-proj)
+        errors-x         (fx/sub-ctx context
+                                     errors-in-sv1-proj)
+        errors-y         (fx/sub-ctx context
+                                     errors-in-sv2-proj)]
+    (mapv (fn [[x
+                y
+                attribs]
+               err-x
+               err-y]
+            [x
+             y
+             err-x
+             err-y
+             attribs])
+          sv12-projections
+          errors-x
+          errors-y)))
+#_
+(fx/sub-ctx @state/*selections
+            sv-proj-with-errors)
+#_
+(quickthing/error-bars
+  (fx/sub-ctx @state/*selections
+              sv-proj-with-errors))
+
+(defn-
+  error-vec
+  "Extract the errors from the proj vec derived data map,
+  and put into a vec of `[x-err y-err]` pairs"
+  [projs]
+  (->> projs
+       (mapv (fn [proj]
+               (let [derived-data-map (get proj
+                                           2)]
+                 [(:sv1-err derived-data-map)
+                  (:sv2-err derived-data-map)])))))
+#_
+(-> @state/*selections
+    (fx/sub-ctx sv-proj)
+    error-vec)
+#_
+(-> @state/*selections
+    (fx/sub-ctx sv-proj)
+    error-vec)
+
+(defn
+  sv-proj-svg
+  [context]
+  (let [projs (-> context
+                  (fx/sub-ctx sv-proj))]
+    (-> projs
+        (plot/sv-plot (* 1.0
+                         (fx/sub-ctx context
+                                     window-width))
+                      (* 4.0
+                         (fx/sub-ctx context
+                                     row-height))
+                      {:errors (error-vec projs)})
+        ;;      #_
+        (spitsvgstream "sv-projs.svg"))))
+;;#_
+(-> @state/*selections
+    (fx/sub-ctx sv-proj-svg)
+    nil?)
+
+
 
 (defn
   sv-bisection
@@ -2217,24 +2299,6 @@
 (-> @state/*selections
     (fx/sub-ctx state/pattern-proj-svg))
 
-(defn
-  sv-proj-svg
-  [context]
-  (-> context
-      (fx/sub-ctx sv-proj)
-      (plot/sv-plot (* 1.0
-                       (fx/sub-ctx context
-                                   window-width))
-                    (* 4.0
-                       (fx/sub-ctx context
-                                   row-height))
-                    {:errors (fx/sub-ctx context
-                                         sv-proj-with-errors)})
-      ;;      #_
-      (spitsvgstream "sv-projs.svg")))
-;;#_
-(-> @state/*selections
-    (fx/sub-ctx sv-proj-svg))
 
 (defn
   singular-values-stats
@@ -2504,9 +2568,24 @@
 (defn
   sv12-vs-other-svg
   [context]
-  (-> (add-cycle-data context
-                      (fx/sub-ctx context
-                                  sv12-vs-other))
+  (let [points (fx/sub-ctx context
+                           sv12-vs-other)]
+  (-> (mapv (fn [points
+                 cycle-fraction]
+              (update points
+                      2
+                      #(assoc %
+                              :cycle-frac
+                              cycle-fraction)))
+            points
+            (->> points
+                 count
+                 range
+                 (mapv #(cycle-frac (fx/sub-ctx context
+                                                cycle-length)
+                                    (fx/sub-ctx context
+                                                cycle-phase)
+                                    %))))
       (plot/add-cycle-color)
       (plot/scatter 1000
                     1000
@@ -2514,7 +2593,7 @@
                      :x-name    "SV1 and SV2"
                      :y-name    "Other SVs"})
       (spitsvgstream (str "power-sv12-vs-other"
-                          ".svg"))))
+                          ".svg")))))
 #_;;usused
 (-> @state/*selections
     (fx/sub-ctx sv12-vs-other-svg))

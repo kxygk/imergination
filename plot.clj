@@ -205,10 +205,15 @@
                                                                                              :cycle-frac
                                                                                              quickthing/color-cycle)}])))
                                                            {:scale 15})))
-             #_
              (update :data
                      #(into %
-                            (flatten (quickthing/error-bars errors))))
+                            (flatten (quickthing/error-bars (mapv (fn [point-2d
+                                                                       error-2d]
+                                                                    (into (vec (take 2
+                                                                                     point-2d))
+                                                                          error-2d))
+                                                                  data
+                                                                  errors)))))
              #_
              (update :data
                      #(into %
