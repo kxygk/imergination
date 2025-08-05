@@ -367,11 +367,11 @@
                       [])
             (update :data
                     #(into %
-                           (quickthing/hist first-two
+                           (quickthing/bars first-two
                                             {:attribs {:stroke "red"}})))
             (update :data
                     #(into %
-                           (quickthing/hist the-rest)))
+                           (quickthing/bars the-rest)))
             viz/svg-plot2d-cartesian
             (quickthing/svg-wrap [width
                                   height]
@@ -431,7 +431,7 @@
           (assoc :data
                  (into []
                        cat
-                       [(quickthing/hist indexed
+                       [(quickthing/bars indexed
                                          {:attribs {;;:opacity "0.5"
                                                     :stroke-width 10 #_0.4
                                                     :stroke       "gray"}})]))
@@ -482,10 +482,10 @@
           (assoc :data
                  (into []
                        cat
-                       [(quickthing/hist index-a
+                       [(quickthing/bars index-a
                                          {:attribs {:stroke-width bar-width
                                                     :stroke       "#00aa88"}})
-                        (quickthing/hist index-b
+                        (quickthing/bars index-b
                                          {:attribs {:stroke-width bar-width
                                                     :stroke       "#aa8800"}})]))
           viz/svg-plot2d-cartesian
@@ -833,7 +833,7 @@
           (-> axis
               (update :data
                       #(into  %
-                              (quickthing/hist hist-data
+                              (quickthing/bars hist-data
                                                {:attribs {;;:opacity "0.5"
                                                           :stroke-width 20 #_0.4
                                                           :stroke       "black"}})))
@@ -860,7 +860,7 @@
     (-> axis
         (update :data
                 #(into %
-                       (quickthing/hist data)))
+                       (quickthing/bars data)))
         viz/svg-plot2d-cartesian
         (quickthing/svg-wrap [width
                               height]
@@ -1105,7 +1105,7 @@
                   notes-data    (->> notes
                                      (mapv (fn [[value
                                                  label]]
-                                             (into (quickthing/hist [[value
+                                             (into (quickthing/bars [[value
                                                                       (* 1.0
                                                                          plot-y-max)]]
                                                                     {:attribs {;;:opacity "0.5"
@@ -1130,13 +1130,13 @@
                          nil)
                   (update :data
                           #(into  %
-                                  (quickthing/hist below-angle-bin-counts
+                                  (quickthing/bars below-angle-bin-counts
                                                    {:attribs {;;:opacity "0.5"
                                                               :stroke-width 20 #_0.4
                                                               :stroke       "#aa880055"}})))
                   (update :data
                           #(into  %
-                                  (quickthing/hist above-angle-bin-counts
+                                  (quickthing/bars above-angle-bin-counts
                                                    {:attribs {;;:opacity "0.5"
                                                               :stroke-width 20 #_0.4
                                                               :stroke       "#00aa8855"}})))
@@ -1216,7 +1216,7 @@
           (-> axis
               (update :data
                       #(into  %
-                              (quickthing/hist hist-data
+                              (quickthing/bars hist-data
                                                {:attribs {;;:opacity "0.5"
                                                           :stroke-width 20 #_0.4
                                                           :stroke       "black"}})))
