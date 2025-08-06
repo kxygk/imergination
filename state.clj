@@ -1600,15 +1600,20 @@
   (let [projs (fx/sub-ctx context
                           sv-proj-vec)]
     (map (fn [projection
+              data-index
               cycle-fraction
               sv1-error
               sv2-error]
            (assoc projection
                   2
-                 {:cycle-frac cycle-fraction
+                  {:index data-index
+                   :cycle-frac cycle-fraction
                   :sv1-err sv1-error
                   :sv2-err sv2-error}))
          projs
+         (->> projs
+              count
+              range)
          (->> projs
               count
               range

@@ -188,7 +188,17 @@
     (->> (-> (quickthing/zero-axis data
                                    {:width       width
                                     :height      height
-                                    :margin-frac 0.0})
+                                    :margin-frac 0.05})
+             (update :data
+                     #(into %
+                            (flatten (quickthing/error-bars (mapv (fn [point-2d
+                                                                       error-2d]
+                                                                    (into (vec (take 2
+                                                                                     point-2d))
+                                                                          error-2d))
+                                                                  data
+                                                                  errors)
+                                                            {:attribs {:stroke "#222"}}))))
              (update :data
                      #(into %
                             (quickthing/adjustable-circles (->> data
@@ -201,19 +211,15 @@
                                                                                 nil ;; default radius
                                                                                 {:stroke #_ "transparent" "#777"
                                                                                  ;; TODO thread the whole thing
+                                                                                 :fill-opacity "0.8"
+                                                                                 :tooltip (str "Index: "
+                                                                                               (:index attribs)
+                                                                                               "\n"
+                                                                                               attribs)
                                                                                  :fill   (-> attribs
                                                                                              :cycle-frac
                                                                                              quickthing/color-cycle)}])))
                                                            {:scale 15})))
-             (update :data
-                     #(into %
-                            (flatten (quickthing/error-bars (mapv (fn [point-2d
-                                                                       error-2d]
-                                                                    (into (vec (take 2
-                                                                                     point-2d))
-                                                                          error-2d))
-                                                                  data
-                                                                  errors)))))
              #_
              (update :data
                      #(into %
@@ -245,10 +251,40 @@
                                                                                              " "
                                                                                              7.0)}})))
              (assoc :grid ;; turn off grid
-                    nil))
+                    nil)
+             (assoc-in [:x-axis
+                        :visible] false)
+             (assoc-in [:y-axis
+                        :visible] false))
          (viz/svg-plot2d-cartesian)
+         (svg/group {}
+                    (-> (quickthing/zero-axis data
+                                               {:width       width
+                                                :height      height
+                                                :margin-frac 0.05})
+                        (update-in [:y-axis
+                                    :major]
+                                   #(filter (fn [tick]
+                                               (or (> tick
+                                                       0.001)
+                                                    (< tick
+                                                       -0.001)))
+                                             %))
+                        (assoc-in [:x-axis
+                                   :major]
+                                  [0.0 , -0.1,-0.2,-0.3,-0.4])
+                         (assoc :grid ;; turn off grid
+                                nil)
+                         (viz/svg-plot2d-cartesian)))
          (svg/svg {:width  width
                    :height height}))))
+#_
+(sv-plot [[1,1][1,2]]
+         100
+         100)
+(filter (partial not=
+                 -0.0)
+        '(-0.1,-0.0,0.1))
 
 ;; NOTE: This doesn't work b/c the ellipse errors aren't in the plotting units
 ;; So you get circles but they're not properly scaled
