@@ -1599,17 +1599,32 @@
   [context]
   (let [projs (fx/sub-ctx context
                           sv-proj-vec)]
-    (map (fn [projection
+    (map (fn [[proj-x
+               proj-y
+               :as projection]
               data-index
               cycle-fraction
               sv1-error
               sv2-error]
+           (let [distance-to-origin (clojure.math/sqrt (+ (clojure.math/pow proj-x
+                                                  2.0)
+                                             (clojure.math/pow proj-y
+                                                  2.0)))]
            (assoc projection
                   2
                   {:index data-index
                    :cycle-frac cycle-fraction
-                  :sv1-err sv1-error
-                  :sv2-err sv2-error}))
+                   :angle (-> projection
+                              bisect/to-angle
+                              (mod bisect/TWOPI))
+                   :length distance-to-origin
+                   :err-x sv1-error
+                   :err-y sv2-error
+                   :angular-error (clojure.math/atan (/ (quickthing/orthogonal-error-length [proj-x
+                                                                                proj-y
+                                                                                {:err-x sv1-error
+                                                                                 :err-y sv2-error}])
+                                           distance-to-origin))})))
          projs
          (->> projs
               count
@@ -1630,56 +1645,6 @@
 (-> @state/*selections
     (fx/sub-ctx state/sv-proj))
 
-#_
-(defn
-  sv-proj-with-errors
-  [context]
-  (let [sv12-projections (fx/sub-ctx context
-                                     state/sv-proj)
-        errors-x         (fx/sub-ctx context
-                                     errors-in-sv1-proj)
-        errors-y         (fx/sub-ctx context
-                                     errors-in-sv2-proj)]
-    (mapv (fn [[x
-                y
-                attribs]
-               err-x
-               err-y]
-            [x
-             y
-             err-x
-             err-y
-             attribs])
-          sv12-projections
-          errors-x
-          errors-y)))
-#_
-(fx/sub-ctx @state/*selections
-            sv-proj-with-errors)
-#_
-(quickthing/error-bars
-  (fx/sub-ctx @state/*selections
-              sv-proj-with-errors))
-
-(defn-
-  error-vec
-  "Extract the errors from the proj vec derived data map,
-  and put into a vec of `[x-err y-err]` pairs"
-  [projs]
-  (->> projs
-       (mapv (fn [proj]
-               (let [derived-data-map (get proj
-                                           2)]
-                 [(:sv1-err derived-data-map)
-                  (:sv2-err derived-data-map)])))))
-#_
-(-> @state/*selections
-    (fx/sub-ctx sv-proj)
-    error-vec)
-#_
-(-> @state/*selections
-    (fx/sub-ctx sv-proj)
-    error-vec)
 
 (defn
   sv-proj-svg

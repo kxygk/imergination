@@ -178,113 +178,120 @@
   [data
    width
    height
-   & [{:keys [errors]
-       :or   {errors []}}]]
+   & [{:keys []
+       :or   {}}]]
   (let [{:keys [angle
                 points-a
                 points-b
                 centroid-a
-                centroid-b]} (bisect/min-var data)]
-    (->> (-> (quickthing/zero-axis data
-                                   {:width       width
-                                    :height      height
-                                    :margin-frac 0.05})
-             (update :data
-                     #(into %
-                            (flatten (quickthing/error-bars (mapv (fn [point-2d
-                                                                       error-2d]
-                                                                    (into (vec (take 2
-                                                                                     point-2d))
-                                                                          error-2d))
-                                                                  data
-                                                                  errors)
-                                                            {:attribs {:stroke "#222"}}))))
-             (update :data
-                     #(into %
-                            (quickthing/adjustable-circles (->> data
-                                                                (map-indexed (fn [index
-                                                                                  [data-x
-                                                                                   data-y
-                                                                                   attribs]]
-                                                                               [data-x
-                                                                                data-y
-                                                                                nil ;; default radius
-                                                                                {:stroke #_ "transparent" "#777"
-                                                                                 ;; TODO thread the whole thing
-                                                                                 :fill-opacity "0.8"
-                                                                                 :tooltip (str "Index: "
-                                                                                               (:index attribs)
-                                                                                               "\n"
-                                                                                               attribs)
-                                                                                 :fill   (-> attribs
-                                                                                             :cycle-frac
-                                                                                             quickthing/color-cycle)}])))
-                                                           {:scale 15})))
-             #_
-             (update :data
-                     #(into %
-                            (quickthing/index-text data
-                                                   {:scale 40})))
-             (update :data
-                     #(into %
-                            (quickthing/line-through-point data
-                                                           (->> angle
-                                                                bisect/angle-to-unitvector)
-                                                           {:attribs {:stroke           "red"
-                                                                      :stroke-dasharray (str 50.0
-                                                                                             " "
-                                                                                             50.0)}})))
-             (update :data
-                     #(into %
-                            (quickthing/line-through-point data
-                                                           centroid-a
-                                                           {:attribs {:stroke           "black"
-                                                                      :stroke-dasharray (str 7.0
-                                                                                             " "
-                                                                                             7.0)}})))
-             (update :data
-                     #(into %
-                            (quickthing/line-through-point data
-                                                           centroid-b
-                                                           {:attribs {:stroke           "black"
-                                                                      :stroke-dasharray (str 7.0
-                                                                                             " "
-                                                                                             7.0)}})))
-             (assoc :grid ;; turn off grid
-                    nil)
-             (assoc-in [:x-axis
-                        :visible] false)
-             (assoc-in [:y-axis
-                        :visible] false))
-         (viz/svg-plot2d-cartesian)
-         (svg/group {}
-                    (-> (quickthing/zero-axis data
-                                               {:width       width
-                                                :height      height
-                                                :margin-frac 0.05})
-                        (update-in [:y-axis
-                                    :major]
-                                   #(filter (fn [tick]
-                                               (or (> tick
+                centroid-b]} (bisect/min-var data)
+        range-magnitude      (max (->> data
+                                       (map first)
+                                       (map abs)
+                                       (apply max))
+                                  (->> data
+                                       (map second)
+                                       (map abs)
+                                       (apply max)))]
+    (let [dummy-data [[(- range-magnitude)
+                       (- range-magnitude)]
+                      [0
+                       range-magnitude]]]
+      (->> (-> (quickthing/zero-axis dummy-data
+                                     {:width       width
+                                      :height      height
+                                      :margin-frac 0.05})
+               (update :data
+                       #(into %
+                              (quickthing/orthogonal-error-bars data
+                                                                {:attribs {:stroke "#c00"}})))
+               (update :data
+                       #(into %
+                              (quickthing/error-bars data
+                                                     {:attribs {:stroke "#222"}})))
+               (update :data
+                       #(into %
+                              (-> (->> data
+                                       (map-indexed (fn [index
+                                                         [data-x
+                                                          data-y
+                                                          attribs]]
+                                                      [data-x
+                                                       data-y
+                                                       nil ;; default radius
+                                                       {:stroke       #_ "transparent" "#777"
+                                                        ;; TODO thread the whole thing
+                                                        :fill-opacity "0.8"
+                                                        :tooltip      (str "Index: "
+                                                                           (:index attribs)
+                                                                           "\n"
+                                                                           attribs)
+                                                        :fill         (-> attribs
+                                                                          :cycle-frac
+                                                                          quickthing/color-cycle)}])))
+                                  (quickthing/adjustable-circles {:scale 15}))))
+               #_
+               (update :data
+                       #(into %
+                              (quickthing/index-text data
+                                                     {:scale 40})))
+               (update :data
+                       #(into %
+                              (quickthing/line-through-point data
+                                                             (->> angle
+                                                                  bisect/angle-to-unitvector)
+                                                             {:attribs {:stroke           "red"
+                                                                        :stroke-dasharray (str 50.0
+                                                                                               " "
+                                                                                               50.0)}})))
+               (update :data
+                       #(into %
+                              (quickthing/line-through-point data
+                                                             centroid-a
+                                                             {:attribs {:stroke           "black"
+                                                                        :stroke-dasharray (str 7.0
+                                                                                               " "
+                                                                                               7.0)}})))
+               (update :data
+                       #(into %
+                              (quickthing/line-through-point data
+                                                             centroid-b
+                                                             {:attribs {:stroke           "black"
+                                                                        :stroke-dasharray (str 7.0
+                                                                                               " "
+                                                                                               7.0)}})))
+               (assoc :grid ;; turn off grid
+                      nil)
+               (assoc-in [:x-axis
+                          :visible] false)
+               (assoc-in [:y-axis
+                          :visible] false))
+           (viz/svg-plot2d-cartesian)
+           (svg/group {}
+                      (-> (quickthing/zero-axis dummy-data
+                                                {:width       width
+                                                 :height      height
+                                                 :margin-frac 0.05})
+                          (update-in [:y-axis
+                                      :major]
+                                     #(filter (fn [tick]
+                                                (or (> tick
                                                        0.001)
                                                     (< tick
                                                        -0.001)))
-                                             %))
-                        (assoc-in [:x-axis
-                                   :major]
-                                  [0.0 , -0.1,-0.2,-0.3,-0.4])
-                         (assoc :grid ;; turn off grid
-                                nil)
-                         (viz/svg-plot2d-cartesian)))
-         (svg/svg {:width  width
-                   :height height}))))
+                                              %))
+                          (assoc-in [:x-axis
+                                     :major]
+                                    [0.0 , -0.1,-0.2,-0.3,-0.4])
+                          (assoc :grid ;; turn off grid
+                                 nil)
+                          (viz/svg-plot2d-cartesian)))
+           (svg/svg {:width  width
+                     :height height})))))
 #_
 (sv-plot [[1,1][1,2]]
          100
          100)
-(filter (partial not=
-                 -0.0)
-        '(-0.1,-0.0,0.1))
 
 ;; NOTE: This doesn't work b/c the ellipse errors aren't in the plotting units
 ;; So you get circles but they're not properly scaled
