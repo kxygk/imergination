@@ -218,7 +218,6 @@
                                                           attribs]]
                                                       [data-x
                                                        data-y
-                                                       nil ;; default radius
                                                        {:stroke       #_ "transparent" "#777"
                                                         ;; TODO thread the whole thing
                                                         :fill-opacity "0.8"
@@ -229,7 +228,7 @@
                                                         :fill         (-> attribs
                                                                           :cycle-frac
                                                                           quickthing/color-cycle)}])))
-                                  (quickthing/adjustable-circles {:scale 15}))))
+                                  (quickthing/circles {:scale 15}))))
                #_
                (update :data
                        #(into %
@@ -345,8 +344,8 @@
              #_
              (update :data
                      #(into %
-                            (quickthing/index-text data
-                                                   {:scale 40})))
+                            (quickthing/index-labels data
+                                                     {:scale 40})))
              (update :data
                      #(into %
                             (quickthing/line-through-point data-with-errors
@@ -774,13 +773,7 @@
               highlighted-idx-vec
               traced-id-vec
               fit-params]}]]
-  (let [xy-radius      (->> xy-vec
-                            (mapv (fn [xy-entry]
-                                    [(first xy-entry)
-                                     (second xy-entry)
-                                     nil
-                                     (last xy-entry)])))
-        xy-indexed-vec (->> xy-vec
+  (let [xy-indexed-vec (->> xy-vec
                             (map-indexed (fn [index
                                               xy-entry]
                                            [(first xy-entry)
@@ -826,12 +819,12 @@
                                                                                         :fill         "none"}})))
             true               (update :data
                                        #(into %
-                                              (quickthing/adjustable-circles xy-radius
-                                                                             {:attribs {:stroke "#777"}})))
+                                              (quickthing/circles xy-vec
+                                                                  {:attribs {:stroke "#777"}})))
             true               (update :data
                                        #(into %
-                                              (quickthing/index-text xy-radius
-                                                                     {:scale 40}))))
+                                              (quickthing/index-labels xy-vec
+                                                                       {:scale 40}))))
           ;;#_#_
           viz/svg-plot2d-cartesian
           (quickthing/svg-wrap [width
@@ -1159,13 +1152,13 @@
                                                                     {:attribs {;;:opacity "0.5"
                                                                                :stroke-width 10 #_0.4
                                                                                :stroke       "#aaaaaa77"}})
-                                                   (quickthing/adjustable-text [[value
-                                                                                 (* 0.9
-                                                                                    plot-y-max)
-                                                                                 (if (nil? label)
+                                                   (quickthing/labels [[value
+                                                                        (* 0.9
+                                                                           plot-y-max)]
+                                                                       {:text    (if (nil? label)
                                                                                    ""
-                                                                                   label)]]
-                                                                               {:attribs notes-attribs}))))
+                                                                                   label)
+                                                                        :attribs notes-attribs}]))))
                                      flatten
                                      vec)]
               (-> dummy-data
@@ -1211,21 +1204,23 @@
                                  notes-data))
                   (update :data
                           #(into  %
-                                  (quickthing/adjustable-circles (->> angle-vec
-                                                                      (mapv (fn [[angle
-                                                                                  meta]]
-                                                                              #_
-                                                                              (println (str "BOTTOM:"
-                                                                                            angle))
-                                                                              [angle
-                                                                               1.5
-                                                                               5.0
-                                                                               (dissoc meta ;; weird SVG thing..
-                                                                                       :above?)]))
-                                                                      add-cycle-color)
-                                                                 {:attribs {;;:opacity "0.5"
-                                                                            :stroke-width 0.4
-                                                                            :stroke       "black"}})))
+                                  (quickthing/circles (->> angle-vec
+                                                           (mapv (fn [[angle
+                                                                       meta]]
+                                                                   #_
+                                                                   (println (str "BOTTOM:"
+                                                                                 angle))
+                                                                   [angle
+                                                                    1.5
+                                                                    (-> meta
+                                                                        (assoc :radius
+                                                                          5.0)
+                                                                        (dissoc meta ;; weird SVG thing..
+                                                                                :above?))]))
+                                                           add-cycle-color)
+                                                      {:attribs {;;:opacity "0.5"
+                                                                 :stroke-width 0.4
+                                                                 :stroke       "black"}})))
                   viz/svg-plot2d-cartesian
                   (quickthing/svg-wrap [width
                                         height]
