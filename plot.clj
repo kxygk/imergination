@@ -238,6 +238,23 @@
                        #(into %
                               (quickthing/index-text data
                                                      {:scale 40})))
+               ;;#_
+               (update :data
+                       #(into %
+                              (quickthing/labels (->> data
+                                                      (map (fn [data-point]
+                                                             (update data-point
+                                                                     2
+                                                                     (fn [options]
+                                                                       (-> options
+                                                                           (clojure.set/rename-keys
+                                                                             {:angular-error :text})
+                                                                           (update :text
+                                                                                   (fn [rad]
+                                                                                     ;;"66" #_
+                                                                                     (format (str "%.3g")
+                                                                                             (clojure.math/to-degrees rad))))))))))
+                                                 {:scale 10})))
                (update :data
                        #(into %
                               (quickthing/line-through-point data
