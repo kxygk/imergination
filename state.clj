@@ -3,6 +3,7 @@
   "Program and GUI state"
   (:use [hashp.core])
   (:require [clojure.java.io :as io]
+            [clojure.data.csv :as csv]
             [cljfx.api       :as fx]
             [clojure.core.cache :as cache]
             [injest.path :refer [+> +>> x>> =>>]]
@@ -20,11 +21,33 @@
 (def
   config-dir
   (str "/home/kxygk/Projects/imergination.wiki/"
+       ;;#_
+       "krabins-short-pentad"
+       #_
+       "krabi-short-daily"
+       #_
+       "krabi-gpcp"
+       #_
+       "fakerain"
+       #_
+       "krabi-gpcc"
+       #_
+       "marrahbins"
+       #_
+       "krabdaily"
+       #_
+       "haihai-norm"
+       #_
+       "krabins-norm"
+       #_
+       "krab-mon-norm"
        #_
        "krabi-monthly"
        #_
        "scs-rainbow"
-       ;;#_
+       #_
+       "krabins-v7"
+       #_
        "krabins"
        #_
        "haihai"))
@@ -57,89 +80,89 @@
                                       (str "/config.edn")
                                       slurp
                                       clojure.edn/read-string))
-                                  #(cache/lru-cache-factory % :threshold 1000))))
+                           #(cache/lru-cache-factory % :threshold 1000))))
 #_
-  {:window-width                   1080.0
-     :row-height                     360
-     :shoreline-filestr              "./data/shoreline-coarse.json"
-     :contour-filestr                nil
-     :non-zero-min?                  true
-     :rain-dirstr
-     #_
-     "/home/kxygk/Data/sst/monthly/geotiff-rot-subset/"
-     ;;#_
-     "/home/kxygk/Data/sst/monthly/geotiff-rot/"
-     #_
-     "/home/kxygk/Data/imerg/daily/late-more/"
-     #_
-     "/home/kxygk/Data/era5/hourly-201103/rot/"
-     #_
-     "/home/kxygk/Data/imerg/30min-subset/"
-     #_
-     "/home/kxygk/Data/era5/monthly/rot/"
-     #_
-     "/home/kxygk/Projects/raingrid/out/"
-     #_
-     "/home/kxygk/Projects/raingrid/out-pat1/"
-     #_
-     "/home/kxygk/Data/imerg/daily/late/"
-     #_
-     "/home/kxygk/Data/imerg/monthly/late/"
-     :elevation-filestr              "./data/World_e-Atlas-UCSD_SRTM30-plus_v8.tif"
-     :bin-size                       1
-     :cycle-length                   12 #_365 #_24 #_48
-     :cycle-phase                    0
-     :eas-res
-     0.25
-     #_0.1
-     :sou-res
-     0.25
-     #_0.1
-     ;; TODO Debug `krabi-region`. Axis labels float off from the map
-     :region                         nil
-     :region-key
+{:window-width                   1080.0
+ :row-height                     360
+ :shoreline-filestr              "./data/shoreline-coarse.json"
+ :contour-filestr                nil
+ :non-zero-min?                  true
+ :rain-dirstr
+ #_
+ "/home/kxygk/Data/sst/monthly/geotiff-rot-subset/"
+ ;;#_
+ "/home/kxygk/Data/sst/monthly/geotiff-rot/"
+ #_
+ "/home/kxygk/Data/imerg/daily/late-more/"
+ #_
+ "/home/kxygk/Data/era5/hourly-201103/rot/"
+ #_
+ "/home/kxygk/Data/imerg/30min-subset/"
+ #_
+ "/home/kxygk/Data/era5/monthly/rot/"
+ #_
+ "/home/kxygk/Projects/raingrid/out/"
+ #_
+ "/home/kxygk/Projects/raingrid/out-pat1/"
+ #_
+ "/home/kxygk/Data/imerg/daily/late/"
+ #_
+ "/home/kxygk/Data/imerg/monthly/late/"
+ :elevation-filestr              "./data/World_e-Atlas-UCSD_SRTM30-plus_v8.tif"
+ :bin-size                       1
+ :cycle-length                   12 #_365 #_24 #_48
+ :cycle-phase                    0
+ :eas-res
+ 0.25
+ #_0.1
+ :sou-res
+ 0.25
+ #_0.1
+ ;; TODO Debug `krabi-region`. Axis labels float off from the map
+ :region                         nil
+ :region-key
                             ;;;;;;;;;;;;;;;;;;;;;;;
-     #_:world
-     #_:ocean1small
-     #_:ocean1small-1pat
-     #_:ocean1large
-     #_:ocean1largeextra
-     #_:ocean1largeextraextra
-     #_extraextraextra
-     #_:ocean2
-     #_:ocean1
-     #_:ghana-large
-     #_:togo
-     #_:jos
-     #_:taipei-region
-     #_:udaipur
-     #_:marrah
-     #_:marrah-big
-     #_:sichuan-wall
-     #_:krabi-root-2
-     #_:krabi-root-2-daily
-     #_:krabi-root-2-era5
-     #_:krabi-root-2-diurnal
-     #_:java
-     #_:java-era5
-     #_:birdhead
-     #_krabi-skinny-region
-     #_eastern-korea
-     #_:himalaya
-     #_:rift-valley-small
-     ;; Sea Surface Temp
-     #_:south-south-china-sea
-     #_:north-south-china-sea
-     #_:south-east-asia
-     #_:south-east-asia-crop
-     :hainan
+ #_:world
+ #_:ocean1small
+ #_:ocean1small-1pat
+ #_:ocean1large
+ #_:ocean1largeextra
+ #_:ocean1largeextraextra
+ #_extraextraextra
+ #_:ocean2
+ #_:ocean1
+ #_:ghana-large
+ #_:togo
+ #_:jos
+ #_:taipei-region
+ #_:udaipur
+ #_:marrah
+ #_:marrah-big
+ #_:sichuan-wall
+ #_:krabi-root-2
+ #_:krabi-root-2-daily
+ #_:krabi-root-2-era5
+ #_:krabi-root-2-diurnal
+ #_:java
+ #_:java-era5
+ #_:birdhead
+ #_krabi-skinny-region
+ #_eastern-korea
+ #_:himalaya
+ #_:rift-valley-small
+ ;; Sea Surface Temp
+ #_:south-south-china-sea
+ #_:north-south-china-sea
+ #_:south-east-asia
+ #_:south-east-asia-crop
+ :hainan
                             ;;;;;;;;;;;;;;;;;;;;;;;
-     :is-in-ram                      false
-     :mouse-click                    nil
-     :datafile-idxs                  [0]
-     :sv-selected-idxs               [0]
-     :noise-selected-idxs            [0]
-     :normalized-noise-selected-idxs [0]}
+ :is-in-ram                      false
+ :mouse-click                    nil
+ :datafile-idxs                  [0]
+ :sv-selected-idxs               [0]
+ :noise-selected-idxs            [0]
+ :normalized-noise-selected-idxs [0]}
 
 
 
@@ -244,9 +267,9 @@
                          "/"
                          filename)
                     #_(str "../imergination.wiki/"
-                         subfolder
-                         "/"
-                         filename)
+                           subfolder
+                           "/"
+                           filename)
                     string))
       nil)
     string))
@@ -284,14 +307,14 @@
 ;; TODO Make these checks on first run
 ;;#_#_
 (if (not (zero? (mod (fx/sub-val @*selections
-                                  :cycle-length)
+                                 :cycle-length)
                      (fx/sub-val @*selections
                                  :bin-size))))
   (println "ERROR: The `bin-size` doesn't cleanly divide the cycle length"))
 
 
 (if (not (zero? (mod (fx/sub-val @*selections
-                                  :cycle-length)
+                                 :cycle-length)
                      (fx/sub-val @*selections
                                  :bin-size))))
   (println "ERROR: The `bin-size` doesn't cleanly divide the cycle length"))
@@ -707,8 +730,8 @@
   (-> context
       (fx/sub-ctx region-matrix)
       matrix/to-geogrid-vec)
-  (let [myregion (fx/sub-ctx context
-                             region)
+  (let [myregion   (fx/sub-ctx context
+                               region)
         normalize? (fx/sub-ctx context
                                normalize-data?) ]
     (if (fx/sub-ctx context
@@ -797,6 +820,10 @@
                                      eas-res)
                          (fx/sub-ctx @state/*selections
                                      sou-res))
+(-> @state/*selections
+    (fx/sub-ctx state/region-geogrid-vec)
+    matrix/from-geogrids)
+
 
 (defn
   region-geogrid-params
@@ -1516,10 +1543,10 @@
          (matrix/scale-to-value (/ 1.0
                                    singular-val))
          ;; pessimistic direct sum method
-         #_
+         ;;#_
          matrix/abs-sums-of-cols
          ;;quadrature sum method
-         ;;#_#_
+         #_#_
          matrix/self-inner-prod-of-cols
          (mapv (fn [sum-of-squares]
                  (-> sum-of-squares
@@ -1545,10 +1572,10 @@
          (matrix/scale-to-value (/ 1.0
                                    singular-val))
          ;; pessimistic direct sum method
-         #_
+         ;;#_
          matrix/abs-sums-of-cols
          ;;quadrature sum method
-         ;;#_#_
+         #_#_
          matrix/self-inner-prod-of-cols
          (mapv (fn [sum-of-squares]
                  (-> sum-of-squares
@@ -1607,24 +1634,24 @@
               sv1-error
               sv2-error]
            (let [distance-to-origin (clojure.math/sqrt (+ (clojure.math/pow proj-x
-                                                  2.0)
-                                             (clojure.math/pow proj-y
-                                                  2.0)))]
-           (assoc projection
-                  2
-                  {:index data-index
-                   :cycle-frac cycle-fraction
-                   :angle (-> projection
-                              bisect/to-angle
-                              (mod bisect/TWOPI))
-                   :length distance-to-origin
-                   :err-x sv1-error
-                   :err-y sv2-error
-                   :angular-error (clojure.math/atan (/ (quickthing/orthogonal-error-length [proj-x
-                                                                                proj-y
-                                                                                {:err-x sv1-error
-                                                                                 :err-y sv2-error}])
-                                           distance-to-origin))})))
+                                                                            2.0)
+                                                          (clojure.math/pow proj-y
+                                                                            2.0)))]
+             (assoc projection
+                    2
+                    {:index         data-index
+                     :cycle-frac    cycle-fraction
+                     :angle         (-> projection
+                                        bisect/to-angle
+                                        (mod bisect/TWOPI))
+                     :length        distance-to-origin
+                     :err-x         sv1-error
+                     :err-y         sv2-error
+                     :angular-error (clojure.math/atan (/ (quickthing/orthogonal-error-length [proj-x
+                                                                                               proj-y
+                                                                                               {:err-x sv1-error
+                                                                                                :err-y sv2-error}])
+                                                          distance-to-origin))})))
          projs
          (->> projs
               count
@@ -1645,7 +1672,6 @@
 (-> @state/*selections
     (fx/sub-ctx state/sv-proj))
 
-
 (defn
   sv-proj-svg
   [context]
@@ -1658,6 +1684,7 @@
                       (* 4.0
                          (fx/sub-ctx context
                                      row-height))
+                      #_
                       {:errors (error-vec projs)})
         ;;      #_
         (spitsvgstream "sv-projs.svg"))))
@@ -1777,12 +1804,12 @@
                                              "Centroid"]
                                             [below-centroid-angle
                                              "Centroid"]]})
-                                        ;#_
                 (spitsvgstream "angles-hist.svg"))))))))
-  ;;#_
-  (-> @state/*selections
-      (fx/sub-ctx state/angular-historgram))
-  ;; => ([4.066817326755436
+;;#_
+(-> @state/*selections
+    (fx/sub-ctx state/angular-historgram)
+    nil?)
+;; => ([4.066817326755436
 ;;      {:cycle-frac 0, :delta-angle 4.066817326755436, :above? false}]
 ;;     [3.979364672052008
 ;;      {:cycle-frac 1/73, :delta-angle 3.979364672052008, :above? false}]
@@ -1794,9 +1821,9 @@
   "Remove the non-zero minimum value from the vector elements"
   [input-vec
    & {:keys [mask]
-      :or   {mask    (->> input-vec
-                          (mapv #(or (zero? %)
-                                     (neg? %))))}}]
+      :or   {mask (->> input-vec
+                       (mapv #(or (zero? %)
+                                  (neg? %))))}}]
   (let [vec-min (->> (map (fn [pix
                                mask]
                             (if mask
@@ -1807,14 +1834,14 @@
                      (filter some?)
                      (apply min))]
     (mapv (fn [pix
-             mask]
-          (if mask
-            0.0
-            (- pix
-               vec-min)))
-        input-vec
-        mask)))
-  #_
+               mask]
+            (if mask
+              0.0
+              (- pix
+                 vec-min)))
+          input-vec
+          mask)))
+#_
 (rezero-vec [ 0 3 4 5 5])
 
 (defn
@@ -1829,17 +1856,17 @@
           [x-coord
            y-coord] centroid-a]
       (let [patt (fx/sub-ctx context
-                                singular-vector-mixture
-                                x-coord
-                                y-coord
-                                sval-one
-                                sval-two)]
-      (if (fx/sub-ctx context
-                      non-zero-min?)
+                             singular-vector-mixture
+                             x-coord
+                             y-coord
+                             sval-one
+                             sval-two)]
+        (if (fx/sub-ctx context
+                        non-zero-min?)
           (rezero-vec patt
                       {:mask (fx/sub-ctx context
                                          zero-point-mask)})
-        patt))))) ;; TODO: Normalize? I think..
+          patt))))) ;; TODO: Normalize? I think..
 #_
 (-> @state/*selections
     (fx/sub-ctx state/top-pattern))
@@ -1855,8 +1882,8 @@
                                  region-svg-hiccup)
                      {:label-top-right "Top Pattern"
                       :label-attribs   {:fill "#00aa88"}
-                      #_#_:colormap (into quickthing/rainbow
-                                      quickthing/rainbow)
+                      #_#_:colormap    (into quickthing/rainbow
+                                             quickthing/rainbow)
                       :display-width   (fx/sub-ctx context
                                                    region-display-width)})
       (spitsvgstream "top-pattern.svg")))
@@ -1933,12 +1960,12 @@
                              y-coord
                              sval-one
                              sval-two)]
-      (if (fx/sub-ctx context
-                      non-zero-min?)
+        (if (fx/sub-ctx context
+                        non-zero-min?)
           (rezero-vec patt
                       {:mask (fx/sub-ctx context
                                          zero-point-mask)})
-        patt)))))
+          patt)))))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/bottom-pattern))
@@ -1964,8 +1991,8 @@
                                  region-svg-hiccup)
                      {:label-top-right "Bottom Pattern"
                       :label-attribs   {:fill "#aa8800"}
-                      #_#_:colormap (into quickthing/rainbow
-                                      quickthing/rainbow)
+                      #_#_:colormap    (into quickthing/rainbow
+                                             quickthing/rainbow)
                       :display-width   (fx/sub-ctx context
                                                    region-display-width)})
       (spitsvgstream "bottom-pattern.svg")))
@@ -2248,10 +2275,10 @@
   (let [[proj-a
          proj-b] (fx/sub-ctx context
                              pattern-proj-partitioned)
-        width (fx/sub-ctx context
-                          state/window-width)
-        height (fx/sub-ctx context
-                           state/row-height)]
+        width    (fx/sub-ctx context
+                             state/window-width)
+        height   (fx/sub-ctx context
+                             state/row-height)]
     (-> (plot/indeces width
                       height
                       proj-a
@@ -2540,30 +2567,30 @@
   [context]
   (let [points (fx/sub-ctx context
                            sv12-vs-other)]
-  (-> (mapv (fn [points
-                 cycle-fraction]
-              (update points
-                      2
-                      #(assoc %
-                              :cycle-frac
-                              cycle-fraction)))
-            points
-            (->> points
-                 count
-                 range
-                 (mapv #(cycle-frac (fx/sub-ctx context
-                                                cycle-length)
-                                    (fx/sub-ctx context
-                                                cycle-phase)
-                                    %))))
-      (plot/add-cycle-color)
-      (plot/scatter 1000
-                    1000
-                    {:title-str "SV Power Plot"
-                     :x-name    "SV1 and SV2"
-                     :y-name    "Other SVs"})
-      (spitsvgstream (str "power-sv12-vs-other"
-                          ".svg")))))
+    (-> (mapv (fn [points
+                   cycle-fraction]
+                (update points
+                        2
+                        #(assoc %
+                                :cycle-frac
+                                cycle-fraction)))
+              points
+              (->> points
+                   count
+                   range
+                   (mapv #(cycle-frac (fx/sub-ctx context
+                                                  cycle-length)
+                                      (fx/sub-ctx context
+                                                  cycle-phase)
+                                      %))))
+        (plot/add-cycle-color)
+        (plot/scatter 1000
+                      1000
+                      {:title-str "SV Power Plot"
+                       :x-name    "SV1 and SV2"
+                       :y-name    "Other SVs"})
+        (spitsvgstream (str "power-sv12-vs-other"
+                            ".svg")))))
 #_;;usused
 (-> @state/*selections
     (fx/sub-ctx sv12-vs-other-svg))
