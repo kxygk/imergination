@@ -224,7 +224,11 @@
                                                         :tooltip      (str "Index: "
                                                                            (:index attribs)
                                                                            "\n"
-                                                                           attribs)
+                                                                           (-> attribs
+                                                                               (update :angle
+                                                                                       clojure.math/to-degrees)
+                                                                               (update :angular-error
+                                                                                       clojure.math/to-degrees)))
                                                         :fill         (-> attribs
                                                                           :cycle-frac
                                                                           quickthing/color-cycle)}])))
