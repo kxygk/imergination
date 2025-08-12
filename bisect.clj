@@ -158,14 +158,14 @@
   points-along-angle
   [points
    angle]
-  (let [a-mod-pi (mod angle
-                      PI)
-        divisor-angle  (if (> a-mod-pi
-                              (* 0.5
-                                 PI))
-                         a-mod-pi
-                         (+ a-mod-pi
-                            PI))]
+  (let [a-mod-pi      (mod angle
+                           PI)
+        divisor-angle (if (> a-mod-pi
+                             (* 0.5
+                                PI))
+                        a-mod-pi
+                        (+ a-mod-pi
+                           PI))]
     (->> points
          (mapv (fn update-point
                  [point]
@@ -174,21 +174,21 @@
                                        (mod TWOPI))
                        delta-angle (- point-angle
                                       divisor-angle)]
-                     (update point
-                             2     ;; typically will be `nil`
-                             #(merge %
-                                       ;; 0 to -PI
-                                     (if (and (> point-angle
-                                                 (- divisor-angle
-                                                    PI))
-                                              (< point-angle
-                                                 divisor-angle))
-                                       {:above? true
-                                        :delta-angle (- divisor-angle
-                                                        point-angle)}
-                                       {:above? false
-                                        :delta-angle (- divisor-angle
-                                                        point-angle)})))))))))
+                   (update point
+                           2     ;; typically will be `nil`
+                           #(merge %
+                                   ;; 0 to -PI
+                                   (if (and (> point-angle
+                                               (- divisor-angle
+                                                  PI))
+                                            (< point-angle
+                                               divisor-angle))
+                                     {:above?      true
+                                      :delta-angle (- divisor-angle
+                                                      point-angle)}
+                                     {:above?      false
+                                      :delta-angle (- divisor-angle
+                                                      point-angle)})))))))))
 #_
 (-> [[2.2,  1.5]
      [1.1, -2.4]
@@ -233,25 +233,25 @@
                               (map :angle))
         top-line         (first angles-to-x-axis)
         bottom-line      (last angles-to-x-axis)
-        extra-dichotomy (/ (+ top-line ;; angle btwn first/last line
-                              PI
-                              bottom-line)
-                           2.0)
-        all-dichotomies (into []
-                              (conj main-dichotomies
-                                    ;;#_
-                                    extra-dichotomy))]
+        extra-dichotomy  (/ (+ top-line ;; angle btwn first/last line
+                               PI
+                               bottom-line)
+                            2.0)
+        all-dichotomies  (into []
+                               (conj main-dichotomies
+                                     ;;#_
+                                     extra-dichotomy))]
     (->> all-dichotomies
          (filterv (fn degenerate-dichotomy? ;; sometimes an extra dichotomy is generated
                     [dichotomy-angle]
                     (let [grouped (->> (points-along-angle points
-                                                                dichotomy-angle)
-                                            (group-by (fn above?
-                                                        [point]
-                                                        (-> point
-                                                            (get 2)
-                                                            :above?)))
-                                            vals)]
+                                                           dichotomy-angle)
+                                       (group-by (fn above?
+                                                   [point]
+                                                   (-> point
+                                                       (get 2)
+                                                       :above?)))
+                                       vals)]
                       (if (== 1
                               (count grouped))
                         false
@@ -279,10 +279,10 @@
      (map to-halfplane)
      (map abs-polar)
      (map to-cartesian)
-;; => ([1.0000000000000002 1.0]
-;;     [-1.0 2.0]
-;;     [-1.0 1.0000000000000002]
-;;     [1.0000000000000002 2.0])
+     ;; => ([1.0000000000000002 1.0]
+     ;;     [-1.0 2.0]
+     ;;     [-1.0 1.0000000000000002]
+     ;;     [1.0000000000000002 2.0])
      angle-dichotomies)
 ;; => [3.141592653589793 ;; THIS ONE IS MISSING NOW.. IS IT A PROBLEM??
 ;;     0.9462734405957693
@@ -373,14 +373,14 @@
   "Get the distance from a point to a given axis"
   [point
    axis]
-  (let [axis-norm (normalize-vector axis)
-        inner-p (reduce +
-                        (map *
-                             point ;; MAYBE ALSO NORMALIZE???
-                             axis-norm))
-        projection (->> axis-norm
-                        (mapv #(* %
-                                  inner-p)))
+  (let [axis-norm       (normalize-vector axis)
+        inner-p         (reduce +
+                                (map *
+                                     point ;; MAYBE ALSO NORMALIZE???
+                                     axis-norm))
+        projection      (->> axis-norm
+                             (mapv #(* %
+                                       inner-p)))
         orthogonal-comp (map -
                              point
                              projection)]
@@ -432,9 +432,9 @@
             num-bot)))))
 #_
 (let [data  [[2.2,  1.5]
-            [1.1, -0.4]
-            [-1.2, 1.6]
-            [-0.7, -2.7]]
+             [1.1, -0.4]
+             [-1.2, 1.6]
+             [-0.7, -2.7]]
       angle 3.3]
   (two-plane-variance data
                       angle))
@@ -477,21 +477,21 @@
    :centroid-a centroid-of-one-half
    :centroid-b centroid-of-the-other-half}"
   [points]
-  (let [angle (min-var-angle points)
-        classified (points-along-angle points
-                                       angle)
-        grouped (group-by #(-> %
-                                     (get 2)
-                                     :above?)
-                                classified)
+  (let [angle        (min-var-angle points)
+        classified   (points-along-angle points
+                                         angle)
+        grouped      (group-by #(-> %
+                                    (get 2)
+                                    :above?)
+                               classified)
         points-above (get grouped ;;above
                           true)
         points-below (get grouped ;;below
                           false)]
     (let [centroid-above (centroid points-above)
           centroid-below (centroid points-below)]
-      {:angle angle
-       :points classified
+      {:angle      angle
+       :points     classified
        :centroid-a centroid-above
        :centroid-b centroid-below})))
 #_
@@ -569,7 +569,7 @@
              [-0.16131258565448184,  0.2633602438965861]
              [-0.031774789528481416, -0.005571887118227592]
              [-0.07212716828092831, -0.004997627405708711]]]
-      (min-var data))
+  (min-var data))
 ;; => {:angle 2.985133363250391,
 ;;     :points
 ;;     [[-0.024578662253719318 0.05558278260624202 {:above? false}]
