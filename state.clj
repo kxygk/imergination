@@ -21,7 +21,7 @@
 (def
   config-dir
   (str "/home/kxygk/Projects/imergination.wiki/"
-       ;;#_
+       #_
        "krabins-short-pentad"
        #_
        "krabi-short-daily"
@@ -47,7 +47,7 @@
        "scs-rainbow"
        #_
        "krabins-v7"
-       #_
+       ;;#_
        "krabins"
        #_
        "haihai"))
@@ -1639,19 +1639,19 @@
                                                                             2.0)))]
              (assoc projection
                     2
-                    {:index         data-index
-                     :cycle-frac    cycle-fraction
-                     :angle         (-> projection
-                                        bisect/to-angle
-                                        (mod bisect/TWOPI))
-                     :length        distance-to-origin
-                     :err-x         sv1-error
-                     :err-y         sv2-error
-                     :angular-error (clojure.math/atan (/ (quickthing/orthogonal-error-length [proj-x
-                                                                                               proj-y
-                                                                                               {:err-x sv1-error
-                                                                                                :err-y sv2-error}])
-                                                          distance-to-origin))})))
+                    {:index      data-index
+                     :cycle-frac cycle-fraction
+                     :angle      (-> projection
+                                     bisect/to-angle
+                                     (mod bisect/TWOPI))
+                     :length     distance-to-origin
+                     :err-x      sv1-error
+                     :err-y      sv2-error
+                     :err-angle  (clojure.math/atan (/ (quickthing/orthogonal-error-length [proj-x
+                                                                                            proj-y
+                                                                                            {:err-x sv1-error
+                                                                                             :err-y sv2-error}])
+                                                       distance-to-origin))})))
          projs
          (->> projs
               count
@@ -1673,19 +1673,54 @@
     (fx/sub-ctx state/sv-proj))
 
 (defn
+  sv-2d-bisection
+  [context]
+  (-> context
+      (fx/sub-ctx sv-proj)
+      bisect/min-var))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/sv-2d-bisection)
+    :angle)
+;; => 2.827520782342667
+
+(defn
+  sv-angular-bisection
+  [context]
+  (-> context
+      (fx/sub-ctx sv-proj)
+      bisect/min-angular-var))
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/sv-angular-bisection)
+    :angle)
+;; => 2.887023616887416
+
+(defn
+  sv-bisection
+  [context]
+  (-> context
+      (fx/sub-ctx sv-2d-bisection)))
+
+
+
+(defn
   sv-proj-svg
   [context]
   (let [projs (-> context
                   (fx/sub-ctx sv-proj))]
     (-> projs
-        (plot/sv-plot (* 1.0
+        (plot/sv-plot (* 0.750
                          (fx/sub-ctx context
                                      window-width))
-                      (* 4.0
+                      (* 1.5
                          (fx/sub-ctx context
-                                     row-height))
-                      #_
-                      {:errors (error-vec projs)})
+                                     window-width))
+                      #_(* 4.0
+                           (fx/sub-ctx context
+                                       row-height))
+                      (fx/sub-ctx context
+                                  sv-bisection))
         ;;      #_
         (spitsvgstream "sv-projs.svg"))))
 ;;#_
@@ -1694,27 +1729,7 @@
     nil?)
 
 
-
-(defn
-  sv-bisection
-  [context]
-  (-> context
-      (fx/sub-ctx sv-proj)
-      bisect/min-var))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/sv-bisection)
-    keys)
-;; => (:angle :points-a :points-b :centroid-a :centroid-b)
-#_
-(let [{:keys [centroid-b]} (fx/sub-ctx @state/*selections
-                                       state/sv-bisection)]
-  (let [[x-coord
-         y-coord] centroid-b]
-    (/ x-coord
-       (+ x-coord
-          y-coord))))
-
 (defn
   angular-historgram
   [context]
@@ -1722,7 +1737,7 @@
                 points
                 centroid-a
                 centroid-b]} (-> context
-                                 (fx/sub-ctx sv-bisection))]
+                                 (fx/sub-ctx sv-angular-bisection))]
     (let [grouped (->> points
                        (group-by #(-> %
                                       (nth 2)
@@ -1805,7 +1820,7 @@
                                             [below-centroid-angle
                                              "Centroid"]]})
                 (spitsvgstream "angles-hist.svg"))))))))
-;;#_
+#_
 (-> @state/*selections
     (fx/sub-ctx state/angular-historgram)
     nil?)

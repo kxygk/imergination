@@ -178,21 +178,18 @@
   [data
    width
    height
-   & [{:keys []
-       :or   {}}]]
-  (let [{:keys [angle
-                points-a
-                points-b
-                centroid-a
-                centroid-b]} (bisect/min-var data)
-        range-magnitude      (max (->> data
-                                       (map first)
-                                       (map abs)
-                                       (apply max))
-                                  (->> data
-                                       (map second)
-                                       (map abs)
-                                       (apply max)))]
+   {:keys [angle
+           centroid-a
+           centroid-b]}]
+  (let  [range-magnitude (* 1.0
+                            (max (->> data
+                                      (map first)
+                                      (map abs)
+                                      (apply max))
+                                 (->> data
+                                      (map second)
+                                      (map abs)
+                                      (apply max))))]
     (let [dummy-data [[(- range-magnitude)
                        (- range-magnitude)]
                       [0
@@ -200,7 +197,8 @@
       (->> (-> (quickthing/zero-axis dummy-data
                                      {:width       width
                                       :height      height
-                                      :margin-frac 0.05})
+                                      :margin-frac 0.00})
+               #_#_
                (update :data
                        #(into %
                               (quickthing/orthogonal-error-bars data
@@ -227,7 +225,7 @@
                                                                            (-> attribs
                                                                                (update :angle
                                                                                        clojure.math/to-degrees)
-                                                                               (update :angular-error
+                                                                               (update :err-angle
                                                                                        clojure.math/to-degrees)))
                                                         :fill         (-> attribs
                                                                           :cycle-frac
@@ -248,7 +246,7 @@
                                                                      (fn [options]
                                                                        (-> options
                                                                            (clojure.set/rename-keys
-                                                                             {:angular-error :text})
+                                                                             {:err-angle :text})
                                                                            (update :text
                                                                                    (fn [rad]
                                                                                      ;;"66" #_
@@ -291,7 +289,7 @@
                       (-> (quickthing/zero-axis dummy-data
                                                 {:width       width
                                                  :height      height
-                                                 :margin-frac 0.05})
+                                                 :margin-frac 0.00})
                           (update-in [:y-axis
                                       :major]
                                      #(filter (fn [tick]
@@ -1235,7 +1233,7 @@
                                                                     1.5
                                                                     (-> meta
                                                                         (assoc :radius
-                                                                          5.0)
+                                                                               5.0)
                                                                         (dissoc meta ;; weird SVG thing..
                                                                                 :above?))]))
                                                            add-cycle-color)

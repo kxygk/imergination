@@ -3,6 +3,9 @@
   "Algorithms for bisecting a set of points"
   (:use [clojure.math]))
 
+(def TWOPI
+  (* 2.0
+     PI))
 
 (defn-
   to-polar
@@ -155,9 +158,7 @@
   points-along-angle
   [points
    angle]
-  (let [TWOPI         (* 2.0
-                         PI)
-        a-mod-pi (mod angle
+  (let [a-mod-pi (mod angle
                       PI)
         divisor-angle  (if (> a-mod-pi
                               (* 0.5
@@ -464,9 +465,9 @@
         best-angle))))
 #_
 (min-var-angle [[2.2,  1.5]
-                 [1.1, -0.4]
-                 [-1.2, 1.6]
-                 [-0.7, -2.7]])
+                [1.1, -0.4]
+                [-1.2, 1.6]
+                [-0.7, -2.7]])
 
 (defn
   min-var
@@ -578,3 +579,183 @@
 ;;      [-0.07212716828092831 -0.004997627405708711 {:above? true}]],
 ;;     :centroid-a [-0.9948657395406916 -0.10120355867336382],
 ;;     :centroid-b [-0.5246724638803938 0.8513041792718258]}
+
+(defn
+  angular-weighted-mean
+  [points]
+  (let [[weighted-sum
+         sum-of-weights] (->> points
+                              (reduce (fn [[partial-weighted-sum
+                                            partial-sum-of-weights]
+                                           [_
+                                            _
+                                            {:keys [angle
+                                                    err-angle]}]]
+                                        (let [weight (/ 1.0
+                                                        (pow err-angle
+                                                             2.0))]
+                                          [(+ partial-weighted-sum
+                                              (* weight
+                                                 angle))
+                                           (+ partial-sum-of-weights
+                                              weight)]))
+                                      [0
+                                       0]))]
+    (/ weighted-sum
+       sum-of-weights)))
+#_
+(->> @state/*selections
+     state/sv-proj
+     (reduce (fn [[partial-weighted-sum
+                   partial-sum-of-weights]
+                  [_
+                   _
+                   {:keys [angle
+                           err-angle]}]]
+               [(+ partial-weighted-sum
+                   (* err-angle
+                      angle))
+                (+ partial-sum-of-weights
+                   err-angle)])
+             [0
+              0]))
+#_
+(->> @state/*selections
+     state/sv-proj
+     angular-weighted-mean)
+
+(defn
+  angular-variance
+  "Calculate the angular variance.
+  Pass in a precalculated `angular-weighted-mean`
+  to not recalculate it.."
+  [points
+   angular-mean]
+  (let [num-points       (count points)
+        [weighted-sum
+         sum-of-weights] (->> points
+                              (reduce (fn [[partial-weighted-sum
+                                            partial-sum-of-weights]
+                                           [_
+                                            _
+                                            {:keys [angle
+                                                    err-angle]}]]
+                                        [(+ partial-weighted-sum
+                                            (* err-angle
+                                               (pow (- angle
+                                                       angular-mean)
+                                                    2.0)))
+                                         (+ partial-sum-of-weights
+                                            err-angle)])
+                                      [0
+                                       0]))]
+    (if (< num-points
+           2)
+      999999.99
+      (* (/ weighted-sum
+            sum-of-weights)
+         (/ num-points
+            (dec num-points))))))
+#_
+(-> @state/*selections
+    state/sv-proj
+    (angular-variance 3.14))
+
+(defn-
+  two-plane-angular-variance
+  [points
+   dichotomy-angle]
+  (let [[top-points
+         bot-points] (vals (group-by #(-> %
+                                          (get 2)
+                                          :above?)
+                                     (points-along-angle points
+                                                         dichotomy-angle)))]
+    (let [num-top              (count top-points)
+          num-bot              (count bot-points)
+          top-centroid         (angular-weighted-mean top-points)
+          bot-centroid         (angular-weighted-mean bot-points)
+          top-variance         (angular-variance top-points
+                                                 top-centroid)
+          top-variance-of-mean (/ top-variance
+                                  num-top)
+          bot-variance         (angular-variance bot-points
+                                                 bot-centroid)
+          bot-variance-of-mean (/ bot-variance
+                                  num-bot)]
+      (let [average-total-variance (/ (+ (* top-variance
+                                            num-top)
+                                         (* bot-variance
+                                            num-bot))
+                                      (+ num-top
+                                         num-bot))
+            average-mean-variance  (/ (+ top-variance-of-mean
+                                         bot-variance-of-mean)
+                                      2.0)]
+        average-total-variance))))
+#_
+(-> @state/*selections
+    state/sv-proj
+    (two-plane-angular-variance 3.14))
+
+
+(defn
+  min-angular-var-angle
+  "return the angle that best splits the points
+  in a way that minimizes the variance"
+  [points]
+  (let [dichotomy-angles (->> points
+                              angle-dichotomies)]
+    (let [best-angle (->> dichotomy-angles
+                          (map #(two-plane-angular-variance points
+                                                            %))
+                          (map-indexed vector)
+                          (apply min-key
+                                 second)
+                          first
+                          (get dichotomy-angles))]
+      (if (and (> best-angle
+                  (- (/ PI
+                        2.0)))
+               (< best-angle
+                  (/ PI
+                     2.0)))
+        (+ best-angle
+           PI)
+        best-angle))))
+#_
+(min-angular-var-angle [[2.2,  1.5]
+                        [1.1, -0.4]
+                        [-1.2, 1.6]
+                        [-0.7, -2.7]])
+
+
+(defn
+  min-angular-var
+  "return a map with
+  {:angle      that-splits-the-plane-to-minimize-variance
+   :points   vector-of-point with a `:classified` key
+   :centroid-a centroid-of-one-half
+   :centroid-b centroid-of-the-other-half}"
+  [points]
+  (let [angle        (min-angular-var-angle points)
+        classified   (points-along-angle points
+                                         angle)
+        grouped      (group-by #(-> %
+                                    (get 2)
+                                    :above?)
+                               classified)
+        points-above (get grouped ;;above
+                          true)
+        points-below (get grouped ;;below
+                          false)]
+    (let [centroid-above (-> points-above
+                             angular-weighted-mean
+                             angle-to-unitvector)
+          centroid-below (-> points-below
+                             angular-weighted-mean
+                             angle-to-unitvector)]
+      {:angle      angle
+       :points     classified
+       :centroid-a centroid-above
+       :centroid-b centroid-below})))
