@@ -2350,6 +2350,116 @@
           (fx/sub-ctx state/singular-valuess-svg)))
 
 (defn
+  observation-svg
+  "May be different from `datafile-svg`
+  b/c you may have binning"
+  [context
+   observation-idx
+   & {:keys [cycle-length]
+      :or {cycle-length (fx/sub-ctx context
+                                    cycle-length)}}]
+  (-> context
+      (fx/sub-ctx region-matrix)
+      matrix/to-geogrid-vec
+      (get observation-idx)
+      (plot/grid-map (fx/sub-ctx context
+                                 region-svg-hiccup)
+                     {:label-top-right (str (inc observation-idx))
+                      #_#_
+                      :max-val         (->  context
+                                            (fx/sub-ctx region-min-max)
+                                            second)
+                        :label-attribs {:font-size 0.7}
+                      :axis-visible?   false
+                      :cycle-frac      (/ observation-idx
+                                          12.0)})
+      (spitsvgstream (str "observation-"
+                          observation-idx
+                          ".svg"))))
+;;#_
+(let [cycle-length 12 #_(fx/sub-ctx @state/*selections
+                               cycle-length)]
+  (->> [0 1 2]
+       (mapv (fn [cycle-num]
+               [(-> cycle-num
+                    (* cycle-length)
+                    (+ 3))
+                (-> cycle-num
+                    (* cycle-length)
+                    (+ 4))
+                (-> cycle-num
+                    (* cycle-length)
+                    (+ 5))
+                (-> cycle-num
+                    (* cycle-length)
+                    (+ 9))
+                (-> cycle-num
+                    (* cycle-length)
+                    (+ 10))
+                (-> cycle-num
+                    (* cycle-length)
+                    (+ 11))]))
+       flatten
+       (mapv (fn [index]
+               ;;index #_
+               (-> @state/*selections
+                   (fx/sub-ctx state/observation-svg (int index)))))))
+;; => [3 4 5 9 10 11 15 16 17 21 22 23 27 28 29 33 34 35]
+
+#_
+(let [cycle-length (fx/sub-ctx @state/*selections
+                               cycle-length)]
+  (->> [0 1 2]
+       (mapv (fn [cycle-num]
+               [(-> cycle-num
+                    (* cycle-length))
+                (-> cycle-num
+                    (* cycle-length)
+                    inc)
+                (-> cycle-num
+                    (* cycle-length)
+                    inc
+                    inc)
+                (-> cycle-num
+                    (* cycle-length)
+                    (+ (/ cycle-length
+                          2)))
+                (-> cycle-num
+                    (* cycle-length)
+                    (+ (/ cycle-length
+                          2))
+                    inc)
+                (-> cycle-num
+                    (* cycle-length)
+                    (+ (/ cycle-length
+                          2))
+                    inc
+                    inc)
+                (-> cycle-num
+                    inc
+                    (* cycle-length)
+                    dec)
+                (-> cycle-num
+                    inc
+                    (* cycle-length)
+                    dec
+                    dec)
+                (-> cycle-num
+                    inc
+                    (* cycle-length)
+                    dec
+                    dec
+                    dec)]))
+       flatten
+       (mapv (fn [index]
+               (-> @state/*selections
+                   (fx/sub-ctx state/observation-svg (int index)))))))
+
+
+(-> @state/*selections
+    (fx/sub-ctx state/region-matrix))
+  
+(defn
   all-svg
   [context
    geogrid-vec]
