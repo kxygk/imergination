@@ -140,26 +140,109 @@
            (ncore/mrows matrix))))
 
 (defn
+  invert-sv1
+  [svd]
+  (let [num-pixels (-> svd
+                       :u
+                       ncore/mrows)
+        num-observ (-> svd
+                       :u
+                       ncore/ncols)]
+    (let [#_#_pixel-inverter (neand/dgd (into [-1]
+                                          (repeat (dec num-pixels))))
+          inverter (neand/dgd num-observ
+                              (into [-1]
+                                    (repeat (dec num-observ)
+                                            1.0)))]
+  (-> svd
+      (update :u
+              (fn [singular-vector-matrix]
+                (ncore/mm singular-vector-matrix
+                           inverter)))
+      (update :vt
+              (fn [singular-vector-matrix]
+                (ncore/mm inverter
+                          singular-vector-matrix)))
+                ))))
+
+(defn
   svd
   "Take a data matrix
   Returns
   {:sv matrix
   :weights vector}"
   [data-matrix]
-  (merge (linalg/svd (:matrix data-matrix)
-                     true
-                     true)
+  (merge (invert-sv1 (linalg/svd (:matrix data-matrix)
+                                 true
+                                 true))
          data-matrix))
 #_
 (linalg/svd (:matrix (-> @state/*selections
                          (cljfx.api/sub-ctx state/region-matrix)))
             true
             true)
+;; => {:sigma #RealDiagonalMatrix[double, type:gd mxn:520x520]
+;;       ▧                                               ─    
+;;       ↘     640.20   38.00    8.57    6.11    4.69    ⋯    
+;;       ┗                                               ┛    
+;;    , :u #RealGEMatrix[double, mxn:5000x520, layout:column]
+;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
+;;       →      -0.00   -0.00    ⁙       0.00   -0.00         
+;;       →       0.00    0.00    ⁙       0.00    0.00         
+;;       →       ⁙       ⁙       ⁙       ⁙       ⁙            
+;;       →      -0.02    0.02    ⁙      -0.03   -0.03         
+;;       →      -0.02    0.02    ⁙      -0.01   -0.00         
+;;       ┗                                               ┛    
+;;    , :vt #RealGEMatrix[double, mxn:520x520, layout:column]
+;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
+;;       →      -0.04   -0.04    ⁙      -0.04   -0.04         
+;;       →       0.07    0.07    ⁙       0.05    0.03         
+;;       →       ⁙       ⁙       ⁙       ⁙       ⁙            
+;;       →       0.00    0.02    ⁙       0.03   -0.06         
+;;       →      -0.01   -0.00    ⁙      -0.01   -0.03         
+;;       ┗                                               ┛    
+;;    , :master true}
 #_
 (-> @state/*selections
     (cljfx.api/sub-ctx state/region-matrix)
     svd
-    keys)
+    invert-sv1)
+;; => {:sigma #RealDiagonalMatrix[double, type:gd mxn:520x520]
+;;       ▧                                               ─    
+;;       ↘     640.20   38.00    8.57    6.11    4.69    ⋯    
+;;       ┗                                               ┛    
+;;    , :u #RealGEMatrix[double, mxn:5000x520, layout:column]
+;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
+;;       →       0.00   -0.00    ⁙       0.00   -0.00         
+;;       →      -0.00    0.00    ⁙       0.00    0.00         
+;;       →       ⁙       ⁙       ⁙       ⁙       ⁙            
+;;       →       0.02    0.02    ⁙      -0.03   -0.03         
+;;       →       0.02    0.02    ⁙      -0.01   -0.00         
+;;       ┗                                               ┛    
+;;    , :vt #RealGEMatrix[double, mxn:520x520, layout:column]
+;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
+;;       →       0.04   -0.04    ⁙      -0.04   -0.04         
+;;       →      -0.07    0.07    ⁙       0.05    0.03         
+;;       →       ⁙       ⁙       ⁙       ⁙       ⁙            
+;;       →      -0.00    0.02    ⁙       0.03   -0.06         
+;;       →       0.01   -0.00    ⁙      -0.01   -0.03         
+;;       ┗                                               ┛    
+;;    ,
+;;     :master true,
+;;     :matrix #RealGEMatrix[double, mxn:5000x520, layout:column]
+;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
+;;       →       0.00    0.00    ⁙       0.00    0.00         
+;;       →       0.00    0.00    ⁙       0.00    0.00         
+;;       →       ⁙       ⁙       ⁙       ⁙       ⁙            
+;;       →       0.55    0.54    ⁙       0.54    0.53         
+;;       →       0.55    0.54    ⁙       0.54    0.53         
+;;       ┗                                               ┛    
+;;    ,
+;;     :dimension [50 100],
+;;     :position {:eas 285.5, :sou 65.0},
+;;     :resolution [0.25 0.25]}
+
+
 
 (defn
   singular-values
@@ -272,7 +355,11 @@
                   (plot/grid-map shoreline)
                   quickthing/serialize))))))
 
-
+(neand/dgd 5 [-1 1 1 1 1])
+;; => #RealDiagonalMatrix[double, type:gd mxn:5x5]
+;;       ▧                                               ┓    
+;;       ↘       1.00    1.00    1.00    1.00    1.00         
+;;       ┗                                               ┛    
 (defn
   project-onto-2d-basis
   "Does an oblique projections of 2D data points
