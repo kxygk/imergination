@@ -731,29 +731,23 @@
       (fx/sub-ctx region-matrix)
       matrix/to-geogrid-vec)
   (let [myregion   (fx/sub-ctx context
-                               region)
-        normalize? (fx/sub-ctx context
-                               normalize-data?) ]
+                               region)]
     (if (fx/sub-ctx context
                     is-in-ram)
       (->> (fx/sub-ctx context
                        world-geogrid-vec)
            (map #(do #_(println "\nCutting out region ..")
                      (geogrid/subregion %
-                                        myregion)))
-           (map #(if normalize?
-                   (geogrid4seq/convert-to-normalized %)
-                   %)))
+                                        myregion))))
       (->> (world-geogrid-vec context)
            (map #(do #_(println "\nCutting out region ..")
                      (geogrid/subregion %
-                                        myregion)))
-           (map #(if normalize?
-                   (geogrid4seq/convert-to-normalized %)
-                   %))))))
+                                        myregion)))))))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/region-geogrid-vec))
+    (fx/sub-ctx state/region-geogrid-vec)
+    first
+    keys)
 
 (defn-
   bin-sum
@@ -769,14 +763,26 @@
 
 (defn-
   bin-geogrids
-  [geogrids
-   bin-size]
+  [bin-size
+   geogrids]
   (if (== bin-size
           1)
     geogrids
     (->> geogrids
          (partition bin-size)
          (mapv bin-sum))))
+
+(defn-
+  normalize-geogrid
+  "Returns a map
+  {:geogrid _
+   :scale   _
+   :shift   _ } "
+  [non-zero-min?
+   grid]
+  (if non-zero-min?
+    (geogrid4seq/convert-to-normalized grid)
+    (geogrid4seq/convert-to-minzero-normalized grid)))
 
 (defn
   region-matrix
@@ -785,18 +791,39 @@
   So that the underlying library can be swapped"
   [context]
   (let [bin-size (fx/sub-ctx context
-                             bin-size)]
-    (cond-> (fx/sub-ctx context
-                        region-geogrid-vec)
-      (not= bin-size
-            1)                   (#(bin-geogrids %
-                                                 bin-size))
-      true                       matrix/from-geogrids
-      (fx/sub-ctx context
-                  non-zero-min?) matrix/rezero-nonzero)))
+                             bin-size)
+        grids (fx/sub-ctx context
+                          region-geogrid-vec)
+        binned-grids (bin-geogrids bin-size
+                                   grids)
+        normalized-grids (if (fx/sub-ctx context
+                                         normalize-data?)
+                           (map (partial normalize-geogrid
+                                         (fx/sub-ctx context
+                                                     non-zero-min?))
+                                binned-grids)
+                           (map (fn [grid]
+                                  {:grid grid
+                                   :scale   1.0
+                                   :shift   0.0})
+                                binned-grids))]
+    (-> (map :grid
+             normalized-grids)
+        matrix/from-geogrids
+        (assoc :scales (->> normalized-grids
+                            (mapv :scale)))
+        (assoc :shifts (->> normalized-grids
+                            (mapv :shift))))))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/region-matrix))
+    (fx/sub-ctx state/region-matrix)
+    keys)
+;; => (:matrix :dimension :position :resolution :scales :shifts)
+
+
+(-> @state/*selections
+    (fx/sub-ctx state/normalize-data?))
+
 ;; => {:matrix #RealGEMatrix[double, mxn:2500x119, layout:column, offset:0]
 ;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
 ;;       →      54.00    2.00    ⁙      74.00   12.00         
@@ -820,8 +847,9 @@
                                      eas-res)
                          (fx/sub-ctx @state/*selections
                                      sou-res))
+#_
 (-> @state/*selections
-    (fx/sub-ctx state/region-geogrid-vec)
+    (fx/sub-ctx state/region-geogrids-and-scales-vec)
     matrix/from-geogrids)
 
 
@@ -1625,28 +1653,38 @@
   "adds cycle meta-data to `sv-proj-vec`"
   [context]
   (let [projs (fx/sub-ctx context
-                          sv-proj-vec)]
+                          sv-proj-vec)
+        scales (:scales (fx/sub-ctx context
+                                    region-matrix))]
     (map (fn [[proj-x
                proj-y
                :as projection]
               data-index
+              scale
               cycle-fraction
               sv1-error
               sv2-error]
-           (let [distance-to-origin (clojure.math/sqrt (+ (clojure.math/pow proj-x
-                                                                            2.0)
-                                                          (clojure.math/pow proj-y
-                                                                            2.0)))]
-             (assoc projection
+           (let [distance-to-origin (* (clojure.math/sqrt (+ (clojure.math/pow proj-x
+                                                                               2.0)
+                                                             (clojure.math/pow proj-y
+                                                                               2.0)))
+                                       1.0)]
+             (assoc [(* proj-x
+                        scale)
+                     (* proj-y
+                        scale)]
                     2
                     {:index      data-index
                      :cycle-frac cycle-fraction
                      :angle      (-> projection
                                      bisect/to-angle
                                      (mod bisect/TWOPI))
-                     :length     distance-to-origin
-                     :err-x      sv1-error
-                     :err-y      sv2-error
+                     :length     (* distance-to-origin
+                                    scale)
+                     :err-x      (* sv1-error
+                                    scale)
+                     :err-y      (* sv2-error
+                                    scale)
                      :err-angle  (clojure.math/atan (/ (quickthing/orthogonal-error-length [proj-x
                                                                                             proj-y
                                                                                             {:err-x sv1-error
@@ -1656,6 +1694,7 @@
          (->> projs
               count
               range)
+         scales
          (->> projs
               count
               range
