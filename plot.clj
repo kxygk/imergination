@@ -93,7 +93,7 @@
          height] (dimension region)
         spacing  (/ (min width
                          height)
-                    10.0)]
+                    8.0)]
     (svg/text [(- width
                   (/  spacing
                       2.0))
@@ -289,6 +289,7 @@
                       (-> (quickthing/zero-axis dummy-data
                                                 {:width       width
                                                  :height      height
+                                                 :scale 90
                                                  :margin-frac 0.00})
                           (update-in [:y-axis
                                       :major]
@@ -529,7 +530,10 @@
                                              :height      height
                                              :x-ticks     [1.0]
                                              :y-ticks     [1.0]
-                                             :margin-frac 0.07
+                                             :scale 72
+                                             :margin-frac 0.01
+                                             :y-breathing-room 0.05
+                                             :title "2 State Climate Index"
                                              :color       "#0008"})
                    (assoc-in [:x-axis
                               :label]
@@ -541,6 +545,9 @@
                              (range cycle-phase
                                     (count proj-a)
                                     cycle-length))
+                   (assoc-in [:y-axis
+                              :visible]
+                             false)
                    (assoc-in [:y-axis
                               :major]
                              []))]
@@ -578,25 +585,46 @@
                                                      proj-sv2)
                                                {:width           width
                                                 :height          height
-                                                :legend          [["First Singular Vector"
+                                                :scale 90
+                                                :legend          [#_#_#_#_#_[nil nil]
+                                                                  [nil nil]
+                                                                  [nil nil]
+                                                                  [nil nil]
+                                                                  [nil nil]
+                                                                  [nil nil]
+                                                                   ["~~~   SV1" #_"First Singular Vector"
                                                                    {:fill "#0000aa"}]
-                                                                  ["Second Singular Vector"
+                                                                   ["~~~  SV2" #_"Second Singular Vector"
                                                                    {:fill "#aa0000"}]]
                                                 ;;:title           "SV1 SV2 weights"
                                                 ;;:x-name      "Data index"
                                                 ;; :x-ticks     [1.0]
                                                 ;; :y-ticks     [1.0]
-                                                #_#_:margin-frac 0.07
+                                               :margin-frac 0.10
                                                 #_#_:color       "#0000aa"})
                       (assoc-in [:grid]
                                 nil)
+                      (update-in [:y-axis
+                                  :major]
+                                 (fn [ticks]
+                                   (->> ticks
+                                        (filter (fn [tick-value]
+                                                  (-> tick-value
+                                                      (* 10)
+                                                      clojure.math/round
+                                                      even?)))
+                                        drop-last)))
                       (assoc-in [:x-axis
                                  :label]
                                 (thi.ng.geom.viz.core/default-svg-label #(+ cycle-start-value
                                                                             (/ %
                                                                                cycle-length))))
                       (assoc-in [:x-axis
+                                 :visible]
+                                false)
+                      (assoc-in [:x-axis
                                  :major]
+                                nil #_
                                 (range cycle-phase
                                        (count sv-projs)
                                        cycle-length)))]

@@ -30,9 +30,13 @@
        #_
        "fakerain"
        #_
+       "rift-valley"
+       #_
+       "imerg-blip"
+       #_
        "krabi-gpcc"
        #_
-       "marrahbins"
+       "marrah"
        #_
        "krabdaily"
        #_
@@ -41,16 +45,26 @@
        "krabins-norm"
        #_
        "krab-mon-norm"
-       #_
+       ;;#_
        "krabi-monthly"
        #_
        "scs-rainbow"
        #_
        "krabins-v7"
-       ;;#_
+       #_
        "krabins"
        #_
-       "haihai"))
+       "sichuan"
+       #_
+       "taipei"
+       #_
+       "taiwan"
+       #_
+       "scs-skinny"
+       #_
+       "hainan-skinny-nonorm"
+       #_
+       "hainan-skinny"))
 
 (def
   *selections
@@ -60,7 +74,7 @@
                                    :shoreline-filestr              "./data/shoreline-coarse.json"
                                    :contour-filestr                nil
                                    :non-zero-min?                  false
-                                   :normalize-data?                false
+                                   :normalize-data?                true
                                    :rain-dirstr                    "/home/kxygk/Data/sst/monthly/geotiff-rot/"
                                    :elevation-filestr              "./data/World_e-Atlas-UCSD_SRTM30-plus_v8.tif"
                                    :bin-size                       1
@@ -1179,11 +1193,22 @@
                     sv-index)
         (plot/grid-map (fx/sub-ctx context
                                    region-svg-hiccup)
-                       {:display-width (fx/sub-ctx context
+                       {:label-top-right (str "SV"
+                                              (inc sv-index))
+                        :label-attribs {:fill "black"
+                                        :stroke "white"
+                                        :font-size 1.1}
+                        :display-width (fx/sub-ctx context
                                                    region-display-width)})
         (spitsvgstream (str "sv-"
                             sv-index
                             ".svg")))))
+;;#_
+(->> 7
+     range
+     (run! (fn [sv-index]
+             (fx/sub-ctx @state/*selections
+                         state/singular-vector-svg sv-index))))
 
 (defn
   first-sv-svg
@@ -1314,6 +1339,9 @@
       (fx/sub-ctx region-matrix)
       matrix/svd
       matrix/svd-to-2d-sv-space))
+#_
+(-> @state/*selections
+    sv-proj-vec)
 
 #_
 (defn-
@@ -1709,7 +1737,8 @@
                      errors-in-sv2-proj))))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/sv-proj))
+    (fx/sub-ctx state/sv-proj)
+    first)
 
 (defn
   sv-2d-bisection
@@ -1739,29 +1768,38 @@
   sv-bisection
   [context]
   (-> context
-      (fx/sub-ctx sv-2d-bisection)))
-
+      (fx/sub-ctx sv-angular-bisection)))
+#_
+(->> @state/*selections
+     state/sv-bisection
+     :points
+     (filterv (fn [[_
+                    _
+                    extras]]
+                (:above? extras))))
+#_
+(->> @state/*selections
+     state/sv-bisection
+     :centroid-a
+     bisect/to-angle)
 
 
 (defn
   sv-proj-svg
   [context]
-  (let [projs (-> context
-                  (fx/sub-ctx sv-proj))]
-    (-> projs
-        (plot/sv-plot (* 0.750
-                         (fx/sub-ctx context
-                                     window-width))
-                      (* 1.5
-                         (fx/sub-ctx context
-                                     window-width))
-                      #_(* 4.0
+  (-> (plot/sv-plot (* 0.750
+                       (fx/sub-ctx context
+                                   window-width))
+                    (* 1.5
+                       (fx/sub-ctx context
+                                   window-width))
+                    #_(* 4.0
                            (fx/sub-ctx context
                                        row-height))
-                      (fx/sub-ctx context
-                                  sv-bisection))
-        ;;      #_
-        (spitsvgstream "sv-projs.svg"))))
+                    (fx/sub-ctx context
+                                sv-bisection))
+      ;;      #_
+      (spitsvgstream "sv-projs.svg")))
 ;;#_
 (-> @state/*selections
     (fx/sub-ctx sv-proj-svg)
@@ -2032,7 +2070,6 @@
   (apply min))
 ;; => 5.912743094506505E-16
 
-(into [1 2 3] [4 5 6])
 
 (defn
   bottom-pattern-svg
@@ -2348,7 +2385,8 @@
         (spitsvgstream "indeces.svg"))))
 ;;#_
 (-> @state/*selections
-    (fx/sub-ctx state/pattern-proj-svg))
+    (fx/sub-ctx state/pattern-proj-svg)
+    nil?)
 
 
 (defn
@@ -2366,7 +2404,7 @@
   [context]
   (-> (plot/sv-weights (fx/sub-ctx context
                                    singular-values)
-                       50
+                       20
                        (fx/sub-ctx context
                                    singular-values-stats)
                        (* 1.0
@@ -2376,7 +2414,7 @@
                           (fx/sub-ctx context
                                       state/row-height)))
       (spitsvgstream "singular-values.svg")))
-#_
+;;#_
 (-> @state/*selections
     (fx/sub-ctx state/singular-values-svg))
 #_
