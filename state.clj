@@ -1983,19 +1983,26 @@
 (defn
   top-pattern-svg
   [context]
-  (-> (geogrid4seq/build-grid (-> context
-                                  (fx/sub-ctx region-geogrid-params))
-                              (-> context
-                                  (fx/sub-ctx top-pattern)))
-      (plot/grid-map (fx/sub-ctx context
-                                 region-svg-hiccup)
-                     {:label-top-right "Top Pattern"
-                      :label-attribs   {:fill "#00aa88"}
-                      #_#_:colormap    (into quickthing/rainbow
-                                             quickthing/rainbow)
-                      :display-width   (fx/sub-ctx context
-                                                   region-display-width)})
-      (spitsvgstream "top-pattern.svg")))
+  (let [input-grid (geogrid4seq/build-grid (-> context
+                                               (fx/sub-ctx region-geogrid-params))
+                                           (-> context
+                                               (fx/sub-ctx top-pattern)))]
+    (let [[width
+           height] (geoprim/dimension (geogrid/covered-region input-grid))]
+      (-> input-grid
+          (plot/grid-map (fx/sub-ctx context
+                                     region-svg-hiccup)
+                         {:label-top-right "Top Pattern"
+                          :label-attribs   {:fill      "#00aa88"
+                                            :font-size (/ (min width
+                                                               height)
+                                                          9)}
+                          #_#_
+                          :colormap        (into quickthing/rainbow
+                                                 quickthing/rainbow)
+                          :display-width   (fx/sub-ctx context
+                                                       region-display-width)})
+          (spitsvgstream "top-pattern.svg")))))
 ;;#_
 (-> @state/*selections
     (fx/sub-ctx state/top-pattern-svg)
@@ -2091,19 +2098,26 @@
 (defn
   bottom-pattern-svg
   [context]
-  (-> (geogrid4seq/build-grid (-> context
-                                  (fx/sub-ctx region-geogrid-params))
-                              (-> context
-                                  (fx/sub-ctx bottom-pattern)))
-      (plot/grid-map (fx/sub-ctx context
-                                 region-svg-hiccup)
-                     {:label-top-right "Bottom Pattern"
-                      :label-attribs   {:fill "#aa8800"}
-                      #_#_:colormap    (into quickthing/rainbow
-                                             quickthing/rainbow)
-                      :display-width   (fx/sub-ctx context
-                                                   region-display-width)})
-      (spitsvgstream "bottom-pattern.svg")))
+    (let [input-grid (geogrid4seq/build-grid (-> context
+                                               (fx/sub-ctx region-geogrid-params))
+                                           (-> context
+                                               (fx/sub-ctx bottom-pattern)))]
+    (let [[width
+           height] (geoprim/dimension (geogrid/covered-region input-grid))]
+      (-> input-grid
+          (plot/grid-map (fx/sub-ctx context
+                                     region-svg-hiccup)
+                         {:label-top-right "Bottom Pattern"
+                          :label-attribs   {:fill      "#aa8800"
+                                            :font-size (/ (min width
+                                                               height)
+                                                          9)}
+                          #_#_
+                          :colormap        (into quickthing/rainbow
+                                                 quickthing/rainbow)
+                          :display-width   (fx/sub-ctx context
+                                                       region-display-width)})
+          (spitsvgstream "bottom-pattern.svg")))))
 ;;#_
 (-> @state/*selections
     (fx/sub-ctx state/bottom-pattern-svg)
