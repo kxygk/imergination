@@ -75,10 +75,20 @@
                                                        131.0)
                                                 (point -4.5
                                                        140))}
-   :krabi-region               {:region (region (point 8.5
-                                                       98.0)
-                                                (point 7.5
-                                                       99.0))}
+   #_#_
+   :ocean1small                {:region (region (point 90.0
+                                                       -180.0)
+                                                (point 88.0
+                                                       -179.0))}
+   :krabi-region
+   #_                          {:region (region (point 12.5
+                                                       97.5)
+                                                (point 5.5
+                                                       101.0))}
+   {:region (region (point 12.4
+                           97.5)
+                    (point 5.4
+                           101.0))}
    :krabi-city-region          {:region (region (point 8.5
                                                        98.0)
                                                 (point 7.5
@@ -115,10 +125,14 @@
                                                            (point 6
                                                                   101))
                                 :interesting-times [38, 22, 71, 89, 65, 101, 85, 24]}
-   :rift-valley-small          {:region (region (point 15.07
+   :rift-valley                {:region (region (point 15.5
                                                        39.0)
-                                                (point 8.0
+                                                (point 7.5
                                                        43.0))}
+   :imerg-blip                 {:region (region (point 13.5
+                                                       38.0)
+                                                (point 5.5
+                                                       42.0))}
    :kashmir                    {:region (region (point 37.07
                                                        73.0)
                                                 (point 30.0
@@ -135,22 +149,26 @@
                                                        126.2)
                                                 (point 34.1
                                                        128.6))}
+   :korea                      {:region (region (point 38.0
+                                                       128.5)
+                                                (point 36.0
+                                                       129.5))}
    :minnan-region              {:region (region (point 26.23
                                                        116.47)
                                                 (point 21.7
                                                        125))}
-   :taiwan-region              {:region (region (point 25.76
-                                                       119.74)
-                                                (point 21.74
-                                                       122.26))}
+   :taiwan              {:region (region (point 26.5
+                                                       119.5)
+                                                (point 20.5
+                                                       122.5))}
    :north-taiwan-region        {:region (region (point 25.475
                                                        120.75)
                                                 (point 23.75
                                                        122.25))}
-   :taipei-region              {:region (region (point 25.475
-                                                       120.75)
-                                                (point 24.75
-                                                       122.25))}
+   :taipei              {:region (region (point 26.0
+                                                       121.0)
+                                                (point 24.0
+                                                       122.0))}
    :birdneck-region            {:region (region (point 0.5
                                                        133.0)
                                                 (point -5.0
@@ -176,16 +194,16 @@
                                                            (point 9.5
                                                                   9.5))
                                 :interesting-times [49, 52, 7, 30, 29, 39, 62, 93]}
-   :sichuan-wall               {:region            (region (point 32.54
+   :sichuan-wall               {:region            (region (point 32.00
                                                                   102.5)
-                                                           (point 29.0
+                                                           (point 28.0
                                                                   104.5))
                                 :interesting-times [97, 52, 101, 89, 54, 55, 27, 59]}
    ;; Deserts
-   :marrah                     {:region            (region (point 14.5 ;;15
-                                                                  23.4)
-                                                           (point 12.0 ;;12
-                                                                  25.4))
+   :marrah                     {:region            (region (point 16.0 ;;15
+                                                                  23.3)
+                                                           (point 11.0 ;;12
+                                                                  25.8))
                                 :interesting-times [55, 30, 42, 65, 54, 41, 39, 4]}
    :marrah-big                 {:region            (region (point 15.5 ;;15
                                                                   22.4)
@@ -197,6 +215,14 @@
                                                 (point 23.0 ;;12
                                                        74.0))}
    ;; Sea Surface
+   :pdo {:region (region (point 60.0
+                                105.5)
+                         (point 20.0
+                                118.0))}
+   :scs-skinny {:region (region (point 25.0
+                                       105.5)
+                                (point 0.0
+                                       118.0))}
    :south-south-china-sea      {:region (region (point 13.0
                                                        105.0)
                                                 (point 2.0
@@ -205,22 +231,26 @@
                                                        105.0)
                                                 (point 16.0 ;;12
                                                        122))}
-   :south-china-sea {:region (region (point 13.0
-                                            105.0)
-                                     (point 2.0
-                                            120.0))}
-   :south-east-asia {:region (region (point 25.0
-                                            95.0)
-                                     (point 0.0
-                                            125.0))}
-   :south-east-asia-crop {:region (region (point 22.5
-                                                 95.0)
-                                          (point 0.0
-                                                 125.0))}
-   :hainan {:region (region (point 22.5
-                                   105.0)
-                            (point 17.0
-                                   113.5))}
+   :south-china-sea            {:region (region (point 13.0
+                                                       105.0)
+                                                (point 2.0
+                                                       120.0))}
+   :south-east-asia            {:region (region (point 25.0
+                                                       95.0)
+                                                (point 0.0
+                                                       125.0))}
+   :south-east-asia-crop       {:region (region (point 22.5
+                                                       95.0)
+                                                (point 0.0
+                                                       125.0))}
+   :hainan                     {:region (region (point 22.5
+                                                       105.0)
+                                                (point 17.0
+                                                       113.5))}
+   :hainan-skinny              {:region (region (point 24.0
+                                                       108.0)
+                                                (point 16.0
+                                                       112.0))}
    })
 
 
