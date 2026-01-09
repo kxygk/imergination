@@ -1740,6 +1740,7 @@
     (fx/sub-ctx state/sv-proj)
     first)
 
+#_
 (defn
   sv-2d-bisection
   [context]
@@ -1757,6 +1758,11 @@
   [context]
   (-> context
       (fx/sub-ctx sv-proj)
+      #_
+      bisect/otsu
+      ;;#_
+      bisect/otsu-weighted
+      #_
       bisect/min-angular-var))
 #_
 (-> @state/*selections
@@ -1772,17 +1778,28 @@
 #_
 (->> @state/*selections
      state/sv-bisection
-     :points
-     (filterv (fn [[_
-                    _
-                    extras]]
-                (:above? extras))))
+     :centroid-a)
+
+
 #_
 (->> @state/*selections
      state/sv-bisection
-     :centroid-a
-     bisect/to-angle)
+     :points
+     (map last)
+     (map :angle-from-down))
+;; => [113.12006734716704
+;;     -203.48496680096278
+;;     {:index 0,
+;;      :cycle-frac 0,
+;;      :err-x 79.35568753767804,
+;;      :err-y 157.21263605633916,
+;;      :err-angle 0.35919181354944224,
+;;      :radius 232.8138341048842,
+;;      :angle-from-down 0.5073720887345978,
+;;      :above? false}]
 
+
+;; => 6.1714157010825055
 
 (defn
   sv-proj-svg
