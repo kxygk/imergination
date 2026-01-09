@@ -22,6 +22,14 @@
   config-dir
   (str "/home/kxygk/Projects/imergination.wiki/"
        #_
+       "krabi-monthly-2year"
+       #_
+       "krabi-daily-2year"
+       #_
+       "krabi-pentad-10year"
+       #_
+       "krabi-pentads-2year"
+       #_
        "krabins-short-pentad"
        #_
        "krabi-short-daily"
@@ -46,6 +54,10 @@
        #_
        "krab-mon-norm"
        ;;#_
+       "krabi-monthly"
+       #_
+       "krabi-monthly-final-v7"
+       #_
        "krabi-monthly"
        #_
        "scs-rainbow"
@@ -95,88 +107,6 @@
                                       slurp
                                       clojure.edn/read-string))
                            #(cache/lru-cache-factory % :threshold 1000))))
-#_
-{:window-width                   1080.0
- :row-height                     360
- :shoreline-filestr              "./data/shoreline-coarse.json"
- :contour-filestr                nil
- :non-zero-min?                  true
- :rain-dirstr
- #_
- "/home/kxygk/Data/sst/monthly/geotiff-rot-subset/"
- ;;#_
- "/home/kxygk/Data/sst/monthly/geotiff-rot/"
- #_
- "/home/kxygk/Data/imerg/daily/late-more/"
- #_
- "/home/kxygk/Data/era5/hourly-201103/rot/"
- #_
- "/home/kxygk/Data/imerg/30min-subset/"
- #_
- "/home/kxygk/Data/era5/monthly/rot/"
- #_
- "/home/kxygk/Projects/raingrid/out/"
- #_
- "/home/kxygk/Projects/raingrid/out-pat1/"
- #_
- "/home/kxygk/Data/imerg/daily/late/"
- #_
- "/home/kxygk/Data/imerg/monthly/late/"
- :elevation-filestr              "./data/World_e-Atlas-UCSD_SRTM30-plus_v8.tif"
- :bin-size                       1
- :cycle-length                   12 #_365 #_24 #_48
- :cycle-phase                    0
- :eas-res
- 0.25
- #_0.1
- :sou-res
- 0.25
- #_0.1
- ;; TODO Debug `krabi-region`. Axis labels float off from the map
- :region                         nil
- :region-key
-                            ;;;;;;;;;;;;;;;;;;;;;;;
- #_:world
- #_:ocean1small
- #_:ocean1small-1pat
- #_:ocean1large
- #_:ocean1largeextra
- #_:ocean1largeextraextra
- #_extraextraextra
- #_:ocean2
- #_:ocean1
- #_:ghana-large
- #_:togo
- #_:jos
- #_:taipei-region
- #_:udaipur
- #_:marrah
- #_:marrah-big
- #_:sichuan-wall
- #_:krabi-root-2
- #_:krabi-root-2-daily
- #_:krabi-root-2-era5
- #_:krabi-root-2-diurnal
- #_:java
- #_:java-era5
- #_:birdhead
- #_krabi-skinny-region
- #_eastern-korea
- #_:himalaya
- #_:rift-valley-small
- ;; Sea Surface Temp
- #_:south-south-china-sea
- #_:north-south-china-sea
- #_:south-east-asia
- #_:south-east-asia-crop
- :hainan
-                            ;;;;;;;;;;;;;;;;;;;;;;;
- :is-in-ram                      false
- :mouse-click                    nil
- :datafile-idxs                  [0]
- :sv-selected-idxs               [0]
- :noise-selected-idxs            [0]
- :normalized-noise-selected-idxs [0]}
 
 
 
@@ -1196,7 +1126,7 @@
                        {:label-top-right (str "SV"
                                               (inc sv-index))
                         :label-attribs {:fill "black"
-                                        :stroke "white"
+                                        :stroke "white" #_#_
                                         :font-size 1.1}
                         :display-width (fx/sub-ctx context
                                                    region-display-width)})
@@ -1680,8 +1610,8 @@
   sv-proj
   "adds cycle meta-data to `sv-proj-vec`"
   [context]
-  (let [projs (fx/sub-ctx context
-                          sv-proj-vec)
+  (let [projs  (fx/sub-ctx context
+                           sv-proj-vec)
         scales (:scales (fx/sub-ctx context
                                     region-matrix))]
     (map (fn [[proj-x
@@ -1751,7 +1681,15 @@
 (-> @state/*selections
     (fx/sub-ctx state/sv-2d-bisection)
     :angle)
-;; => 2.827520782342667
+
+
+;; => 4.667193224617784;; => 2.827520782342667
+
+
+#_
+(-> @state/*selections
+    (fx/sub-ctx state/sv-proj)
+    bisect/angle-dichotomies)
 
 (defn
   sv-angular-bisection
@@ -1767,8 +1705,13 @@
 #_
 (-> @state/*selections
     (fx/sub-ctx state/sv-angular-bisection)
-    :angle)
-;; => 2.887023616887416
+    :points
+    second)
+;; => 3.0963968978228875
+
+;; => 1.5256005710279907
+
+;; => 3.0876082629567905;; => 2.887023616887416
 
 (defn
   sv-bisection
@@ -2330,6 +2273,10 @@
 #_
 (->> @state/*selections
      climate-noise-var-svg)
+
+
+;;      :err-centroid-a 0.018324016829075744,
+;;      :err-centroid-b 0.020913045151059212,
 
 (defn
   pattern-proj-partitioned
