@@ -443,6 +443,59 @@
                         [22.0, 6.0]
                         [20.0, 6.0]])
 
+
+(defn
+  project-onto-2-patterns
+  "Does an oblique projections of 2D data points
+   on to the two vectors of the new basis
+   Input:
+   DATA vector of pairs [[x1,y1] [x2,y2] .. ]
+   BASIS-A a 2d [x y] vector pair for the basis direction
+   BASIS-B a 2d [x y] vector pair for the basis direction
+   Returns:
+   2xn vector
+   ..
+   We need to generate an inverse of the 2x2 matrix
+   For projecting the data on to the basis vectors
+   ...
+   if basis vectors are A and B
+   Then we arrange them as two cols
+   [u_ax u_bx
+    u_ay u_by]
+   ...
+   a 2x2 matrix can be manually inverted
+   https://en.wikipedia.org/wiki/Invertible_matrix"
+  [pattern-a
+   pattern-b
+   points]
+  (let [[a b] pattern-a ;; names match standard notation
+        [c d] pattern-b]
+    (let [vector-above (neand/dv [a b]) ;; doesn't work with `dge` for some reason
+          vector-below (neand/dv [c d])
+          point-matrix (neand/dge (count points)
+                                  2
+                                  (flatten (->> points
+                                                (mapv #(take 2
+                                                             %))))
+                                  {:layout :row})]
+      ;; points arranged as rows in a long 2 column matrix
+      ;; This is then multiplied by the coordinate of the pattern
+      (mapv (fn stitch
+              [original-point
+               new-x
+               new-y]
+              (-> original-point
+                  (assoc 0
+                         new-x)
+                  (assoc 1
+                         new-y)))
+            points
+            (into []
+                  (ncore/mv point-matrix
+                            vector-above))
+            (into []
+                  (ncore/mv point-matrix
+                            vector-below))))))
 (defn
   svd-to-weights
   "get the weight of a particular vector for each data point
