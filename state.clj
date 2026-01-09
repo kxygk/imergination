@@ -1,7 +1,8 @@
 (ns
     state
   "Program and GUI state"
-  (:use [hashp.core])
+  (:use [hashp.core]
+        [clojure.math])
   (:require [clojure.java.io :as io]
             [clojure.data.csv :as csv]
             [cljfx.api       :as fx]
