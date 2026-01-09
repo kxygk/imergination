@@ -1614,61 +1614,133 @@
                            sv-proj-vec)
         scales (:scales (fx/sub-ctx context
                                     region-matrix))]
-    (map (fn [[proj-x
-               proj-y
-               :as projection]
-              data-index
-              scale
-              cycle-fraction
-              sv1-error
-              sv2-error]
-           (let [distance-to-origin (* (clojure.math/sqrt (+ (clojure.math/pow proj-x
-                                                                               2.0)
-                                                             (clojure.math/pow proj-y
-                                                                               2.0)))
-                                       1.0)]
-             (assoc [(* proj-x
-                        scale)
-                     (* proj-y
-                        scale)]
-                    2
-                    {:index      data-index
-                     :cycle-frac cycle-fraction
-                     :angle      (-> projection
-                                     bisect/to-angle
-                                     (mod bisect/TWOPI))
-                     :length     (* distance-to-origin
-                                    scale)
-                     :err-x      (* sv1-error
-                                    scale)
-                     :err-y      (* sv2-error
-                                    scale)
-                     :err-angle  (clojure.math/atan (/ (quickthing/orthogonal-error-length [proj-x
-                                                                                            proj-y
-                                                                                            {:err-x sv1-error
-                                                                                             :err-y sv2-error}])
-                                                       distance-to-origin))})))
-         projs
-         (->> projs
-              count
-              range)
-         scales
-         (->> projs
-              count
-              range
-              (mapv #(cycle-frac (fx/sub-ctx context
-                                             cycle-length)
-                                 (fx/sub-ctx context
-                                             cycle-phase)
-                                 %)))
-         (fx/sub-ctx context
-                     errors-in-sv1-proj)
-         (fx/sub-ctx context
-                     errors-in-sv2-proj))))
+    (filterv #(-> %
+                 last
+                 :radius
+                 zero?
+                 not)
+            (map (fn [[proj-x
+                       proj-y
+                       :as projection]
+                      data-index
+                      scale
+                      cycle-fraction
+                      sv1-error
+                      sv2-error]
+                   (let [polar-coords (bisect/to-polar projection)]
+                     (if (neg? proj-x)
+                       (println (str "WARNING:"
+                                     \newline
+                                     "You have a point outside of the expected range"
+                                     \newline
+                                     "Index: "
+                                     data-index
+                                     \newline
+                                     "Coords: "
+                                     projection
+                                     \newline
+                                     "This point was a negative SV1 component."
+                                     "Please report this case to the author")))
+                     (assoc [(* proj-x
+                                scale)
+                             (* proj-y
+                                scale)]
+                            2
+                            (merge {:index      data-index
+                                    :cycle-frac cycle-fraction
+                                    :err-x      (* sv1-error
+                                                   scale)
+                                    :err-y      (* sv2-error
+                                                   scale)
+                                    :err-angle  (let [radius (:radius polar-coords)]
+                                                  (if (zero? radius)
+                                                    (do (println (str "Bin (Pentad or Day): "
+                                                                      data-index
+                                                                      " has no rain!"))
+                                                        nil)
+                                                  (clojure.math/atan (/ (quickthing/orthogonal-error-length [proj-x
+                                                                                                             proj-y
+                                                                                                             {:err-x sv1-error
+                                                                                                              :err-y sv2-error}])
+                                                                        radius))))}
+                                   (-> polar-coords
+                                       (update :radius
+                                               #(* %
+                                                   scale)))))))
+                 projs
+                 (->> projs
+                      count
+                      range)
+                 scales
+                 (->> projs
+                      count
+                      range
+                      (mapv #(cycle-frac (fx/sub-ctx context
+                                                     cycle-length)
+                                         (fx/sub-ctx context
+                                                     cycle-phase)
+                                         %)))
+                 (fx/sub-ctx context
+                             errors-in-sv1-proj)
+                 (fx/sub-ctx context
+                             errors-in-sv2-proj)))))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/sv-proj)
-    first)
+    count)
+;; => [113.12006734716704
+;;     -203.48496680096278
+;;     {:index 0,
+;;      :cycle-frac 0,
+;;      :err-x 79.35568753767804,
+;;      :err-y 157.21263605633916,
+;;      :err-angle 0.35919181354944224,
+;;      :radius 232.8138341048842,
+;;      :angle-from-down 0.5073720887345978}]
+
+
+;; => [24.164284948952567
+;;     -44.09616040647046
+;;     {:index 0,
+;;      :cycle-frac 0,
+;;      :err-x 12.984442896066495,
+;;      :err-y 33.19259196387512,
+;;      :err-angle 0.2803344675436626,
+;;      :radius 50.283039185070635,
+;;      :angle-from-down 0.5012992384298911}]
+
+
+;; => [24.164284948952567
+;;     -44.09616040647046
+;;     {:index 0,
+;;      :cycle-frac 0,
+;;      :angle-from-down 0.5012992384298913,
+;;      :length 50.283039185070635,
+;;      :err-x 12.984442896066495,
+;;      :err-y 33.19259196387512,
+;;      :err-angle 0.2803344675436626}]
+
+;; => [24.164284948952567
+;;     -44.09616040647046
+;;     {:index 0,
+;;      :cycle-frac 0,
+;;      :angle 5.213688218814581,
+;;      :length 50.283039185070635,
+;;      :err-x 12.984442896066495,
+;;      :err-y 33.19259196387512,
+;;      :err-angle 0.2803344675436626}]
+
+#_
+(->>(fx/sub-ctx @state/*selections
+                state/sv-proj)
+    (mapv #(get %
+                2))
+    (mapv :angle)
+    (mapv #(if (> %
+                  clojure.math/PI)
+             (- %
+                bisect/TWOPI)
+             %)))
 
 #_
 (defn
