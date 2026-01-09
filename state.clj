@@ -2634,7 +2634,7 @@ count)
                       :max-val         (->  context
                                             (fx/sub-ctx region-min-max)
                                             second)
-                        :label-attribs {:font-size 0.7}
+                        :label-attribs {#_#_:font-size 0.7}
                       :axis-visible?   false
                       :cycle-frac      (/ observation-idx
                                           12.0)})
