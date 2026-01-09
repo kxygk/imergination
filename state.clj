@@ -2201,17 +2201,132 @@
                 centroid-b
                 points]} (fx/sub-ctx context
                                      sv-bisection)]
-    (let [projections (matrix/project-onto-2d-basis  centroid-a
-                                                     centroid-b
-                                                     points)]
-      projections)))
+    (let [centroid-a-angle (-> centroid-a
+                               bisect/to-polar
+                               :angle-from-down
+                               (- (/ PI
+                                     2.0)))
+          centroid-b-angle (-> centroid-b
+                               bisect/to-polar
+                               :angle-from-down
+                               (- (/ PI
+                                     2.0)))]
+      (let [projections    (matrix/project-onto-2-patterns  centroid-a ;; matrix/project-onto-2d-basis
+                                                            centroid-b
+                                                            points)
+            err-centroid-a (->> points
+                                (mapv (fn [point]
+                                        (quickthing/parallel-error-length centroid-a-angle
+                                                                          point))))
+            err-centroid-b (->> points
+                                (mapv (fn [point]
+                                        (quickthing/parallel-error-length centroid-b-angle
+                                                                          point))))]
+        #_projections
+        (mapv (fn [point
+                   err-cent-a
+                   err-cent-b]
+                (-> point
+                    (update 2
+                            #(assoc %
+                                    :err-centroid-a
+                                    err-cent-a))
+                    (update 2
+                            #(assoc %
+                                    :err-centroid-b
+                                    err-cent-b))))
+              projections
+              err-centroid-a
+              err-centroid-b)))))
+
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/pattern-proj)
-    first)
-;; => [-0.009947702296436598
-;;     0.0614008470602693
-;;     {:cycle-frac 0, :above? false}]
+    state/sv-bisection
+    :centroid-a)
+;; => [0.7085216175364683 0.705689108236415]
+
+#_
+(-> @state/*selections
+    state/sv-bisection
+    :centroid-b)
+;; => [0.5739485119789848 -0.8188913881566402]
+
+
+#_
+(-> @state/*selections
+    state/sv-bisection
+    :points
+    (get 2))
+;; => [147.88696751163914
+;;     -174.6602634890784
+;;     {:index 2,
+;;      :cycle-frac 1/6,
+;;      :err-x 52.162313764093206,
+;;      :err-y 127.42670092948086,
+;;      :err-angle 0.2750300327604253,
+;;      :radius 228.85970113120158,
+;;      :angle-from-down 0.7025821993082306,
+;;      :above? false}]
+
+(map *
+     [0.5739485119789848 -0.8188913881566402]
+     [147.88696751163914 -174.6602634890784])
+;; => (84.87950494438975 143.02778562437595)
+
+#_
+(-> @state/*selections
+    state/sv-bisection
+    :points
+    (get 71))
+;; => [112.57764719667338
+;;     -253.63562272487084
+;;     {:index 71,
+;;      :cycle-frac 11/12,
+;;      :err-x 65.33889317833521,
+;;      :err-y 176.27591651947827,
+;;      :err-angle 0.24892029918671557,
+;;      :radius 277.49730766869015,
+;;      :angle-from-down 0.4177326901041829,
+;;      :above? false}]
+
+(map *
+     [0.5739485119789848 -0.8188913881566402]
+     [112.57764719667338 -253.63562272487084])
+;; => (64.61377309062581 207.70002717914335)
+
+#_
+(-> @state/*selections
+    state/pattern-proj
+    (get 2))
+;; => [-18.474732152035315
+;;     227.9072905687657
+;;     {:cycle-frac 1/6,
+;;      :angle-from-down 0.7025821993082306,
+;;      :index 2,
+;;      :err-y 127.42670092948086,
+;;      :radius 228.85970113120158,
+;;      :err-centroid-a 68.17283427493027,
+;;      :err-centroid-b 78.47856683923837,
+;;      :err-x 52.162313764093206,
+;;      :above? false,
+;;      :err-angle 0.2750300327604253}]
+
+#_
+(-> @state/*selections
+    state/pattern-proj
+    (get 71))
+;; => [-99.224199727465
+;;     272.31380026976916
+;;     {:cycle-frac 11/12,
+;;      :angle-from-down 0.4177326901041829,
+;;      :index 71,
+;;      :err-y 176.27591651947827,
+;;      :radius 277.49730766869015,
+;;      :err-centroid-a 86.51137672966664,
+;;      :err-centroid-b 100.63471700224113,
+;;      :err-x 65.33889317833521,
+;;      :above? false,
+;;      :err-angle 0.24892029918671557}]
 
 (defn
   binary-index-vector
@@ -2355,7 +2470,8 @@
   "Projections of all the data
   onto the two extracted patterns, but partitioned into two groups
   Returns:
-  a two list of nonorthogonal coordinates"
+  a two list of nonorthogonal coordinates
+  and a list of errors"
   [context]
   (let [projections (fx/sub-ctx context
                                 pattern-proj)
@@ -2382,39 +2498,59 @@
                          (mapv (fn [proj]
                                  (if (pos? proj)
                                    proj
-                                   0.0))))]
+                                   0.0))))
+        errors      (->> projections
+                         (mapv (fn [proj]
+                                 (if (-> proj
+                                         (get 2)
+                                         :above?)
+                                   (-> proj
+                                       (get 2)
+                                       :err-centroid-a)
+                                   (-> proj
+                                       (get 2)
+                                       :err-centroid-b)))))]
     (with-open [writer (io/writer (str config-dir
                                        "/climate-index.csv"))]
-      (println (str "Writing out climate index to CSV file .. "
-                    #_
-                    (str config-dir
-                         "/climate-index.csv")))
+      (println (str "Writing out climate index to CSV file .. "))
       (csv/write-csv writer
                      (mapv vector
                            proj-a
-                           proj-b)))
+                           proj-b
+                           errors)))
     [proj-a
-     proj-b]))
+     proj-b
+     errors]))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/pattern-proj-partitioned))
+    state/pattern-proj-partitioned
+    (nth 2))
+
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/pattern-proj-partitioned)
-    first
-    count)
-;; => 826
+(fx/sub-ctx state/pattern-proj-partitioned)
+first
+count)
+;; => 146
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/window-width))
-;; => 1080.0
+(fx/sub-ctx state/pattern-proj-partitioned)
+second
+count)
+;; => 146
+#_
+(-> @state/*selections
+(fx/sub-ctx state/pattern-proj-partitioned)
+(nth 2)
+count)
 
 (defn
   pattern-proj-svg
   "Plot of the climate indeces"
   [context]
   (let [[proj-a
-         proj-b] (fx/sub-ctx context
+         proj-b
+         errors] (fx/sub-ctx context
                              pattern-proj-partitioned)
         width    (fx/sub-ctx context
                              state/window-width)
@@ -2424,6 +2560,7 @@
                       height
                       proj-a
                       proj-b
+                      errors
                       2011
                       (fx/sub-ctx context
                                   cycle-length)
