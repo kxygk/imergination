@@ -93,18 +93,18 @@
          height] (dimension region)
         spacing  (/ (min width
                          height)
-                    8.0)]
+                    2.5)]
     (svg/text [(- width
                   (/  spacing
-                      2.0))
+                      6.0))
                (/ spacing
-                  3.0)]
+                  6.0)]
               text
               (merge {:font-size         spacing
                       :text-anchor       "end"
                       :stroke            "black"
                       :stroke-width      (/ spacing
-                                            50)
+                                            150)
                       :fill              "white"
                       :dominant-baseline "hanging"}
                      attribs))))
@@ -175,24 +175,50 @@
   "Data points should be in the form:
   [x, y, {:cycle-frac 69}]
   if the `:cycle-frac` is missing, it will be colored black"
-  [data
-   width
+  [width
    height
-   {:keys [angle
+   {:keys [angle-from-bottom
+           points
            centroid-a
            centroid-b]}]
-  (let  [range-magnitude (* 1.0
-                            (max (->> data
+  (let  [data            (->> points
+                              (mapv (fn [data-point]
+                                      (update data-point
+                                              2 ;; this `:above?` keys breaks SVGs weirdly
+                                              #(dissoc %
+                                                       :above?)))))
+         data-above      (->> points
+                              (filterv (fn [[_
+                                             _
+                                             extras]]
+                                         (:above? extras)))
+                              (mapv (fn [data-point]
+                                      (update data-point
+                                              2 ;; this `:above?` keys breaks SVGs weirdly
+                                              #(dissoc %
+                                                       :above?)))))
+         data-below      (->> points ;; maybe can be done with group-by, but needs to ensure order
+                              (filterv (fn [[_
+                                             _
+                                             extras]]
+                                         (not (:above? extras))))
+                              (mapv (fn [data-point]
+                                      (update data-point
+                                              2 ;; this `:above?` keys breaks SVGs weirdly
+                                              #(dissoc %
+                                                       :above?)))))
+         range-magnitude (* 1.05
+                            (max (->> points
                                       (map first)
                                       (map abs)
                                       (apply max))
-                                 (->> data
+                                 (->> points
                                       (map second)
                                       (map abs)
                                       (apply max))))]
-    (let [dummy-data [[(- range-magnitude)
+    (let [dummy-data [[0
                        (- range-magnitude)]
-                      [0
+                      [range-magnitude
                        range-magnitude]]]
       (->> (-> (quickthing/zero-axis dummy-data
                                      {:width       width
@@ -201,8 +227,28 @@
                #_#_
                (update :data
                        #(into %
+                              (quickthing/parallel-error-bars (-> centroid-a
+                                                                  bisect/to-polar
+                                                                  :angle-from-down
+                                                                  (+ (/ clojure.math/PI
+                                                                        2.0)))
+                                                              data-above
+                                                              {:attribs {:stroke "#0c0"}})))
+               (update :data
+                       #(into %
+                              (quickthing/parallel-error-bars (-> centroid-b
+                                                                  bisect/to-polar
+                                                                  :angle-from-down
+                                                                  (+ (/ clojure.math/PI
+                                                                        2.0)))
+                                                              data-below
+                                                              {:attribs {:stroke "#00c"}})))
+               #_
+               (update :data
+                       #(into %
                               (quickthing/orthogonal-error-bars data
                                                                 {:attribs {:stroke "#c00"}})))
+               #_
                (update :data
                        #(into %
                               (quickthing/error-bars data
@@ -216,27 +262,26 @@
                                                           attribs]]
                                                       [data-x
                                                        data-y
-                                                       {:stroke       #_ "transparent" "#777"
+                                                       {:stroke       "black" #_ "transparent" #_ "#777"
                                                         ;; TODO thread the whole thing
                                                         :fill-opacity "0.8"
                                                         :tooltip      (str "Index: "
                                                                            (:index attribs)
                                                                            "\n"
                                                                            (-> attribs
-                                                                               (update :angle
+                                                                               (update :angle-from-down
                                                                                        clojure.math/to-degrees)
                                                                                (update :err-angle
                                                                                        clojure.math/to-degrees)))
                                                         :fill         (-> attribs
                                                                           :cycle-frac
                                                                           quickthing/color-cycle)}])))
-                                  (quickthing/circles {:scale 15}))))
+                                  (quickthing/circles {:scale 30}))))
                #_
                (update :data
                        #(into %
-                              (quickthing/index-text data
-                                                     {:scale 40})))
-               ;;#_
+                              (quickthing/index-labels data
+                                                       {:scale 40})))
                (update :data
                        #(into %
                               (quickthing/labels (->> data
@@ -253,18 +298,19 @@
                                                                                      (format (str "%.3g")
                                                                                              (clojure.math/to-degrees rad))))))))))
                                                  {:scale 10})))
+               ;;#_#_#_
                (update :data
                        #(into %
-                              (quickthing/line-through-point data
-                                                             (->> angle
-                                                                  bisect/angle-to-unitvector)
+                              (quickthing/line-through-point dummy-data
+                                                             (->> angle-from-bottom
+                                                                  bisect/angle-from-bottom-to-unitvector)
                                                              {:attribs {:stroke           "red"
                                                                         :stroke-dasharray (str 50.0
                                                                                                " "
                                                                                                50.0)}})))
                (update :data
                        #(into %
-                              (quickthing/line-through-point data
+                              (quickthing/line-through-point dummy-data
                                                              centroid-a
                                                              {:attribs {:stroke           "black"
                                                                         :stroke-dasharray (str 7.0
@@ -272,7 +318,7 @@
                                                                                                7.0)}})))
                (update :data
                        #(into %
-                              (quickthing/line-through-point data
+                              (quickthing/line-through-point dummy-data
                                                              centroid-b
                                                              {:attribs {:stroke           "black"
                                                                         :stroke-dasharray (str 7.0
@@ -289,7 +335,7 @@
                       (-> (quickthing/zero-axis dummy-data
                                                 {:width       width
                                                  :height      height
-                                                 :scale 90
+                                                 :scale       90
                                                  :margin-frac 0.00})
                           (update-in [:y-axis
                                       :major]
@@ -423,7 +469,10 @@
         (-> weight-perc
             (quickthing/primary-axis  {:width       width
                                        :height      height
-                                       :margin-frac 0.05})
+                                       :title       "Singular Values"
+                                       :y-name      "%"
+                                       :scale       90
+                                       :margin-frac 0.1})
             (assoc :grid ;; turn off grid
                    nil)
             (assoc-in [:x-axis
@@ -432,13 +481,25 @@
             (assoc-in [:x-axis
                        :minor]
                       [])
+            (update-in [:y-axis
+                        :major]
+                       (fn [ticks]
+                         (->> ticks
+                              (filterv pos?))))
             (update :data
                     #(into %
                            (quickthing/bars first-two
-                                            {:attribs {:stroke "red"}})))
+                                            {:attribs {:stroke       "red"
+                                                       :stroke-width (* 0.5
+                                                                        (/ width
+                                                                           num-display))}})))
             (update :data
                     #(into %
-                           (quickthing/bars the-rest)))
+                           (quickthing/bars the-rest
+                                            {:attribs {;;:stroke "red"
+                                                       :stroke-width (* 0.5
+                                                                        (/ width
+                                                                           num-display))}})))
             viz/svg-plot2d-cartesian
             (quickthing/svg-wrap [width
                                   height]
@@ -513,6 +574,7 @@
    height
    proj-a
    proj-b
+   errors
    cycle-start-value
    cycle-length ;; Maybe make these optional?
    cycle-phase
@@ -520,21 +582,51 @@
      :or   {bar-width (* 0.5
                          (/ width
                             (count proj-a)))}}]
-  (let [index-a (into [] (map-indexed vector
-                                      proj-a))
-        index-b (map-indexed vector
-                             proj-b)]
-    (let [axis (-> (quickthing/primary-axis (into index-a
-                                                  index-b)
-                                            {:width       width
-                                             :height      height
-                                             :x-ticks     [1.0]
-                                             :y-ticks     [1.0]
-                                             :scale 72
-                                             :margin-frac 0.01
+  (let [index-a (mapv (fn [point
+                           error]
+                        (if (-> point
+                                second
+                                zero?)
+                          (conj point
+                                {})
+                          (conj point
+                                {:err-y error})))
+                      (map-indexed vector
+                                   proj-a)
+                      errors)
+        index-b (mapv (fn [point
+                           error]
+                        (if (-> point
+                                second
+                                zero?)
+                          (conj point
+                                {})
+                          (conj point
+                                {:err-y error})))
+                      (map-indexed vector
+                                   proj-b)
+                      errors)]
+    (let [axis (-> (quickthing/primary-axis [[0
+                                              0]
+                                             [(apply max
+                                                     (mapv first
+                                                           (into index-a
+                                                                 index-b)))
+                                              (+ (apply max
+                                                        errors)
+                                                 (apply max
+                                                        (mapv second
+                                                              (into index-a
+                                                                    index-b))))]]
+                                            {:width            width
+                                             :height           height
+                                             :x-ticks          [1.0]
+                                             :y-ticks          [1.0]
+                                             :scale            72
+                                             :margin-frac      0.01
                                              :y-breathing-room 0.05
-                                             :title "2 State Climate Index"
-                                             :color       "#0008"})
+                                             :title            "2 State Climate Index"
+                                             :color            "#0008"})
                    (assoc-in [:x-axis
                               :label]
                              (thi.ng.geom.viz.core/default-svg-label #(+ cycle-start-value
@@ -552,15 +644,28 @@
                               :major]
                              []))]
       (-> axis
-          (assoc :data
-                 (into []
-                       cat
-                       [(quickthing/bars index-a
-                                         {:attribs {:stroke-width bar-width
-                                                    :stroke       "#00aa88"}})
-                        (quickthing/bars index-b
-                                         {:attribs {:stroke-width bar-width
-                                                    :stroke       "#aa8800"}})]))
+          #_#_
+          (update :data
+                  #(into %
+                         (quickthing/error-bars index-a)))
+          (update :data
+                  #(into %
+                         (quickthing/error-bars index-b)))
+          (update :data
+                  #(into %
+                         (quickthing/bars index-a
+                                          {:attribs {:stroke-width bar-width
+                                                     :stroke       "#00aa88"}})))
+          (update :data
+                  #(into %
+                         (quickthing/bars index-b
+                                          {:attribs {:stroke-width bar-width
+                                                     :stroke       "#aa8800"}})))
+          (update :data
+                  #(into %
+                         (quickthing/bars index-b
+                                          {:attribs {:stroke-width bar-width
+                                                     :stroke       "#aa8800"}})))
           viz/svg-plot2d-cartesian
           (quickthing/svg-wrap [width
                                 height]
@@ -583,25 +688,25 @@
                       (map-indexed vector))]
     (let [sv-axis (-> (quickthing/primary-axis (into proj-sv1
                                                      proj-sv2)
-                                               {:width           width
-                                                :height          height
-                                                :scale 90
-                                                :legend          [#_#_#_#_#_[nil nil]
-                                                                  [nil nil]
-                                                                  [nil nil]
-                                                                  [nil nil]
-                                                                  [nil nil]
-                                                                  [nil nil]
-                                                                   ["~~~   SV1" #_"First Singular Vector"
-                                                                   {:fill "#0000aa"}]
-                                                                   ["~~~  SV2" #_"Second Singular Vector"
-                                                                   {:fill "#aa0000"}]]
+                                               {:width       width
+                                                :height      height
+                                                :scale       90
+                                                :legend      [#_#_#_#_#_[nil nil]
+                                                              [nil nil]
+                                                              [nil nil]
+                                                              [nil nil]
+                                                              [nil nil]
+                                                              [nil nil]
+                                                              ["~~~   SV1" #_"First Singular Vector"
+                                                               {:fill "#0000aa"}]
+                                                              ["~~~  SV2" #_"Second Singular Vector"
+                                                               {:fill "#aa0000"}]]
                                                 ;;:title           "SV1 SV2 weights"
                                                 ;;:x-name      "Data index"
                                                 ;; :x-ticks     [1.0]
                                                 ;; :y-ticks     [1.0]
-                                               :margin-frac 0.10
-                                                #_#_:color       "#0000aa"})
+                                                :margin-frac 0.10
+                                                #_#_:color   "#0000aa"})
                       (assoc-in [:grid]
                                 nil)
                       (update-in [:y-axis
