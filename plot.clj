@@ -2,7 +2,8 @@
     plot
   "Some project-specific plotting fuctions"
   (:use     geoprim)
-  (:require [geogrid]
+  (:require matrix
+            [geogrid]
             [geogrid2svg]
             [geojson2svg]
             [quickthing]
@@ -1068,7 +1069,7 @@
   (let [counts-for-each-index (->> indeces
                                    (mapv (fn [time-index]
                                            (let [rain-vector (-> data-matrix
-                                                                 (uncomplicate.neanderthal.core/col time-index)
+                                                                 (matrix/col time-index)
                                                                  seq
                                                                  vec)]
                                              (let [bin-size (-> rain-vector
@@ -1077,8 +1078,8 @@
                                                                 (/ (clojure.math/log 2))
                                                                 clojure.math/ceil
                                                                 inc)] ;; Sturges' rule
-                                               (->> (update-vals (->> (uncomplicate.neanderthal.core/col data-matrix
-                                                                                                         time-index)
+                                               (->> (update-vals (->> (matrix/col data-matrix
+                                                                                  time-index)
                                                                       seq
                                                                       vec
                                                                       (mapv #(/ %

@@ -348,7 +348,7 @@
   (->>
     indeces
     (mapv
-      #(matrix/extract-grid ;;matrix-col-to-grid
+      #(datamats/extract-grid ;;matrix-col-to-grid
          rains-matrix
          %))
     (mapv
@@ -474,7 +474,7 @@
     [summer-idx
      winter-idx]
     map-label]
-   (let [region-rains-matrix (matrix/from-geogrids
+   (let [region-rains-matrix (datamats/from-geogrids
                                (fx/sub
                                  @state/*selections
                                  state/region-images)
@@ -492,10 +492,10 @@
              rain-dirstr
              [0.1
               0.1]))
-         first-month-rain    (matrix/extract-grid ;;matrix-col-to-grid
+         first-month-rain    (datamats/extract-grid ;;matrix-col-to-grid
                                region-rains-matrix
                                0)
-         sixth-month-rain    (matrix/extract-grid ;;matrix-col-to-grid
+         sixth-month-rain    (datamats/extract-grid ;;matrix-col-to-grid
                                region-rains-matrix
                                5)
          svd                 (linalg/svd
@@ -509,11 +509,11 @@
                                (:u
                                 svd))
          first-sv            (data
-                               (matrix/extract-grid ;;matrix-col-to-grid
+                               (datamats/extract-grid ;;matrix-col-to-grid
                                  svs
                                  0))
          secon-sv            (data
-                               (matrix/extract-grid ;;matrix-col-to-grid
+                               (datamats/extract-grid ;;matrix-col-to-grid
                                  svs
                                  1))
          projections         (mapv
@@ -611,7 +611,7 @@
        "out/first-sv.svg"
        (quickthing/serialize-with-line-breaks
          (plot/grid-map
-           (matrix/extract-grid ;;matrix-col-to-grid
+           (datamats/extract-grid ;;matrix-col-to-grid
              svs
              0)
            input-region ;; it'll crop redundantly here..
@@ -621,7 +621,7 @@
        "out/second-sv.svg"
        (quickthing/serialize-with-line-breaks
          (plot/grid-map
-           (matrix/extract-grid ;;matrix-col-to-grid
+           (datamats/extract-grid ;;matrix-col-to-grid
              svs
              1)
            input-region ;; it'll crop redundantly here..
@@ -631,7 +631,7 @@
        "out/third-sv.svg"
        (quickthing/serialize-with-line-breaks
          (plot/grid-map
-           (matrix/extract-grid ;;matrix-col-to-grid
+           (datamats/extract-grid ;;matrix-col-to-grid
              svs
              2)
            input-region ;; it'll crop redundantly here..
@@ -641,7 +641,7 @@
        "out/fourth-sv.svg"
        (quickthing/serialize-with-line-breaks
          (plot/grid-map
-           (matrix/extract-grid ;;matrix-col-to-grid
+           (datamats/extract-grid ;;matrix-col-to-grid
              svs
              3)
            input-region ;; it'll crop redundantly here..
@@ -661,7 +661,7 @@
        "out/summer.svg"
        (quickthing/serialize-with-line-breaks
          (plot/grid-map
-           (matrix/col-to-grid
+           (col-to-grid
              summer-month
              region-rains-matrix)
            input-region ;; it'll crop redundantly here..
@@ -671,7 +671,7 @@
        "out/winter.svg"
        (quickthing/serialize-with-line-breaks
          (plot/grid-map
-           (matrix/col-to-grid
+           (col-to-grid
              winter-month
              region-rains-matrix)
            input-region ;; it'll crop redundantly here..

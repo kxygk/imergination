@@ -1,365 +1,105 @@
-(ns
-    matrix
+(ns matrix
   "The matrix of all the data
   First implementation based on `neanderthal`
   Will rewrite into something that can be more easily packaged.."
-  (:require geogrid
-            geogrid4seq
-            [uncomplicate.neanderthal.core :as ncore]
-            [uncomplicate.neanderthal.native :as neand]
-            [uncomplicate.neanderthal.linalg :as linalg]
-            [uncomplicate.neanderthal.vect-math :as vect-math]))
+  (:require clojure.math))
 
-(defn-
-  glue-geogrids-into-one-matrix
-  "Take all the grids,
-  pull out the data,
-  slap them all together column by column"
-  [geogrids]
-  (let [[width-pix
-         height-pix] (-> geogrids
-                         first
-                         geogrid/dimension-pix)
-        all-data     (->> geogrids
-                          (map geogrid/data)
-                          (reduce into
-                                  []))]
-    (neand/dge (* width-pix ;;rows
-                  height-pix)
-               (count geogrids) ;;cols
-               all-data)));; data
+(defprotocol Primitives
+  "An interface for matrix libraries to do what the subset of things we need"
+  (data [matrix])
+  (mrows [matrix])
+  (ncols [matrix])
+  (cols  [matrix])
+  (row [matrix
+         index])
+  (col [matrix
+         index])
+  (diag [matrix]) ;; should run on the `:sigma` and return a vector
+  (set-value! [matrix
+               x
+               y
+               value])
+  (scale-to-value   [matrix
+                     factor])
+  (mult-elementwise [matrix
+                     other-matrix])
+  (mm [matrix1
+       matrix2]
+    [matrix1
+     matrix2
+     matrix3])
+  (svd [matrix]) ;; Returns {:sigma _ :u _ :vt _} each also `Matrix`
+  #_
+  (sv1-inverter [matrix])
+  (rezero   [matrix])
+  (rezero-nonzero [matrix])
+  (zero-top-left [matrix]))
 
-(defn
-  from-geogrids
-  "Read in a vector of geogrids into one large `matrix`"
-  [geogrids]
-  (let [local-matrix (glue-geogrids-into-one-matrix
-                       geogrids)]
-    {:matrix     local-matrix
-     :dimension  (-> geogrids
-                     first
-                     geogrid/dimension-pix)
-     :position   (-> geogrids
-                     first
-                     geogrid/corner)
-     :resolution (-> geogrids
-                     first
-                     geogrid/eassou-res)}))
+(defprotocol Factory
+  (build-matrix [factory ;; the "type" to switch on
+                 num-rows
+                 num-columns
+                 data-vec])
+  ;; Maybe this should have a default version ..
+  ;; But normally the impl should make a diagonal matrix here
+  ;; (instead a dense general matrix)
+  (build-inverter [factory 
+                   size]))
+
+;; A global atom to hold the current active factory
+(defonce matrix-factory (atom nil))
+
+;; Function to set the switch
+(defn set-factory! [f]
+  (reset! matrix-factory f))
+
+;;;; Higher order Functions
+
+(defn build
+  "Higher-level helper.
+  Make a new mastrix,
+  using the global switch"
+  [num-rows
+   num-cols
+   data-vec]
+  (if-let [factory @matrix-factory]
+    (do (println (str "Factory type is: "
+                      (type factory)))
+        (build-matrix factory
+                      num-rows
+                      num-cols
+                      data-vec))
+    (throw (Exception. (str "No matrix factory initialized."
+                            "Call `set-factory!` first."
+                            "Namesapces like `matrix-neanderthal` self-register")))))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/region-images)
-    matrix/from-geogrids)
-
-(defn
-  get-min-max
-  [matrix]
-  (let [data-vec (-> matrix
-                     :matrix
-                     seq
-                     vec
-                     flatten
-                     vec)]
-    ;;data-vec
-    [(apply min data-vec)
-     (apply max data-vec)]))
-
-
-(defn
-  rezero
-  "Removes the `min` value from all values"
-  [matrix]
-  (let [[min-pix
-         _] (get-min-max matrix)]
-  (-> matrix
-      (update :matrix
-              (fn [matrix]
-                (ncore/axpby! (neand/dge (ncore/mrows matrix)
-                                         (ncore/ncols matrix)
-                                         (repeat (- min-pix)))
-                              matrix))))))
-
-
-
-(defn
-  rezero-nonzero
-  "Removes the `min` value from all values
-  But skip zeros"
-  [matrix]
-  (let [min-pix (->> matrix
-                     :matrix
-                     seq
-                     vec
-                     flatten
-                     vec
-                     (filter pos?)
-                     (apply min))]
-    (-> matrix
-        (update :matrix
-                (fn [old-matrix]
-                  (ncore/axpby! (neand/dge (ncore/mrows old-matrix)
-                                           (ncore/ncols old-matrix)
-                                           (->> old-matrix
-                                                seq
-                                                vec
-                                                flatten
-                                                vec
-                                                (mapv (fn [pix]
-                                                        (if (zero? pix)
-                                                          0.0
-                                                          (- min-pix))))))
-                                old-matrix))))))
-
+(build 2
+                       2
+                       [1, 2, 3, 4])
 #_
-(neand/dge 3 3 [0 0 4 5 6 7 8 9 10])
-;; => #RealGEMatrix[double, mxn:3x3, layout:column]
-;;       ▥       ↓       ↓       ↓       ┓    
-;;       →       0.00    5.00    8.00         
-;;       →       0.00    6.00    9.00         
-;;       →       4.00    7.00   10.00         
-;;       ┗                               ┛
+(scale-to-value (build 2
+                       2
+                       [1, 2, 3, 4])
+                2)
 #_
-(rezero-nonzero {:matrix (neand/dge 3 3 [0 0 4 5 6 7 8 9 10])})
-;; => {:matrix #RealGEMatrix[double, mxn:3x3, layout:column]
-;;       ▥       ↓       ↓       ↓       ┓    
-;;       →       0.00    1.00    4.00         
-;;       →       0.00    2.00    5.00         
-;;       →       0.00    3.00    6.00         
-;;       ┗                               ┛    
-;;    }
+(abs-sums-of-cols (scale-to-value (build 2
+                                         2
+                                         [1, 2, 3, 4])
+                                  2))
 
-(defn
-  num-svs
-  "Number of Singular Vectors/Values.
-  This is either the number of data point,
-  or the number of pixels.
-  Whichever is smallest"
-  [data-matrix]
-  (let [matrix (-> data-matrix
-                   :matrix)]
-      (min (ncore/ncols matrix)
-           (ncore/mrows matrix))))
+(defn inverter
+  "This is the identity matrix,
+with the first 0,0 flipped to -1"
+  [size]
+  (if-let [factory @matrix-factory]
+    (build-inverter factory
+                    size)
+    (throw (Exception. (str "No matrix factory initialized."
+                            "Call `set-factory!` first."
+                            "Namesapces like `matrix-neanderthal` self-register")))))
 
-(defn
-  invert-sv1
-  [svd]
-  (let [num-pixels (-> svd
-                       :u
-                       ncore/mrows)
-        num-observ (-> svd
-                       :u
-                       ncore/ncols)]
-    (let [#_#_pixel-inverter (neand/dgd (into [-1]
-                                          (repeat (dec num-pixels))))
-          inverter (neand/dgd num-observ
-                              (into [-1]
-                                    (repeat (dec num-observ)
-                                            1.0)))]
-  (-> svd
-      (update :u
-              (fn [singular-vector-matrix]
-                (ncore/mm singular-vector-matrix
-                           inverter)))
-      (update :vt
-              (fn [singular-vector-matrix]
-                (ncore/mm inverter
-                          singular-vector-matrix)))
-                ))))
-
-(defn
-  svd
-  "Take a data matrix
-  Returns
-  {:sv matrix
-  :weights vector}"
-  [data-matrix]
-  (merge (invert-sv1 (linalg/svd (:matrix data-matrix)
-                                 true
-                                 true))
-         data-matrix))
+;; Didn't reimplement b/c unused
 #_
-(linalg/svd (:matrix (-> @state/*selections
-                         (cljfx.api/sub-ctx state/region-matrix)))
-            true
-            true)
-;; => {:sigma #RealDiagonalMatrix[double, type:gd mxn:520x520]
-;;       ▧                                               ─    
-;;       ↘     640.20   38.00    8.57    6.11    4.69    ⋯    
-;;       ┗                                               ┛    
-;;    , :u #RealGEMatrix[double, mxn:5000x520, layout:column]
-;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
-;;       →      -0.00   -0.00    ⁙       0.00   -0.00         
-;;       →       0.00    0.00    ⁙       0.00    0.00         
-;;       →       ⁙       ⁙       ⁙       ⁙       ⁙            
-;;       →      -0.02    0.02    ⁙      -0.03   -0.03         
-;;       →      -0.02    0.02    ⁙      -0.01   -0.00         
-;;       ┗                                               ┛    
-;;    , :vt #RealGEMatrix[double, mxn:520x520, layout:column]
-;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
-;;       →      -0.04   -0.04    ⁙      -0.04   -0.04         
-;;       →       0.07    0.07    ⁙       0.05    0.03         
-;;       →       ⁙       ⁙       ⁙       ⁙       ⁙            
-;;       →       0.00    0.02    ⁙       0.03   -0.06         
-;;       →      -0.01   -0.00    ⁙      -0.01   -0.03         
-;;       ┗                                               ┛    
-;;    , :master true}
-#_
-(-> @state/*selections
-    (cljfx.api/sub-ctx state/region-matrix)
-    svd
-    invert-sv1)
-;; => {:sigma #RealDiagonalMatrix[double, type:gd mxn:520x520]
-;;       ▧                                               ─    
-;;       ↘     640.20   38.00    8.57    6.11    4.69    ⋯    
-;;       ┗                                               ┛    
-;;    , :u #RealGEMatrix[double, mxn:5000x520, layout:column]
-;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
-;;       →       0.00   -0.00    ⁙       0.00   -0.00         
-;;       →      -0.00    0.00    ⁙       0.00    0.00         
-;;       →       ⁙       ⁙       ⁙       ⁙       ⁙            
-;;       →       0.02    0.02    ⁙      -0.03   -0.03         
-;;       →       0.02    0.02    ⁙      -0.01   -0.00         
-;;       ┗                                               ┛    
-;;    , :vt #RealGEMatrix[double, mxn:520x520, layout:column]
-;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
-;;       →       0.04   -0.04    ⁙      -0.04   -0.04         
-;;       →      -0.07    0.07    ⁙       0.05    0.03         
-;;       →       ⁙       ⁙       ⁙       ⁙       ⁙            
-;;       →      -0.00    0.02    ⁙       0.03   -0.06         
-;;       →       0.01   -0.00    ⁙      -0.01   -0.03         
-;;       ┗                                               ┛    
-;;    ,
-;;     :master true,
-;;     :matrix #RealGEMatrix[double, mxn:5000x520, layout:column]
-;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
-;;       →       0.00    0.00    ⁙       0.00    0.00         
-;;       →       0.00    0.00    ⁙       0.00    0.00         
-;;       →       ⁙       ⁙       ⁙       ⁙       ⁙            
-;;       →       0.55    0.54    ⁙       0.54    0.53         
-;;       →       0.55    0.54    ⁙       0.54    0.53         
-;;       ┗                                               ┛    
-;;    ,
-;;     :dimension [50 100],
-;;     :position {:eas 285.5, :sou 65.0},
-;;     :resolution [0.25 0.25]}
-
-
-
-(defn
-  singular-values
-  "Given an SVD return the singular-values
-  Returned as pairs:
-  [[sv-num sv]
-   [sv-num sv]
-   ..
-   [sv-num sv]]
-  Index starts at 1
-  B/c this is what is directly plottable
-  and this is the natural way we speak of svs"
-  [svd]
-  (->> svd
-       :sigma
-       ncore/dia
-       (into [])
-       (map-indexed (fn [index
-                         value]
-                      (vector (inc index)
-                              value)))
-       (into [])))
-#_
-(-> @state/*selections
-    (cljfx.api/sub-ctx state/region-matrix)
-    svd
-    singular-values)
-
-(defn
-  singular-value
-  [svd
-   sv-index]
-  (-> svd
-      singular-values
-      (get sv-index)
-      second))
-#_
-(-> @state/*selections
-    (cljfx.api/sub-ctx state/region-matrix)
-    svd
-    (singular-value 1))
-;; => 9247.099897276306
-
-(defn
-  singular-values-stats
-  [singular-values]
-  (let [weights (->> singular-values
-                     (map second))]
-    (let [signal (->> weights
-                      (take 2))
-          noise  (->> weights
-                      (drop 2))
-          total  (apply +
-                        weights)]
-      {:total  total
-       :signal (/ (apply +
-                         signal)
-                  total)
-       :noise  (/ (apply +
-                         noise)
-                  total)})))
-
-(defn
-  singular-vector
-  "Take the result of the SVD
-  and return one singular vector
-  It'll be the size of the original region
-  ..
-  NOTE: When num-pixels > num-images
-  the number of singular vectors is limited to
-  the number of images
-  This is different from the Wiki definition of the SVD
-  The U matrix is not square!!
-  aka a `Thin SVD`"
-  [svd
-   sv-index]
-  (into []
-        (ncore/col (:u svd)
-                   sv-index)))
-#_
-(let [region      locations/krabi-skinny-region
-      data-dirstr "./data/late/"
-      eas-res     0.1
-      sou-res     0.1
-      sv-index    0]
-  (let [geogrids (->> data-dirstr
-                      java.io.File.
-                      .list
-                      sort
-                      (mapv #(str data-dirstr
-                                  %))
-                      (mapv #(geogrid4image/read-file %
-                                                      eas-res
-                                                      sou-res))
-                      (mapv #(geogrid/subregion %
-                                                region)))]
-    (let [sv            (-> geogrids
-                            matrix/from-geogrids
-                            matrix/svd
-                            (matrix/singular-vector sv-index))
-          first-geogrid (-> geogrids
-                            first)]
-      (let [sv-grid   (geogrid4seq/build-grid (geogrid/params first-geogrid)
-                                              sv)
-            shoreline (plot/shoreline-map region
-                                          "./data/shoreline-coarse.json"
-                                          [])]
-        (spit "out/test/matrix_singular-vector.svg"
-              (-> sv-grid
-                  (plot/grid-map shoreline)
-                  quickthing/serialize))))))
-
-(neand/dgd 5 [-1 1 1 1 1])
-;; => #RealDiagonalMatrix[double, type:gd mxn:5x5]
-;;       ▧                                               ┓    
-;;       ↘       1.00    1.00    1.00    1.00    1.00         
-;;       ┗                                               ┛    
 (defn
   project-onto-2d-basis
   "Does an oblique projections of 2D data points
@@ -431,54 +171,52 @@
 ;;     [-38.000000000000036 30.000000000000025]
 ;;     [-34.000000000000036 27.000000000000025]]
 
-(project-onto-2d-basis [-0.6637395088755317 0.7479638121979351]
-                       [-0.8414805073840199 -0.5402874750470648]
-                       [[-0.03984475266550661 0.05052713742626782]
-                        [-0.07180659921926151 -0.022952287269459186]])
-
-#_
-(project-onto-2d-basis [1.0, 0.0]
-                       [0.0, 1.0]
-                       [[5.0, 8.0, {:blah 2}]
-                        [22.0, 6.0]
-                        [20.0, 6.0]])
-
+(into [1 2 3 ] [3 4 5])
 
 (defn
   project-onto-2-patterns
-  "Does an oblique projections of 2D data points
+  "Does an orthogonal projections of 2D data points
    on to the two vectors of the new basis
    Input:
    DATA vector of pairs [[x1,y1] [x2,y2] .. ]
    BASIS-A a 2d [x y] vector pair for the basis direction
    BASIS-B a 2d [x y] vector pair for the basis direction
    Returns:
-   2xn vector
-   ..
-   We need to generate an inverse of the 2x2 matrix
-   For projecting the data on to the basis vectors
-   ...
-   if basis vectors are A and B
-   Then we arrange them as two cols
-   [u_ax u_bx
-    u_ay u_by]
-   ...
-   a 2x2 matrix can be manually inverted
-   https://en.wikipedia.org/wiki/Invertible_matrix"
+   2xn vector"
   [pattern-a
    pattern-b
    points]
   (let [[a b] pattern-a ;; names match standard notation
         [c d] pattern-b]
-    (let [vector-above (neand/dv [a b]) ;; doesn't work with `dge` for some reason
-          vector-below (neand/dv [c d])
-          point-matrix (neand/dge (count points)
-                                  2
-                                  (flatten (->> points
+    (let [vector-above (build 1
+                              2
+                              [a b]) ;; doesn't work with `dge` for some reason
+          vector-below (build 1
+                              2
+                              [c d])
+          point-matrix (build 2
+                              (count points)
+                              (flatten (->> points
                                                 (mapv #(take 2
                                                              %))))
-                                  {:layout :row})]
-      ;; points arranged as rows in a long 2 column matrix
+                              #_
+                              (into (->> points
+                                         (mapv first))
+                                     (->> points
+                                          (mapv second))))]
+      ;; Before
+      ;;[[x y]
+      ;; [x y]
+      ;; [x y]
+      ;; [x y]]
+      ;; *
+      ;; [pat_x
+      ;;  pat_y}
+      ;; Now
+      ;; [pat_x pat_y
+      ;; *
+      ;; [ x x x x x x x x ]
+      ;; [ y y y y y y y y ]
       ;; This is then multiplied by the coordinate of the pattern
       (mapv (fn stitch
               [original-point
@@ -490,43 +228,28 @@
                   (assoc 1
                          new-y)))
             points
-            (into []
-                  (ncore/mv point-matrix
-                            vector-above))
-            (into []
-                  (ncore/mv point-matrix
-                            vector-below))))))
-(defn
-  svd-to-weights
-  "get the weight of a particular vector for each data point
-  So for `0` it will give you the weight of the PC-1 for each point in time"
-  [svd
-   sv-index]
-  (let [weight-matrix (:vt svd)]
-    (-> weight-matrix
-        (ncore/row sv-index)
-        seq
-        vec)))
-
-(defn
-  svd-to-2d-sv-space
-  [svd]
-  (let [weight-matrix (:vt svd)]
-    (mapv vector
-          (ncore/row weight-matrix                          ;; data proj on sv1
-                     0)
-          (ncore/row weight-matrix                          ;; data proj on sv2
-                     1))))
+            (data (mm vector-above
+                      point-matrix))
+            (data (mm vector-below
+                      point-matrix))))))
 #_
-(-> @state/*selections
-    (cljfx.api/sub-ctx state/region-matrix)
-    svd
-    svd-to-2d-sv-space)
+(let [points [[-0.03984475266550661 0.05052713742626782]
+              [-0.03984475266550661 0.05052713742626782]
+              [-0.07180659921926151 -0.022952287269459186]]
+      patt-a [-0.6637395088755317 0.7479638121979351]
+      patt-b [-0.8414805073840199 -0.5402874750470648]]
+  (project-onto-2-patterns patt-a
+                           patt-b
+                           points))
+
+
+
 
 (defn
   singular-vector-mix
   "Take SINGULAR-VECTOR-A and SINGULAR-VECTOR-B
-  And mix them according to WEIGHT-A and WEIGHT-B"
+  And mix them according to WEIGHT-A and WEIGHT-B
+  (Doesn't actually use any backend)"
   [singular-vector-a
    singular-vector-b
    weight-a
@@ -543,242 +266,16 @@
     mixture))
 
 (defn
-  col-to-grid
-  "Given a COLUMN-OF-DATA
-  as well as map with keys for the grid's
-  `:dimension` `:position` and `:resolution`
-  Returns a `geogrid`"
-  [column-of-data
-   {:keys [;;matrix
-           dimension
-           position
-           resolution]}]
-  (let [[width-pix
-         height-pix] dimension
-        [eas-res
-         sou-res]    resolution]
-    (geogrid4seq/build-grid [width-pix
-                             height-pix
-                             eas-res
-                             sou-res
-                             position]
-                            column-of-data)))
-
-(defn
-  extract-grid
-  "Given a matrix"
-  [{:keys [matrix
-           dimension
-           position
-           resolution]
-    :as   grid-params}
-   column-index]
-  (col-to-grid (into []
-                     (ncore/col matrix
-                                column-index))
-               grid-params))
-
-(defn
-  to-geogrid-vec
-  [grid-params]
-  (->> grid-params
-       :matrix
-       ncore/ncols
-       range
-       (mapv #(extract-grid grid-params
-                            %))))
-
-(defn
-  extract-params
-  "Get the geogrid params from the matrix
-  The format matches the vector returned in `geogrid/params`
-  Not sure why I made it that way.. Probably should be a map of values"
-  [{:keys [matrix
-           dimension
-           position
-           resolution]
-    :as   grid-params}]
-   (let [[width
-          height] dimension
-         [eas-res
-          sou-res] resolution
-         norwes-point position]
-     ;; list from `geogrid/params`
-     [width
-      height
-      eas-res
-      sou-res
-      norwes-point]))
-
-(defn
-  minus-1-sv
-  "Take the SV matrices
-  Zero out the first component
-  Return the new data matrix of (maybe?) only noise"
-  [svd]
-  (let [truncated-sigma (-> svd
-                            :sigma
-                            (ncore/alter! 0
-                                          0
-                                          (fn ^double   ;; the type annotations are required for some reason
-                                            [^double _] ;; crashed without them..
-                                            0.0)))
-        new-data-matrix (ncore/mm (:u svd)
-                                  truncated-sigma
-                                  (:vt svd))]
-    (-> svd
-        (assoc :sigma
-               truncated-sigma)
-        (assoc :matrix
-               new-data-matrix))))
-#_
-(-> [1 2 3]
-    neand/dv
-    (ncore/alter! 0
-                  ;;0
-                  (fn ^double [^double _] 0.0 #_(inc x)) ))
-
-(defn
-  minus-2-sv
-  "Take the SV matrices
-  Zero out the first two components
-  Return the new data matrix of only noise"
-  [svd]
-  (let [truncated-sigma (-> svd
-                            :sigma
-                            (ncore/alter! 0
-                                          0
-                                          (fn ^double   ;; the type annotations are required for some reason
-                                            [^double _] ;; crashed without them..
-                                            0.0))
-                            (ncore/alter! 1
-                                          1
-                                          (fn ^double
-                                            [^double _]
-                                            0.0)))
-        new-data-matrix (ncore/mm (:u svd)
-                                  truncated-sigma
-                                  (:vt svd))]
-    (-> svd
-        (assoc :sigma
-               truncated-sigma)
-        (assoc :matrix
-               new-data-matrix))))
-
-#_
-(defn
-  from-svd
-  [svd
-   geogrid]
-  (let [{:keys [u
-                vt
-                sigma]} svd]
-    (merge {:matrix     (ncore/mm u
-                                  sigma
-                                  vt)
-            :dimension  (-> geogrids
-                            first
-                            geogrid/dimension-pix)
-            :position   (-> geogrids
-                            first
-                            geogrid/corner)
-            :resolution (-> geogrids
-                            first
-                            geogrid/eassou-res)}
-           grid-params)))
-
-
-(defn
   design-matrix
   "This is the matrix used for the regression
   https://en.wikipedia.org/wiki/Design_matrix
   Basically just have leading column of 1s for the constant"
   [xs]
-  (neand/dge (count xs)
-             2
-             (concat (repeat (count xs)
-                             1.0)
-                     xs)))
-#_
-(design-matrix [1 2 3 4])
-
-
-;; example data from
-;; wikipedia.org/wiki/Simple_linear_regression#Example
-;; going to use for demos below
-(def
-  data [[1.47 	52.21]
-        [1.50 	53.12]
-        [1.52 	54.48]
-        [1.55 	55.84]
-        [1.57 	57.20]
-        [1.60 	58.57]
-        [1.63 	59.93]
-        [1.65 	61.29]
-        [1.68 	63.11]
-        [1.70 	64.47]
-        [1.73 	66.28]
-        [1.75 	68.10]
-        [1.78 	69.92]
-        [1.80 	72.19]
-        [1.83 	74.46]])
-
-(defn
-  linear-fit
-  "Fit a line to a set of [x y] pairs
-  Return a column vector with
-  first offset (alpha)
-  second slope (beta)"
-  [xy-pairs-vec]
-  (let [xs                   (->> xy-pairs-vec
-                                  (mapv first))
-        ys                   (->> xy-pairs-vec
-                                  (mapv second))
-        least-squares-matrix (neand/dge (count xy-pairs-vec)
-                                        2
-                                        (design-matrix xs))
-        y-vector             (neand/dge (count xy-pairs-vec)
-                                        1
-                                        ys)]
-
-    (ncore/view-ge (linalg/ls least-squares-matrix
-                              y-vector)
-                   2
-                   1)))
-#_
-(->> data
-    linear-fit)
-;; => #RealGEMatrix[double, mxn:2x1, layout:column]
-;;       ▥       ↓       ┓    
-;;       →     -39.06         
-;;       →      61.27         
-;;       ┗               ┛    
-;; These match the wiki page!
-;; First is offset and second is slope - as expected
-#_
-(->> data
-    linear-fit
-    seq
-    flatten
-    (zipmap [:offset
-             :slope]))
-;; => {:offset -39.061955918843935, :slope 61.27218654211063}
-
-(defn
-  predicted-values
-  [fit-params
-   xy-pairs]
-  (-> (mapv first
-            xy-pairs)
-      design-matrix
-      (ncore/mm fit-params)
-      seq
-      flatten
-      vec))
-#_
-(-> data
-    linear-fit
-    (predicted-values data))
+  (build (count xs)
+         2
+         (concat (repeat (count xs)
+                         1.0)
+                 xs)))
 
 (defn
   residual
@@ -790,11 +287,6 @@
              predicted-y))
         xy-pairs
         predicted-ys))
-#_
-(residual data
-          (-> data
-              linear-fit
-              (predicted-values data)))
 
 (defn
   self-inner-product
@@ -805,193 +297,35 @@
                                  2.0)))
        (reduce +)))
 #_
-(self-inner-product (residual data
-                              (-> data
-                                  linear-fit
-                                  (predicted-values data))))
-;; => 7.490558403882591
-
-(defn
-  residual-variance
-  [fit-params
-   xy-pairs]
-  (/ (self-inner-product (residual xy-pairs
-                                   (predicted-values fit-params
-                                                     xy-pairs)))
-     (- (count xy-pairs)
-        3.0)))
-#_
-(residual-variance data)
-
-(defn
-  subsets-for-linear-regression
-  [sorted-xy-pairs]
-  (->> sorted-xy-pairs
-       count
-       range
-       (drop-last 3)
-       (mapv (fn [num-to-drop]
-               (let [subset     (->> sorted-xy-pairs
-                                     (drop-last num-to-drop)
-                                     vec)
-                     fit-params (-> subset
-                                    linear-fit)
-                     [offset
-                      slope]    (-> fit-params
-                                    seq
-                                    flatten
-                                    vec)]
-                 {:num-dropped       num-to-drop
-                  :residual-variance (residual-variance fit-params
-                                                        subset)
-                  :fit-params        {:slope  slope
-                                      :offset offset}
-                  :subset            subset})))))
-#_
-(->> data
-     subsets-for-linear-regression
-     (mapv :residual-variance))
-#_
-(->> data
-     subsets-for-linear-regression
-     (apply min-key
-            :residual-variance)
-     keys)
-;; => (:num-dropped :residual-variance :fit-params :subset)
-
-
-(defn
-  vecnorm
-  "Normalize vector...
-  Why does Neanderthal not have a function for this?"
-  [somevec]
-  (ncore/scal (/ 1.0
-                 (ncore/nrm2 somevec))
-              somevec))
-
-(ncore/dim (neand/dv [1 2 3 4 5]))
+(self-inner-product [1 2 3])
 
 (defn
   vecvar
   "variance with mean zero"
   [somevec]
-  (/ (ncore/dot somevec ;; some of the squares
-                somevec)
-     (ncore/dim somevec)))
-
-#_
-(let [num (count data-seq)]
-  (->> data-seq
-       (reduce #(+ (/ (clojure.math/pow %2
-                                        2.0)
-                      num)
-                   %1)
-               0.0)))
+  (/ (self-inner-product somevec)
+     (count somevec)))
 
 (defn
-  colvars
-  "for each column in a matrix
-  caluclate it's variance
-  ..
-  Assumes a mean of zero"
-  [noisematrix]
-  (->> noisematrix
-       :matrix
-       ncore/cols
-       (mapv vecvar)))
-
-(defn
-  from-vecofvecs
-  "Take a vector of vector of values and turn it into a matrix"
-  [data-matrix-for-meta-data
-   vecofvecs]
-  (-> data-matrix-for-meta-data
-      (assoc :matrix
-             (neand/dge (-> vecofvecs
-                            first
-                            count)
-                        (-> vecofvecs
-                            count)
-                        vecofvecs))))
-
-(defn
-  get-points-at-coord
-  [{:keys [matrix
-           dimension
-           position
-           resolution]}
-   my-point]
-  (let [[width-pix
-         height-pix] dimension
-        [eas-res
-         sou-res]    resolution]
-    (let [[eas sou] (geogrid/point-to-pix my-point
-                                          (geogrid4seq/build-grid [width-pix
-                                                                   height-pix
-                                                                   eas-res
-                                                                   sou-res
-                                                                   position]
-                                                                  nil))]
-      #_matrix
-      (println (str "\nDimensions: "
-                    dimension
-                    "\nPoint Coord: "
-                    eas
-                    " "
-                    sou))
-      (-> matrix
-          (ncore/row
-            (+ (int eas)
-               (* width-pix
-                  (int sou))))
-          seq))))
+  abs-sums-of-cols
+  ""
+  [data-matrix]
+  (->> data-matrix
+       matrix/cols
+       (mapv (fn [column]
+               (->> column
+                    (mapv abs)
+                    (apply +)
+               #_#_
+                   seq
+               (ncore/dot column
+                          (neand/dv (repeat (ncore/dim column)
+                                            1))))))))
 #_
-(let [test-poi (geoprim/point 8.100833
-                              98.984722)]
-  (-> @state/*selections
-      (cljfx.api/sub-ctx state/region-matrix)
-      (get-points-at-coord test-poi)))
-
-
-(defn
-  data-average-vec
-  [{:keys [matrix
-           dimension
-           position
-           resolution]}]
-  (let [ndata (ncore/ncols matrix)]
-    (ncore/ax (/ 1.0
-                 ndata)
-              (ncore/mv matrix
-                        (neand/dv (repeat ndata
-                                          1.0))))))
+(->> [1 2 3 4]
+     (build 2 2 )
+     abs-sums-of-cols)
 #_
-(-> @state/*selections
-    (cljfx.api/sub-ctx state/region-matrix)
-    data-average-vec)
-
-(defn
-  data-average-geogrid
-  [grid-params]
-  (-> grid-params
-      data-average-vec
-      (col-to-grid grid-params)))
-#_
-(-> @state/*selections
-    (cljfx.api/sub-ctx state/region-matrix)
-    data-average-geogrid)
-
-;; NOTE:
-;; The `vect-math/mu` function allows element-by-element multiplication
-#_
-(vect-math/mul (neand/dge 2 2 [2 2 2 2])
-               (neand/dge 2 2 [3 2 4 2]))
-;; => #RealGEMatrix[double, mxn:2x2, layout:column]
-;;       ▥       ↓       ↓       ┓    
-;;       →       6.00    8.00         
-;;       →       4.00    4.00         
-;;       ┗                       ┛
-
 (defn
   scaled-to-vec
   "Scale the columns in a matrix to by the values in a data-vec"
@@ -1015,81 +349,3 @@
           (dissoc :sigma ;; remove any stale svd info
                   :u
                   :vt)))))
-
-(defn
-  self-inner-prod-of-cols
-  "Take each column of a matric.
-  Then have each column do a self-inner product.
-  Returns a vector of values.
-  One for each columns naturally"
-  [data-matrix]
-  (->> data-matrix
-       :matrix
-       ncore/cols
-       (mapv (fn [column]
-               (ncore/dot column
-                          column)))))
-#_
-(->> @state/*selections
-     state/noise-matrix-scaled-to-sv1
-     self-inner-prod-of-cols
-     (mapv (fn [sum-of-squares]
-             (-> sum-of-squares
-                 Math/sqrt)))
-     (take 10))
-;; => (25.95740653462767
-;;     24.087339908058606
-;;     25.47331435497869
-;;     10.914960246318396
-;;     118.31429855040672
-;;     131.48134760159914
-;;     103.94066584890113
-;;     58.13503209623256
-;;     73.8519049869493
-;;     31.969072264154654)
-#_
-(state/singular-value @state/*selections
-                      0)
-(defn
-  abs-sums-of-cols
-  "Take each column of a matric.
-  Then have each column do a self-inner product.
-  Returns a vector of values.
-  One for each columns naturally"
-  [data-matrix]
-  (->> data-matrix
-       :matrix
-       ncore/cols
-       (mapv (fn [column]
-               (-> column
-                   ncore/asum) #_#_
-                   seq
-               (ncore/dot column
-                          (neand/dv (repeat (ncore/dim column)
-                                            1)))))))
-#_
-(->> @state/*selections
-     state/noise-matrix-scaled-to-sv1
-     self-inner-prod-of-cols
-     (take 10))
-;; => (673.7869540039312
-;;     580.1999438463528
-;;     648.8897442275634
-;;     119.13635717871094
-;;     13998.273241474773
-;;     17287.344767132538
-;;     10803.662017112922
-;;     3379.6819568299898
-;;     5454.103870201387
-;;     1022.0215814307423)
-
-(defn
-  scale-to-value
-  "Scaled a matrix by some value
-   I intended this to scale by the sinuglar value.."
-  [scale-factor
-   input-matrix]
-  (update input-matrix
-          :matrix
-          #(ncore/scal scale-factor
-                       %)))

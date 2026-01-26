@@ -12,7 +12,9 @@
             geogrid4image
             geogrid4seq
             svg2jfx
-            matrix
+            datamats
+            matrix4neanderthal ;; this sets the matrix backend
+            matrix ;; only used in one spot
             plot
             locations))
 
@@ -88,7 +90,7 @@
                                    :contour-filestr                nil
                                    :non-zero-min?                  false
                                    :normalize-data?                true
-                                   :rain-dirstr                    "/home/kxygk/Data/sst/monthly/geotiff-rot/"
+                                   #_#_#_#_:rain-dirstr                    "/home/kxygk/Data/sst/monthly/geotiff-rot/"
                                    :elevation-filestr              "./data/World_e-Atlas-UCSD_SRTM30-plus_v8.tif"
                                    :bin-size                       1
                                    :cycle-length                   12
@@ -674,7 +676,7 @@
   #_ ;; TODO. This probably does the same thing...
   (-> context
       (fx/sub-ctx region-matrix)
-      matrix/to-geogrid-vec)
+      datamats/to-geogrid-vec)
   (let [myregion   (fx/sub-ctx context
                                region)]
     (if (fx/sub-ctx context
@@ -754,15 +756,14 @@
                                 binned-grids))]
     (-> (map :grid
              normalized-grids)
-        matrix/from-geogrids
+        datamats/from-geogrids
         (assoc :scales (->> normalized-grids
                             (mapv :scale)))
         (assoc :shifts (->> normalized-grids
                             (mapv :shift))))))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/region-matrix)
-    keys)
+    (fx/sub-ctx state/region-matrix))
 ;; => (:matrix :dimension :position :resolution :scales :shifts)
 
 
@@ -795,7 +796,7 @@
 #_
 (-> @state/*selections
     (fx/sub-ctx state/region-geogrids-and-scales-vec)
-    matrix/from-geogrids)
+    datamats/from-geogrids)
 
 
 (defn
@@ -807,7 +808,7 @@
   [context]
   (->> (fx/sub-ctx context
                    region-matrix)
-       matrix/extract-params))
+       datamats/extract-params))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/region-geogrid-params))
@@ -822,7 +823,7 @@
   [context]
   (-> context
       (fx/sub-ctx region-matrix)
-      matrix/num-svs))
+      datamats/num-svs))
 
 (defn
   sv-strs
@@ -859,11 +860,10 @@
   [context]
   (-> context
       (fx/sub-ctx region-matrix)
-      matrix/svd))
+      datamats/svd))
 #_
 (-> @state/*selections
-    (fx/sub-ctx state/region-svd)
-    keys)
+    (fx/sub-ctx state/region-svd))
 #_
 (state/region-svd @state/*selections)
 
@@ -872,7 +872,7 @@
   [context]
   (-> context
       (fx/sub-ctx region-matrix)
-      matrix/get-min-max))
+      datamats/get-min-max))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/region-min-max))
@@ -883,7 +883,7 @@
     :matrix
     (uncomplicate.neanderthal.linalg/svd  true
                                           true)
-    (matrix/from-svd))
+    (datamats/from-svd))
 
 (defn
   sv-weights
@@ -894,7 +894,7 @@
    sv-index]
   (-> context
       (fx/sub-ctx region-svd)
-      (matrix/svd-to-weights sv-index)))
+      (datamats/svd-to-weights sv-index)))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/sv-weights 0))
@@ -948,7 +948,7 @@
   datafile-geogrid
   [context
    id]
-  (matrix/extract-grid (fx/sub-ctx context
+  (datamats/extract-grid (fx/sub-ctx context
                                    region-matrix)
                        id))
 #_
@@ -980,12 +980,13 @@
 (-> @state/*selections
     (fx/sub-ctx zero-point-mask))
 
+#_#_
 (defn
   average-geogrid
   [context]
   (-> context
       (fx/sub-ctx region-matrix)
-      matrix/data-average-geogrid
+      datamats/data-average-geogrid
       (plot/grid-map (fx/sub-ctx context
                                  region-svg-hiccup)
                      {:label-top-right "Average"
@@ -1043,8 +1044,8 @@
   [context]
   (-> context
       (fx/sub-ctx region-matrix)
-      matrix/svd
-      matrix/singular-values))
+      datamats/svd
+      datamats/singular-values))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/singular-values))
@@ -1073,7 +1074,7 @@
    sv-index]
   (-> context
       (fx/sub-ctx region-svd)
-      (matrix/singular-vector sv-index)))
+      (datamats/singular-vector sv-index)))
 #_
 (state/singular-vector @state/*selections
                        0)
@@ -1268,8 +1269,8 @@
   [context]
   (-> context
       (fx/sub-ctx region-matrix)
-      matrix/svd
-      matrix/svd-to-2d-sv-space))
+      datamats/svd
+      datamats/svd-to-2d-sv-space))
 #_
 (-> @state/*selections
     sv-proj-vec)
@@ -1351,11 +1352,12 @@
   [context]
   (-> context
       (fx/sub-ctx region-svd)
-      (matrix/minus-2-sv)))
+      (datamats/minus-2-sv)))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/noise-matrix-2d)
-    :matrix)
+    :matrix
+    matrix/ncols)
 #_
 (-> @state/*selections
     (fx/sub-ctx state/region-matrix)
@@ -1368,7 +1370,7 @@
   (-> context
       (fx/sub-ctx noise-matrix-2d)
       :matrix
-      (matrix/colvars)))
+      (datamats/colvars)))
 #_
 (take 12
       (-> @state/*selections
@@ -1379,7 +1381,7 @@
   "Get the noise background of one data point"
   [context
    id]
-  (-> (matrix/extract-grid (fx/sub-ctx context
+  (-> (datamats/extract-grid (fx/sub-ctx context
                                        noise-matrix-2d)
                            id)
       (plot/grid-map (fx/sub-ctx context
@@ -1463,17 +1465,23 @@
                        0)]
     (->  context
          (fx/sub-ctx noise-matrix-2d)
-         (matrix/scaled-to-vec sv))))
+         (datamats/scaled-to-vec sv))))
 #_
-(fx/sub-ctx @state/*selections
-            noise-matrix-scaled-to-sv1)
+(-> @state/*selections
+    (fx/sub-ctx noise-matrix-scaled-to-sv1)
+    ;;#_
+    :matrix
+    ;;#_
+    matrix/abs-sums-of-cols
+    #_
+    (datamats/errors-from-error-datamats 10))
 
 (defn
   noise-scaled-to-sv1-svg
   "Get the noise background of one data point"
   [context
    id]
-  (-> (matrix/extract-grid (fx/sub-ctx context
+  (-> (datamats/extract-grid (fx/sub-ctx context
                                        noise-matrix-scaled-to-sv1)
                            id)
       (plot/grid-map (fx/sub-ctx context
@@ -1495,7 +1503,7 @@
                        1)]
     (-> context
         (fx/sub-ctx noise-matrix-2d)
-        (matrix/scaled-to-vec sv))))
+        (datamats/scaled-to-vec sv))))
 #_
 (fx/sub-ctx @state/*selections
             noise-matrix-scaled-to-sv2)
@@ -1505,7 +1513,7 @@
   "Get the noise background of one data point"
   [context
    id]
-  (-> (matrix/extract-grid (fx/sub-ctx context
+  (-> (datamats/extract-grid (fx/sub-ctx context
                                        noise-matrix-scaled-to-sv2)
                            id)
       (plot/grid-map (fx/sub-ctx context
@@ -1522,32 +1530,34 @@
 (defn
   errors-in-sv1-proj
   [context]
-  (let [singular-val (fx/sub-ctx context
+    (let [singular-val (fx/sub-ctx context
                                  singular-value
                                  0)]
-    (->> (fx/sub-ctx context
-                     noise-matrix-scaled-to-sv1)
-         (matrix/scale-to-value (/ 1.0
-                                   singular-val))
-         ;; pessimistic direct sum method
-         ;;#_
-         matrix/abs-sums-of-cols
-         ;;quadrature sum method
-         #_#_
-         matrix/self-inner-prod-of-cols
-         (mapv (fn [sum-of-squares]
-                 (-> sum-of-squares
-                     Math/sqrt)))
-         #_
-         (map-indexed (fn [sv-index
-                           scaled-error]
-                        (/ scaled-error
-                           singular-val)))
-         vec)))
+      (println (str "Singular Value 1 : "
+                    singular-val))
+      (datamats/errors-from-error-datamats (fx/sub-ctx context
+                                                       noise-matrix-scaled-to-sv1)
+                                           singular-val)))
+#_
+(-> @state/*selections
+    (fx/sub-ctx errors-in-sv1-proj)
+    first
+    println)
+
+(defn
+  errors-in-sv2-proj
+  [context]
+    (let [singular-val (fx/sub-ctx context
+                                 singular-value
+                                 1)]
+      (datamats/errors-from-error-datamats (fx/sub-ctx context
+                                                       noise-matrix-scaled-to-sv1)
+                                           singular-val)))
 #_
 (fx/sub-ctx @state/*selections
             errors-in-sv1-proj)
 
+#_
 (defn
   errors-in-sv2-proj
   [context]
@@ -1556,14 +1566,14 @@
                                  1)]
     (->> (fx/sub-ctx context
                      noise-matrix-scaled-to-sv2)
-         (matrix/scale-to-value (/ 1.0
+         (datamats/scale-to-value (/ 1.0
                                    singular-val))
          ;; pessimistic direct sum method
          ;;#_
-         matrix/abs-sums-of-cols
+         datamats/abs-sums-of-cols
          ;;quadrature sum method
          #_#_
-         matrix/self-inner-prod-of-cols
+         datamats/self-inner-prod-of-cols
          (mapv (fn [sum-of-squares]
                  (-> sum-of-squares
                      Math/sqrt)))
@@ -1586,7 +1596,7 @@
   [context]
   (-> context
       (fx/sub-ctx region-svd)
-      (matrix/minus-1-sv)))
+      (datamats/minus-1-sv)))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/noise-matrix-1d)
@@ -1598,7 +1608,7 @@
   [context]
   (-> context
       (fx/sub-ctx noise-1d-matrix)
-      matrix/get-min-max))
+      datamats/get-min-max))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/noise-1d-min-max))
@@ -1616,79 +1626,80 @@
         scales (:scales (fx/sub-ctx context
                                     region-matrix))]
     (filterv #(-> %
-                 last
-                 :radius
-                 zero?
-                 not)
-            (map (fn [[proj-x
-                       proj-y
-                       :as projection]
-                      data-index
-                      scale
-                      cycle-fraction
-                      sv1-error
-                      sv2-error]
-                   (let [polar-coords (bisect/to-polar projection)]
-                     (if (neg? proj-x)
-                       (println (str "WARNING:"
-                                     \newline
-                                     "You have a point outside of the expected range"
-                                     \newline
-                                     "Index: "
-                                     data-index
-                                     \newline
-                                     "Coords: "
-                                     projection
-                                     \newline
-                                     "This point was a negative SV1 component."
-                                     "Please report this case to the author")))
-                     (assoc [(* proj-x
-                                scale)
-                             (* proj-y
-                                scale)]
-                            2
-                            (merge {:index      data-index
-                                    :cycle-frac cycle-fraction
-                                    :err-x      (* sv1-error
-                                                   scale)
-                                    :err-y      (* sv2-error
-                                                   scale)
-                                    :err-angle  (let [radius (:radius polar-coords)]
-                                                  (if (zero? radius)
-                                                    (do (println (str "Bin (Pentad or Day): "
-                                                                      data-index
-                                                                      " has no rain!"))
-                                                        nil)
-                                                  (clojure.math/atan (/ (quickthing/orthogonal-error-length [proj-x
-                                                                                                             proj-y
-                                                                                                             {:err-x sv1-error
-                                                                                                              :err-y sv2-error}])
-                                                                        radius))))}
-                                   (-> polar-coords
-                                       (update :radius
-                                               #(* %
-                                                   scale)))))))
-                 projs
-                 (->> projs
-                      count
-                      range)
-                 scales
-                 (->> projs
-                      count
-                      range
-                      (mapv #(cycle-frac (fx/sub-ctx context
-                                                     cycle-length)
-                                         (fx/sub-ctx context
-                                                     cycle-phase)
-                                         %)))
-                 (fx/sub-ctx context
-                             errors-in-sv1-proj)
-                 (fx/sub-ctx context
-                             errors-in-sv2-proj)))))
+                  last
+                  :radius
+                  zero?
+                  not)
+             (map (fn [[proj-x
+                        proj-y
+                        :as projection]
+                       data-index
+                       scale
+                       cycle-fraction
+                       sv1-error
+                       sv2-error]
+                    (let [polar-coords (bisect/to-polar projection)]
+                      (if (neg? proj-x)
+                        (println (str "WARNING:"
+                                      \newline
+                                      "You have a point outside of the expected range"
+                                      \newline
+                                      "Index: "
+                                      data-index
+                                      \newline
+                                      "Coords: "
+                                      projection
+                                      \newline
+                                      "This point was a negative SV1 component."
+                                      "Please report this case to the author")))
+                      (assoc [(* proj-x
+                                 scale)
+                              (* proj-y
+                                 scale)]
+                             2
+                             (merge {:index      data-index
+                                     :cycle-frac cycle-fraction
+                                     :scale      scale
+                                     :err-x      (* sv1-error
+                                                    scale)
+                                     :err-y      (* sv2-error
+                                                    scale)
+                                     :err-angle  (let [radius (:radius polar-coords)]
+                                                   (if (zero? radius)
+                                                     (do (println (str "Bin (Pentad or Day): "
+                                                                       data-index
+                                                                       " has no rain!"))
+                                                         nil)
+                                                     (clojure.math/atan (/ (quickthing/orthogonal-error-length [proj-x
+                                                                                                                proj-y
+                                                                                                                {:err-x sv1-error
+                                                                                                                 :err-y sv2-error}])
+                                                                           radius))))}
+                                    (-> polar-coords
+                                        (update :radius
+                                                #(* %
+                                                    scale)))))))
+                  projs
+                  (->> projs
+                       count
+                       range)
+                  scales
+                  (->> projs
+                       count
+                       range
+                       (mapv #(cycle-frac (fx/sub-ctx context
+                                                      cycle-length)
+                                          (fx/sub-ctx context
+                                                      cycle-phase)
+                                          %)))
+                  (fx/sub-ctx context
+                              errors-in-sv1-proj)
+                  (fx/sub-ctx context
+                              errors-in-sv2-proj)))))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/sv-proj)
-    count)
+    first)
 ;; => [113.12006734716704
 ;;     -203.48496680096278
 ;;     {:index 0,
@@ -2031,7 +2042,7 @@
    index]
   (-> context
       (fx/sub-ctx noise-matrix-2d)
-      (matrix/extract-grid index)
+      (datamats/extract-grid index)
       :data-array
       (#(mapv *
               %
@@ -2146,7 +2157,7 @@
    index]
   (-> context
       (fx/sub-ctx noise-matrix-2d)
-      (matrix/extract-grid index)
+      (datamats/extract-grid index)
       :data-array
       (#(mapv *
               %
@@ -2212,7 +2223,7 @@
                                :angle-from-down
                                (- (/ PI
                                      2.0)))]
-      (let [projections    (matrix/project-onto-2-patterns  centroid-a ;; matrix/project-onto-2d-basis
+      (let [projections    (matrix/project-onto-2-patterns  centroid-a ;; datamats/project-onto-2d-basis
                                                             centroid-b
                                                             points)
             err-centroid-a (->> points
@@ -2361,7 +2372,7 @@
                                                       index)
                           (bottom-pattern-weighted-noise context
                                                          index))))
-         (matrix/from-vecofvecs (fx/sub-ctx context
+         (datamats/from-vecofvecs (fx/sub-ctx context
                                             region-matrix)))))
 #_
 (->> @state/*selections
@@ -2402,7 +2413,7 @@
   "Get the noise background of one data point"
   [context
    id]
-  (-> (matrix/extract-grid (fx/sub-ctx context
+  (-> (datamats/extract-grid (fx/sub-ctx context
                                        climate-noise-matrix-2d-normalized)
                            id)
       (plot/grid-map (fx/sub-ctx context
@@ -2437,7 +2448,7 @@
   [context]
   (-> context
       (fx/sub-ctx climate-noise-matrix-2d-normalized)
-      (matrix/colvars)))
+      (datamats/colvars)))
 #_
 (->> @state/*selections
      climate-noise-vars)
@@ -2542,7 +2553,7 @@ count)
 #_
 (-> @state/*selections
 (fx/sub-ctx state/pattern-proj-partitioned)
-(nth 2)
+(nth 0)#_
 count)
 
 (defn
@@ -2582,7 +2593,7 @@ count)
   [context]
   (-> context
       (fx/sub-ctx singular-values)
-      matrix/singular-values-stats))
+      datamats/singular-values-stats))
 #_
 (-> @state/*selections
     (fx/sub-ctx state/singular-valuesstats))
@@ -2625,7 +2636,7 @@ count)
                                     cycle-length)}}]
   (-> context
       (fx/sub-ctx region-matrix)
-      matrix/to-geogrid-vec
+      datamats/to-geogrid-vec
       (get observation-idx)
       (plot/grid-map (fx/sub-ctx context
                                  region-svg-hiccup)
@@ -2751,7 +2762,7 @@ count)
   (-> context
       (all-svg (-> context
                    (fx/sub-ctx region-matrix)
-                   matrix/to-geogrid-vec))
+                   datamats/to-geogrid-vec))
       (spitsvgstream "precipitation-all.svg")))
 ;;#_ ;;unused
 (if (-> @state/*selections
@@ -2767,7 +2778,7 @@ count)
   (-> context
       (all-svg (-> context
                    (fx/sub-ctx noise-matrix-2d)
-                   matrix/to-geogrid-vec))
+                   datamats/to-geogrid-vec))
       (spitsvgstream "noise-all.svg")))
 ;;unused
 (if (-> @state/*selections
@@ -2791,7 +2802,7 @@ count)
                          cycle-length)]
         (-> (->> (range cycle-start
                         cycle-end)
-                 (mapv (partial matrix/extract-grid
+                 (mapv (partial datamats/extract-grid
                                 (fx/sub-ctx context
                                             region-matrix)))
                  (map-indexed (fn grids-to-maps
@@ -2844,7 +2855,7 @@ count)
                          cycle-length)]
         (-> (->> (range cycle-start
                         cycle-end)
-                 (mapv (partial matrix/extract-grid
+                 (mapv (partial datamats/extract-grid
                                 (fx/sub-ctx context
                                             region-matrix))) ;;))))))
                  (map-indexed (fn grids-to-maps
