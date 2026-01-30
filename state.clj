@@ -13,7 +13,10 @@
             geogrid4seq
             svg2jfx
             datamats
-            matrix4neanderthal ;; this sets the matrix backend
+            #_
+            matrix4neanderthal
+            ;;#_
+            matrix4ojalgo ;; this sets the matrix backend
             matrix ;; only used in one spot
             plot
             locations))
