@@ -1,6 +1,6 @@
-(ns matrix4neanderthal
+(ns kxygk.imergination.matrix4neanderthal
   "Implements the Matrix Protocol using the Neanderthal library"
-  (:require matrix
+  (:require kxygk.imergination.matrix
             [uncomplicate.neanderthal.core :as ncore]
             [uncomplicate.neanderthal.native :as neand]
             [uncomplicate.neanderthal.linalg :as linalg]

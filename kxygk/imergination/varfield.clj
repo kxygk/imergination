@@ -1,4 +1,4 @@
-(ns varfield
+(ns kxygk.imergination.varfield
   "Functions to prompt for:
   Variance across the whole field
   And other related statistics"
@@ -9,13 +9,13 @@
             [injest.path :refer [+> +>> x>> =>>]]
             [uncomplicate.neanderthal.core :as ncore]
             [uncomplicate.neanderthal.native  :as nnative]
-            bisect
-            geogrid4image
-            geogrid4seq
-            svg2jfx
-            matrix
-            plot
-            locations))
+            kxygk.imergination.bisect
+            kxygk.imergination.geogrid4image
+            kxygk.imergination.geogrid4seq
+            kxygk.imergination.svg2jfx
+            kxygk.imergination.matrix
+            kxygk.imergination.plot
+            kxygk.imergination.locations))
 
 #_
 (-> @state/*selections

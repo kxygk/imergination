@@ -1,16 +1,16 @@
 (ns
-    eof1
+    kxygk.imergination.eof1
   (:use [hashp.core])
   (:require [clojure.java.io :as io]
             [cljfx.api       :as fx]
             [clojure.core.cache :as cache]
             [injest.path :refer [+> +>> x>> =>>]]
-            state
-            bisect
-            svg2jfx
-            matrix
-            plot
-            locations))
+            kxygk.imergination.state
+            kxygk.imergination.bisect
+            kxygk.imergination.svg2jfx
+            kxygk.imergination.matrix
+            kxygk.imergination.plot
+            kxygk.imergination.locations))
 
 (def debug?
   true)

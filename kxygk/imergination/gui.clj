@@ -1,15 +1,13 @@
 (ns
-    gui
+    kxygk.imergination.gui
   "Imergination GUI tree"
   (:require [clojure.java.io :as io]
             [cljfx.api       :as fx]
             [cljfx.ext.list-view :as fx.ext.list-view]
-            quickthing
-            bisect
-            plot
-            locations
-            svg2jfx
-            state)
+            [quickthing]
+            [geoprim]
+            [kxygk.imergination.svg2jfx :as svg2jfx]
+            [kxygk.imergination.state :as state])
   (:gen-class :main true))`
 
 (set!

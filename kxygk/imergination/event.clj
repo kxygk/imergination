@@ -1,8 +1,8 @@
 (ns
-    event
+    kxygk.imergination.event
   "GUI events and the handler"
   (:require [cljfx.api :as fx]
-            state))
+            [kxygk.imergination.state :as state]))
 
 (defn-
   wrap-with-map

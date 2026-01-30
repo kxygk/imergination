@@ -1,4 +1,4 @@
-(ns matrix
+(ns kxygk.imergination.matrix
   "The matrix of all the data
   First implementation based on `neanderthal`
   Will rewrite into something that can be more easily packaged.."
@@ -320,7 +320,7 @@ with the first 0,0 flipped to -1"
   ""
   [data-matrix]
   (->> data-matrix
-       matrix/cols
+       cols
        (mapv (fn [column]
                (->> column
                     (mapv abs)

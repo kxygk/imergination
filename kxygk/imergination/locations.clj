@@ -1,5 +1,5 @@
 (ns
-    locations
+    kxygk.imergination.locations
   "Different commonly used locations as `def`s"
   (:use geoprim
         clojure.math))

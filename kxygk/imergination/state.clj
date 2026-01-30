@@ -1,5 +1,5 @@
 (ns
-    state
+    kxygk.imergination.state
   "Program and GUI state"
   (:use [hashp.core]
         [clojure.math])
@@ -7,19 +7,19 @@
             [clojure.data.csv :as csv]
             [cljfx.api       :as fx]
             [clojure.core.cache :as cache]
-            [injest.path :refer [+> +>> x>> =>>]]
-            bisect
-            geogrid4image
-            geogrid4seq
-            svg2jfx
-            datamats
+;;            [injest.path :refer [+> +>> x>> =>>]]
+            [kxygk.imergination.bisect :as bisect]
+            [geogrid4image]
+            [geogrid4seq]
+            [kxygk.imergination.svg2jfx]
+            [kxygk.imergination.datamats :as datamats]
             #_
-            matrix4neanderthal
+            kxygk.imergination.matrix4neanderthal
             ;;#_
-            matrix4ojalgo ;; this sets the matrix backend
-            matrix ;; only used in one spot
-            plot
-            locations))
+            kxygk.imergination.matrix4ojalgo ;; this sets the matrix backend
+            [kxygk.imergination.matrix :as matrix] ;; only used in one spot
+            [kxygk.imergination.plot :as plot]
+            [kxygk.imergination.locations :as locations]))
 
 (def debug?
   true)
@@ -122,8 +122,8 @@
   (fx/sub-val context
               :is-in-ram))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/is-in-ram))
+(-> @*selections
+    (fx/sub-ctx is-in-ram))
 
 (defn
   non-zero-min?
@@ -160,8 +160,8 @@
   (fx/sub-val context
               :region-key))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/region-key))
+(-> @*selections
+    (fx/sub-ctx region-key))
 ;; => :krabi-root-2
 
 (defn
@@ -175,8 +175,8 @@
                   (fx/sub-ctx context
                               region-key)))))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/region))
+(-> @*selections
+    (fx/sub-ctx region))
 ;; => {:norwes {:eas 298.57142857142856, :sou 62.857142857142854},
 ;;     :soueas {:eas 303.4285714285714, :sou 69.14285714285714}}
 ;; => {:norwes {:eas 277.0, :sou 76.92893218813452},
@@ -192,8 +192,8 @@
        (fx/sub-ctx context
                    region-key)))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/region-meta))
+(-> @*selections
+    (fx/sub-ctx region-meta))
 
 ;; DEBUG HELPERS *************************
 (defn
@@ -207,8 +207,8 @@
    filename]
   (assert (instance? String
                      string))
-  (let [region-key (-> @state/*selections
-                       (fx/sub-ctx state/region-key))
+  (let [region-key (-> @*selections
+                       (fx/sub-ctx region-key))
         subfolder  (if (nil? region-key)
                      "custom"
                      (symbol region-key))]
@@ -226,8 +226,8 @@
 
 #_
 (if debug?
-  (->> (-> @state/*selections
-           (fx/sub-ctx state/region-key))
+  (->> (-> @*selections
+           (fx/sub-ctx region-key))
        symbol
        (str "../imergination.wiki/")
        (java.io.File.)
@@ -312,8 +312,8 @@
      (fx/sub-ctx context
                  window-width)))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/display-width))
+(-> @*selections
+    (fx/sub-ctx display-width))
 
 (defn
   region-xy-ratio
@@ -325,11 +325,11 @@
     (/ lat
        lon)))
 #_
-(-> @state/*selections
+(-> @*selections
     (fx/sub-ctx region-xy-ratio))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/region))
+(-> @*selections
+    (fx/sub-ctx region))
 ;; => {:norwes {:eas 297.66666666666663, :sou 136.33333333333331},
 ;;     :soueas {:eas 297.66666666666663, :sou 136.33333333333331}}
 ;;  geoprim/dimension)
@@ -354,8 +354,8 @@
       (* image-ratio
          max-image-height))))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/region-display-width))
+(-> @*selections
+    (fx/sub-ctx region-display-width))
 
 (defn region-display-height
   [context]
@@ -364,8 +364,8 @@
      (fx/sub-ctx context
                  region-xy-ratio)))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/region-display-height))
+(-> @*selections
+    (fx/sub-ctx region-display-height))
 
 (defn
   region-to-display-scale-x
@@ -405,8 +405,8 @@
   (fx/sub-val context
               :sou-res))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/sou-res))
+(-> @*selections
+    (fx/sub-ctx sou-res))
 
 (defn-
   world-svg-hiccup
@@ -420,8 +420,8 @@
                         {:display-width (fx/sub-ctx context
                                                     display-width)}))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/world-svg-hiccup))
+(-> @*selections
+    (fx/sub-ctx world-svg-hiccup))
 
 (defn
   world-svg
@@ -432,12 +432,12 @@
       (fx/sub-ctx world-svg-hiccup)
       (spitsvgstream "world.svg")))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/world-svg))
+(-> @*selections
+    (fx/sub-ctx world-svg))
 #_
 (spit "out/test-world.svg"
-      (-> @state/*selections
-          (fx/sub-ctx state/world-svg)))
+      (-> @*selections
+          (fx/sub-ctx world-svg)))
 
 #_#_
 (defn
@@ -458,11 +458,11 @@
   (let [batik-group (fx/sub-ctx context
                                 world-batik)
         scale-x     (/ (fx/sub-ctx context
-                                   state/window-width)
+                                   window-width)
                        360.0)
         scale-y     (/
                       (fx/sub-ctx context
-                                  state/window-width)
+                                  window-width)
                       360.0)]
     (svg2jfx/batik-scale  batik-group
                           scale-x
@@ -508,8 +508,8 @@
       (fx/sub-ctx region-svg-hiccup)
       (spitsvgstream "region.svg")))
 #_
-(type (-> @state/*selections
-          (fx/sub-ctx state/region-svg)))
+(type (-> @*selections
+          (fx/sub-ctx region-svg)))
 
 (defn
   contour-map-svg
@@ -539,9 +539,9 @@
   (let [batik-group (fx/sub-ctx context
                                 region-batik)
         scale-x     (fx/sub-ctx context
-                                state/region-to-display-scale-x)
+                                region-to-display-scale-x)
         scale-y     (fx/sub-ctx context
-                                state/region-to-display-scale-y)]
+                                region-to-display-scale-y)]
     (svg2jfx/batik-scale batik-group
                          scale-x
                          scale-y)))
@@ -568,12 +568,12 @@
        .list
        sort))
 #_
-(->> (fx/sub-ctx @state/*selections
-                 state/datafile-strs)
+(->> (fx/sub-ctx @*selections
+                 datafile-strs)
      count)
 #_
-(->> (fx/sub-ctx @state/*selections
-                 state/datafile-strs)
+(->> (fx/sub-ctx @*selections
+                 datafile-strs)
      (map-indexed (fn append-index
                     [index
                      file-str]
@@ -657,10 +657,10 @@
                          (fx/sub-ctx context
                                      sou-res))))
 #_
-(realized? (-> @state/*selections
-               (fx/sub-ctx state/world-geogrid-vec)))
+(realized? (-> @*selections
+               (fx/sub-ctx world-geogrid-vec)))
 #_
-(-> @state/*selections
+(-> @*selections
     (fx/sub-ctx is-in-ram))
 
 (defn-
@@ -694,8 +694,8 @@
                      (geogrid/subregion %
                                         myregion)))))))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/region-geogrid-vec)
+(-> @*selections
+    (fx/sub-ctx region-geogrid-vec)
     first
     keys)
 
@@ -765,13 +765,13 @@
         (assoc :shifts (->> normalized-grids
                             (mapv :shift))))))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/region-matrix))
+(-> @*selections
+    (fx/sub-ctx region-matrix))
 ;; => (:matrix :dimension :position :resolution :scales :shifts)
 
 
-(-> @state/*selections
-    (fx/sub-ctx state/normalize-data?))
+(-> @*selections
+    (fx/sub-ctx normalize-data?))
 
 ;; => {:matrix #RealGEMatrix[double, mxn:2500x119, layout:column, offset:0]
 ;;       ▥       ↓       ↓       ↓       ↓       ↓       ┓    
@@ -786,19 +786,19 @@
 ;;     :position {:eas 276.5, :sou 79.0},
 ;;     :resolution [0.1 0.1]}
 #_
-(geogrid4image/read-file (->> (fx/sub-ctx @state/*selections
+(geogrid4image/read-file (->> (fx/sub-ctx @*selections
                                           datafile-strs)
-                              (map #(str (fx/sub-ctx @state/*selections
+                              (map #(str (fx/sub-ctx @*selections
                                                      data-dirstr)
                                          %))
                               first)
-                         (fx/sub-ctx @state/*selections
+                         (fx/sub-ctx @*selections
                                      eas-res)
-                         (fx/sub-ctx @state/*selections
+                         (fx/sub-ctx @*selections
                                      sou-res))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/region-geogrids-and-scales-vec)
+(-> @*selections
+    (fx/sub-ctx region-geogrids-and-scales-vec)
     datamats/from-geogrids)
 
 
@@ -813,8 +813,8 @@
                    region-matrix)
        datamats/extract-params))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/region-geogrid-params))
+(-> @*selections
+    (fx/sub-ctx region-geogrid-params))
 ;; => [40 71 0.1 0.1 {:eas 277.0, :sou 76.9}]
 
 (defn
@@ -848,10 +848,10 @@
                            svindex)))
             svs))))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/sv-strs))
+(-> @*selections
+    (fx/sub-ctx sv-strs))
 #_
-(-> @state/*selections
+(-> @*selections
     (fx/sub-ctx num-svs)
     clojure.math/log10
     clojure.math/ceil
@@ -865,10 +865,11 @@
       (fx/sub-ctx region-matrix)
       datamats/svd))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/region-svd))
+(-> @*selections
+    (fx/sub-ctx region-svd)
+    keys)
 #_
-(state/region-svd @state/*selections)
+(region-svd @*selections)
 
 (defn
   region-min-max
@@ -877,12 +878,12 @@
       (fx/sub-ctx region-matrix)
       datamats/get-min-max))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/region-min-max))
+(-> @*selections
+    (fx/sub-ctx region-min-max))
 ;; => [0.0 1802.0]
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/region-matrix)
+(-> @*selections
+    (fx/sub-ctx region-matrix)
     :matrix
     (uncomplicate.neanderthal.linalg/svd  true
                                           true)
@@ -899,8 +900,8 @@
       (fx/sub-ctx region-svd)
       (datamats/svd-to-weights sv-index)))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/sv-weights 0))
+(-> @*selections
+    (fx/sub-ctx sv-weights 0))
 
 (defn
   datafile-idxs
@@ -909,7 +910,7 @@
   (fx/sub-val context
               :datafile-idxs))
 #_
-(fx/sub-ctx @state/*selections
+(fx/sub-ctx @*selections
             datafile-idxs)
 
 (defn
@@ -921,7 +922,7 @@
   (first (fx/sub-ctx context
                      datafile-idxs)))
 #_
-(fx/sub-ctx @state/*selections
+(fx/sub-ctx @*selections
             first-datafile-idx)
 
 (defn
@@ -931,7 +932,7 @@
   (fx/sub-val context
               :sv-selected-idxs))
 #_
-(fx/sub-ctx @state/*selections
+(fx/sub-ctx @*selections
             datafile-idxs)
 
 (defn
@@ -943,7 +944,7 @@
   (first (fx/sub-ctx context
                      sv-selected-idxs)))
 #_
-(fx/sub-ctx @state/*selections
+(fx/sub-ctx @*selections
             first-datafile-idx)
 
 
@@ -956,8 +957,8 @@
                        id))
 #_
 (apply max
-       (-> @state/*selections
-           (fx/sub-ctx state/datafile-geogrid
+       (-> @*selections
+           (fx/sub-ctx datafile-geogrid
                        9)
            :data-array
            vec))
@@ -965,7 +966,7 @@
 ;; => 30174.0
 ;; => -32344.0
 #_
-(-> @state/*selections
+(-> @*selections
     (fx/sub-ctx region-matrix)
     :matrix
     uncomplicate.neanderthal.core/amax)
@@ -976,11 +977,11 @@
   [context]
   (mapv zero?
         (-> context
-            (fx/sub-ctx state/datafile-geogrid
+            (fx/sub-ctx datafile-geogrid
                         0)
             :data-array)))
 #_
-(-> @state/*selections
+(-> @*selections
     (fx/sub-ctx zero-point-mask))
 
 #_#_
@@ -999,8 +1000,8 @@
       (spitsvgstream (str "average"
                           ".svg"))))
 ;;#_ ;;unused
-(-> @state/*selections
-    (state/average-geogrid))
+(-> @*selections
+    (average-geogrid))
 
 (defn
   datafile-svg
@@ -1023,8 +1024,8 @@
                           id
                           ".svg"))))
 #_
-(-> @state/*selections
-    (state/datafile-svg 31))
+(-> @*selections
+    (datafile-svg 31))
 
 (defn
   first-datafile-svg
@@ -1039,8 +1040,8 @@
                   datafile-svg
                   first-selections-idx))))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/first-datafile-svg))
+(-> @*selections
+    (fx/sub-ctx first-datafile-svg))
 
 (defn
   singular-values
@@ -1050,8 +1051,8 @@
       datamats/svd
       datamats/singular-values))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/singular-values))
+(-> @*selections
+    (fx/sub-ctx singular-values))
 
 
 (defn
@@ -1065,7 +1066,7 @@
       (get sv-index)
       second))
 #_
-(state/singular-value @state/*selections
+(singular-value @*selections
                       1)
 ;; => 9247.099897276306
 
@@ -1079,11 +1080,11 @@
       (fx/sub-ctx region-svd)
       (datamats/singular-vector sv-index)))
 #_
-(state/singular-vector @state/*selections
+(singular-vector @*selections
                        0)
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/singular-vector 0))
+(-> @*selections
+    (fx/sub-ctx singular-vector 0))
 
 (defn
   singular-vector-geogrid
@@ -1096,21 +1097,21 @@
                                 (fx/sub-ctx region-geogrid-params))
                             sv)))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/singular-vector-geogrid
+(-> @*selections
+    (fx/sub-ctx singular-vector-geogrid
                 0))
 #_ ;; BROKEN
 (spit
   (str "out/"
-       (-> @state/*selections
-           (fx/sub-ctx state/region-key)
+       (-> @*selections
+           (fx/sub-ctx region-key)
            symbol )
        "/first-sv.svg")
   (quickthing/svg2xml
     (plot/grid-map
-      (-> @state/*selections
-          (fx/sub-ctx state/region))
-      (state/region @state/*selections) ;;input-region ;; it'll crop redundantly here..
+      (-> @*selections
+          (fx/sub-ctx region))
+      (region @*selections) ;;input-region ;; it'll crop redundantly here..
       "1st SV")))
 
 (defn
@@ -1142,8 +1143,8 @@
 (->> 7
      range
      (run! (fn [sv-index]
-             (fx/sub-ctx @state/*selections
-                         state/singular-vector-svg sv-index))))
+             (fx/sub-ctx @*selections
+                         singular-vector-svg sv-index))))
 
 (defn
   first-sv-svg
@@ -1153,8 +1154,8 @@
                   0)
       (spitsvgstream "first-sv.svg")))
 ;;#_
-(-> @state/*selections
-    (fx/sub-ctx state/first-sv-svg))
+(-> @*selections
+    (fx/sub-ctx first-sv-svg))
 
 (defn
   second-sv-svg
@@ -1164,8 +1165,8 @@
                   1)
       (spitsvgstream "second-sv.svg")))
 ;;#_
-(-> @state/*selections
-    (fx/sub-ctx state/second-sv-svg))
+(-> @*selections
+    (fx/sub-ctx second-sv-svg))
 
 (defn
   first-sv-selected-svg
@@ -1180,8 +1181,8 @@
                   singular-vector-svg
                   first-selections-idx))))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/first-datafile-svg))
+(-> @*selections
+    (fx/sub-ctx first-datafile-svg))
 
 
 (defn
@@ -1227,8 +1228,8 @@
                                       sval-one
                                       sval-two)))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/singular-vector-mixture-geogrid
+(-> @*selections
+    (fx/sub-ctx singular-vector-mixture-geogrid
                 0.5
                 0.5
                 1.0
@@ -1253,12 +1254,12 @@
                                                  region-display-width)})))
 #_
 (spit (str "out/"
-           (-> @state/*selections
-               (fx/sub-ctx state/region-key)
+           (-> @*selections
+               (fx/sub-ctx region-key)
                symbol )
            "/fiftyfifty.svg")
-      (-> @state/*selections
-          (fx/sub-ctx state/singular-vector-mixture-svg
+      (-> @*selections
+          (fx/sub-ctx singular-vector-mixture-svg
                       0.5
                       0.5
                       1.0
@@ -1275,7 +1276,7 @@
       datamats/svd
       datamats/svd-to-2d-sv-space))
 #_
-(-> @state/*selections
+(-> @*selections
     sv-proj-vec)
 
 #_
@@ -1305,10 +1306,10 @@
                              sv-proj-vec)]
     (-> (plot/sv1sv2-1scale (* 1.0
                                (fx/sub-ctx context
-                                           state/window-width))
+                                           window-width))
                             (* 1.0
                                (fx/sub-ctx context
-                                           state/row-height))
+                                           row-height))
                             sv-projs
                             2011
                             (fx/sub-ctx context
@@ -1317,8 +1318,8 @@
                                         cycle-phase))
         (spitsvgstream "sv1sv2.svg"))))
 ;;#_ ;;unused
-(-> @state/*selections
-    (fx/sub-ctx state/sv12-plot-svg))
+(-> @*selections
+    (fx/sub-ctx sv12-plot-svg))
 
 (defn
   sv12-plot-2scale-svg
@@ -1329,10 +1330,10 @@
                              sv-proj-vec)]
     (-> (plot/sv1sv2-2scale (* 1.0
                                (fx/sub-ctx context
-                                           state/window-width))
+                                           window-width))
                             (* 1.0
                                (fx/sub-ctx context
-                                           state/row-height))
+                                           row-height))
                             sv-projs
                             2011
                             (fx/sub-ctx context
@@ -1341,8 +1342,8 @@
                                         cycle-phase))
         (spitsvgstream "sv1sv2-2scale.svg"))))
 ;;#_ ;;unused
-(-> @state/*selections
-    (fx/sub-ctx state/sv12-plot-2scale-svg))
+(-> @*selections
+    (fx/sub-ctx sv12-plot-2scale-svg))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;      NOISE 
@@ -1357,14 +1358,15 @@
       (fx/sub-ctx region-svd)
       (datamats/minus-2-sv)))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/noise-matrix-2d)
-    :matrix
-    matrix/ncols)
+(-> @*selections
+    (fx/sub-ctx noise-matrix-2d)
+    keys)
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/region-matrix)
-    :matrix)
+(filter nil?
+      (-> @*selections
+          (fx/sub-ctx region-matrix)
+          :matrix
+          matrix/data))
 
 (defn
   noise-vars
@@ -1376,8 +1378,8 @@
       (datamats/colvars)))
 #_
 (take 12
-      (-> @state/*selections
-          (fx/sub-ctx state/noise-vars)))
+      (-> @*selections
+          (fx/sub-ctx noise-vars)))
 
 (defn
   noise-svg
@@ -1395,8 +1397,8 @@
                           id
                           "file.svg"))))
 #_
-(-> @state/*selections
-    (state/noise-svg 31))
+(-> @*selections
+    (noise-svg 31))
 
 (defn
   noise-selected-idxs
@@ -1405,7 +1407,7 @@
   (fx/sub-val context
               :noise-selected-idxs))
 #_
-(fx/sub-ctx @state/*selections
+(fx/sub-ctx @*selections
             noise-selected-idxs)
 
 (defn
@@ -1417,7 +1419,7 @@
   (first (fx/sub-ctx context
                      noise-selected-idxs)))
 #_
-(fx/sub-ctx @state/*selections
+(fx/sub-ctx @*selections
             first-noise-selected-idx)
 
 (defn
@@ -1427,7 +1429,7 @@
   (fx/sub-val context
               :normalized-noise-selected-idxs))
 #_
-(fx/sub-ctx @state/*selections
+(fx/sub-ctx @*selections
             normalized-noise-selected-idxs)
 
 (defn
@@ -1439,7 +1441,7 @@
   (first (fx/sub-ctx context
                      normalized-noise-selected-idxs)))
 #_
-(fx/sub-ctx @state/*selections
+(fx/sub-ctx @*selections
             first-normalized-noise-selected-idx)
 
 
@@ -1456,8 +1458,8 @@
                   noise-svg
                   first-selections-idx))))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/first-noise-selected-svg))
+(-> @*selections
+    (fx/sub-ctx first-noise-selected-svg))
 
 
 (defn
@@ -1470,7 +1472,7 @@
          (fx/sub-ctx noise-matrix-2d)
          (datamats/scaled-to-vec sv))))
 #_
-(-> @state/*selections
+(-> @*selections
     (fx/sub-ctx noise-matrix-scaled-to-sv1)
     ;;#_
     :matrix
@@ -1495,8 +1497,8 @@
                           id
                           "file.svg"))))
 #_
-(-> @state/*selections
-    (state/noise-svg 31))
+(-> @*selections
+    (noise-svg 31))
 
 (defn
   noise-matrix-scaled-to-sv2
@@ -1508,7 +1510,7 @@
         (fx/sub-ctx noise-matrix-2d)
         (datamats/scaled-to-vec sv))))
 #_
-(fx/sub-ctx @state/*selections
+(fx/sub-ctx @*selections
             noise-matrix-scaled-to-sv2)
 
 (defn
@@ -1527,8 +1529,8 @@
                           id
                           "file.svg"))))
 #_
-(-> @state/*selections
-    (state/noise-svg 31))
+(-> @*selections
+    (noise-svg 31))
 
 (defn
   errors-in-sv1-proj
@@ -1542,7 +1544,7 @@
                                                        noise-matrix-scaled-to-sv1)
                                            singular-val)))
 #_
-(-> @state/*selections
+(-> @*selections
     (fx/sub-ctx errors-in-sv1-proj)
     first
     println)
@@ -1557,7 +1559,7 @@
                                                        noise-matrix-scaled-to-sv1)
                                            singular-val)))
 #_
-(fx/sub-ctx @state/*selections
+(fx/sub-ctx @*selections
             errors-in-sv1-proj)
 
 #_
@@ -1587,7 +1589,7 @@
                            singular-val)))
          vec)))
 #_
-(fx/sub-ctx @state/*selections
+(fx/sub-ctx @*selections
             errors-in-sv2-proj)
 
 #_
@@ -1601,8 +1603,8 @@
       (fx/sub-ctx region-svd)
       (datamats/minus-1-sv)))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/noise-matrix-1d)
+(-> @*selections
+    (fx/sub-ctx noise-matrix-1d)
     keys)
 
 #_
@@ -1613,8 +1615,8 @@
       (fx/sub-ctx noise-1d-matrix)
       datamats/get-min-max))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/noise-1d-min-max))
+(-> @*selections
+    (fx/sub-ctx noise-1d-min-max))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1700,8 +1702,8 @@
                   (fx/sub-ctx context
                               errors-in-sv2-proj)))))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/sv-proj)
+(-> @*selections
+    (fx/sub-ctx sv-proj)
     first)
 ;; => [113.12006734716704
 ;;     -203.48496680096278
@@ -1746,8 +1748,8 @@
 ;;      :err-angle 0.2803344675436626}]
 
 #_
-(->>(fx/sub-ctx @state/*selections
-                state/sv-proj)
+(->>(fx/sub-ctx @*selections
+                sv-proj)
     (mapv #(get %
                 2))
     (mapv :angle)
@@ -1765,8 +1767,8 @@
       (fx/sub-ctx sv-proj)
       bisect/min-var))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/sv-2d-bisection)
+(-> @*selections
+    (fx/sub-ctx sv-2d-bisection)
     :angle)
 
 
@@ -1774,8 +1776,8 @@
 
 
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/sv-proj)
+(-> @*selections
+    (fx/sub-ctx sv-proj)
     bisect/angle-dichotomies)
 
 (defn
@@ -1790,8 +1792,8 @@
       #_
       bisect/min-angular-var))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/sv-angular-bisection)
+(-> @*selections
+    (fx/sub-ctx sv-angular-bisection)
     :points
     second)
 ;; => 3.0963968978228875
@@ -1806,14 +1808,14 @@
   (-> context
       (fx/sub-ctx sv-angular-bisection)))
 #_
-(->> @state/*selections
-     state/sv-bisection
+(->> @*selections
+     sv-bisection
      :centroid-a)
 
 
 #_
-(->> @state/*selections
-     state/sv-bisection
+(->> @*selections
+     sv-bisection
      :points
      (map last)
      (map :angle-from-down))
@@ -1848,7 +1850,7 @@
       ;;      #_
       (spitsvgstream "sv-projs.svg")))
 ;;#_
-(-> @state/*selections
+(-> @*selections
     (fx/sub-ctx sv-proj-svg)
     nil?)
 
@@ -1945,8 +1947,8 @@
                                              "Centroid"]]})
                 (spitsvgstream "angles-hist.svg"))))))))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/angular-historgram)
+(-> @*selections
+    (fx/sub-ctx angular-historgram)
     nil?)
 ;; => ([4.066817326755436
 ;;      {:cycle-frac 0, :delta-angle 4.066817326755436, :above? false}]
@@ -1987,11 +1989,11 @@
   top-pattern
   [context]
   (let [{:keys [centroid-a]} (fx/sub-ctx context
-                                         state/sv-bisection)]
+                                         sv-bisection)]
     (let [sval-one  (-> context
-                        (fx/sub-ctx state/singular-value 0))
+                        (fx/sub-ctx singular-value 0))
           sval-two  (-> context
-                        (fx/sub-ctx state/singular-value 1))
+                        (fx/sub-ctx singular-value 1))
           [x-coord
            y-coord] centroid-a]
       (let [patt (fx/sub-ctx context
@@ -2007,8 +2009,8 @@
                                          zero-point-mask)})
           patt))))) ;; TODO: Normalize? I think..
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/top-pattern))
+(-> @*selections
+    (fx/sub-ctx top-pattern))
 
 (defn
   top-pattern-svg
@@ -2034,8 +2036,8 @@
                                                        region-display-width)})
           (spitsvgstream "top-pattern.svg")))))
 ;;#_
-(-> @state/*selections
-    (fx/sub-ctx state/top-pattern-svg)
+(-> @*selections
+    (fx/sub-ctx top-pattern-svg)
     empty?)
 
 (defn
@@ -2051,8 +2053,8 @@
               %
               (fx/sub-ctx context top-pattern)))))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/top-pattern-weighted-noise 6))
+(-> @*selections
+    (fx/sub-ctx top-pattern-weighted-noise 6))
 
 (defn
   top-pattern-weighted-noise-svg
@@ -2071,33 +2073,33 @@
                           index
                           ".svg"))))
 #_
-(-> @state/*selections
-    (state/datafile-svg 6))
+(-> @*selections
+    (datafile-svg 6))
 #_
-(-> @state/*selections
-    (state/noise-svg 6))
+(-> @*selections
+    (noise-svg 6))
 #_
-(-> @state/*selections
-    (state/top-pattern-weighted-noise-svg 6))
+(-> @*selections
+    (top-pattern-weighted-noise-svg 6))
 #_
-(-> @state/*selections
-    (state/datafile-svg 31))
+(-> @*selections
+    (datafile-svg 31))
 #_
-(-> @state/*selections
-    (state/noise-svg 31))
+(-> @*selections
+    (noise-svg 31))
 #_
-(-> @state/*selections
-    (state/top-pattern-weighted-noise-svg 31))
+(-> @*selections
+    (top-pattern-weighted-noise-svg 31))
 
 (defn
   bottom-pattern
   [context]
   (let [{:keys [centroid-b]} (fx/sub-ctx context
-                                         state/sv-bisection)]
+                                         sv-bisection)]
     (let [sval-one  (-> context
-                        (fx/sub-ctx state/singular-value 0))
+                        (fx/sub-ctx singular-value 0))
           sval-two  (-> context
-                        (fx/sub-ctx state/singular-value 1))
+                        (fx/sub-ctx singular-value 1))
           [x-coord
            y-coord] centroid-b]
       (let [patt (fx/sub-ctx context
@@ -2113,13 +2115,13 @@
                                          zero-point-mask)})
           patt)))))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/bottom-pattern))
+(-> @*selections
+    (fx/sub-ctx bottom-pattern))
 
 #_
 (->>
-  (-> @state/*selections
-      (fx/sub-ctx state/bottom-pattern))
+  (-> @*selections
+      (fx/sub-ctx bottom-pattern))
   (filter pos?)
   (apply min))
 ;; => 5.912743094506505E-16
@@ -2149,8 +2151,8 @@
                                                        region-display-width)})
           (spitsvgstream "bottom-pattern.svg")))))
 ;;#_
-(-> @state/*selections
-    (fx/sub-ctx state/bottom-pattern-svg)
+(-> @*selections
+    (fx/sub-ctx bottom-pattern-svg)
     empty?)
 
 (defn
@@ -2167,8 +2169,8 @@
               (fx/sub-ctx context
                           bottom-pattern)))))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/bottom-pattern-weighted-noise 6))
+(-> @*selections
+    (fx/sub-ctx bottom-pattern-weighted-noise 6))
 
 (defn
   bottom-pattern-weighted-noise-svg
@@ -2187,23 +2189,23 @@
                           index
                           ".svg"))))
 #_
-(-> @state/*selections
-    (state/datafile-svg 10))
+(-> @*selections
+    (datafile-svg 10))
 #_
-(-> @state/*selections
-    (state/noise-svg 10))
+(-> @*selections
+    (noise-svg 10))
 #_
-(-> @state/*selections
-    (state/bottom-pattern-weighted-noise-svg 10))
+(-> @*selections
+    (bottom-pattern-weighted-noise-svg 10))
 #_
-(-> @state/*selections
-    (state/datafile-svg 11))
+(-> @*selections
+    (datafile-svg 11))
 #_
-(-> @state/*selections
-    (state/noise-svg 11))
+(-> @*selections
+    (noise-svg 11))
 #_
-(-> @state/*selections
-    (state/bottom-pattern-weighted-noise-svg 11))
+(-> @*selections
+    (bottom-pattern-weighted-noise-svg 11))
 
 (defn
   pattern-proj
@@ -2255,21 +2257,21 @@
               err-centroid-b)))))
 
 #_
-(-> @state/*selections
-    state/sv-bisection
+(-> @*selections
+    sv-bisection
     :centroid-a)
 ;; => [0.7085216175364683 0.705689108236415]
 
 #_
-(-> @state/*selections
-    state/sv-bisection
+(-> @*selections
+    sv-bisection
     :centroid-b)
 ;; => [0.5739485119789848 -0.8188913881566402]
 
 
 #_
-(-> @state/*selections
-    state/sv-bisection
+(-> @*selections
+    sv-bisection
     :points
     (get 2))
 ;; => [147.88696751163914
@@ -2289,8 +2291,8 @@
 ;; => (84.87950494438975 143.02778562437595)
 
 #_
-(-> @state/*selections
-    state/sv-bisection
+(-> @*selections
+    sv-bisection
     :points
     (get 71))
 ;; => [112.57764719667338
@@ -2310,8 +2312,8 @@
 ;; => (64.61377309062581 207.70002717914335)
 
 #_
-(-> @state/*selections
-    state/pattern-proj
+(-> @*selections
+    pattern-proj
     (get 2))
 ;; => [-18.474732152035315
 ;;     227.9072905687657
@@ -2327,8 +2329,8 @@
 ;;      :err-angle 0.2750300327604253}]
 
 #_
-(-> @state/*selections
-    state/pattern-proj
+(-> @*selections
+    pattern-proj
     (get 71))
 ;; => [-99.224199727465
 ;;     272.31380026976916
@@ -2355,7 +2357,7 @@
                    (get 2)
                    :above?)))))
 #_
-(-> @state/*selections
+(-> @*selections
     binary-index-vector)
 
 (defn
@@ -2378,7 +2380,7 @@
          (datamats/from-vecofvecs (fx/sub-ctx context
                                             region-matrix)))))
 #_
-(->> @state/*selections
+(->> @*selections
      climate-noise-matrix-2d-normalized)
 ;;Validating the matric is built correctly row by row (on `:krabi-root2`)
 ;; => {:matrix #RealGEMatrix[double, mxn:2840x119, layout:column]
@@ -2395,19 +2397,19 @@
 ;;     :resolution [0.1 0.1]}
 ;; We repeat the projections/normalization manually
 #_
-(-> @state/*selections
+(-> @*selections
     binary-index-vector
     first)
 ;; => false
 ;; (so January is classified as "summer")
 #_
 (take 2
-      (-> @state/*selections
+      (-> @*selections
           (top-pattern-weighted-noise 0)))
 ;; => (23429.16540445495 18104.86334445968)
 #_
 (take-last 2
-           (-> @state/*selections
+           (-> @*selections
                (top-pattern-weighted-noise 0)))
 ;; => (-28273.311179534514 -11668.173447261712)
 
@@ -2427,8 +2429,8 @@
                           id
                           "file.svg"))))
 #_
-(-> @state/*selections
-    (state/climate-noise-svg 31))
+(-> @*selections
+    (climate-noise-svg 31))
 
 (defn
   first-normalized-noise-selected-svg
@@ -2443,8 +2445,8 @@
                   climate-noise-svg
                   first-selections-idx))))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/first-normalized-noise-selected-svg))
+(-> @*selections
+    (fx/sub-ctx first-normalized-noise-selected-svg))
 
 (defn
   climate-noise-vars
@@ -2453,17 +2455,17 @@
       (fx/sub-ctx climate-noise-matrix-2d-normalized)
       (datamats/colvars)))
 #_
-(->> @state/*selections
+(->> @*selections
      climate-noise-vars)
 
 (defn climate-noise-var-svg
   [context]
   (-> (plot/index (* 1.0
                      (fx/sub-ctx context
-                                 state/window-width))
+                                 window-width))
                   (* 1.0
                      (fx/sub-ctx context
-                                 state/row-height))
+                                 row-height))
                   (-> context
                       (fx/sub-ctx climate-noise-vars))
                   2011
@@ -2473,7 +2475,7 @@
                               cycle-phase))
       (spitsvgstream "indeces-vars.svg")))
 #_
-(->> @state/*selections
+(->> @*selections
      climate-noise-var-svg)
 
 
@@ -2537,25 +2539,25 @@
      proj-b
      errors]))
 #_
-(-> @state/*selections
-    state/pattern-proj-partitioned
+(-> @*selections
+    pattern-proj-partitioned
     (nth 2))
 
 #_
-(-> @state/*selections
-(fx/sub-ctx state/pattern-proj-partitioned)
+(-> @*selections
+(fx/sub-ctx pattern-proj-partitioned)
 first
 count)
 ;; => 146
 #_
-(-> @state/*selections
-(fx/sub-ctx state/pattern-proj-partitioned)
+(-> @*selections
+(fx/sub-ctx pattern-proj-partitioned)
 second
 count)
 ;; => 146
 #_
-(-> @state/*selections
-(fx/sub-ctx state/pattern-proj-partitioned)
+(-> @*selections
+(fx/sub-ctx pattern-proj-partitioned)
 (nth 0)#_
 count)
 
@@ -2568,9 +2570,9 @@ count)
          errors] (fx/sub-ctx context
                              pattern-proj-partitioned)
         width    (fx/sub-ctx context
-                             state/window-width)
+                             window-width)
         height   (fx/sub-ctx context
-                             state/row-height)]
+                             row-height)]
     (-> (plot/indeces width
                       height
                       proj-a
@@ -2586,8 +2588,8 @@ count)
                                         (count proj-a)))})
         (spitsvgstream "indeces.svg"))))
 ;;#_
-(-> @state/*selections
-    (fx/sub-ctx state/pattern-proj-svg)
+(-> @*selections
+    (fx/sub-ctx pattern-proj-svg)
     nil?)
 
 
@@ -2598,8 +2600,8 @@ count)
       (fx/sub-ctx singular-values)
       datamats/singular-values-stats))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/singular-valuesstats))
+(-> @*selections
+    (fx/sub-ctx singular-valuesstats))
 
 (defn
   singular-values-svg
@@ -2611,22 +2613,22 @@ count)
                                    singular-values-stats)
                        (* 1.0
                           (fx/sub-ctx context
-                                      state/window-width))
+                                      window-width))
                        (* 1.0
                           (fx/sub-ctx context
-                                      state/row-height)))
+                                      row-height)))
       (spitsvgstream "singular-values.svg")))
 ;;#_
-(-> @state/*selections
-    (fx/sub-ctx state/singular-values-svg))
+(-> @*selections
+    (fx/sub-ctx singular-values-svg))
 #_
 (spit (str "out/"
-           (-> @state/*selections
-               (fx/sub-ctx state/region-key)
+           (-> @*selections
+               (fx/sub-ctx region-key)
                symbol)
            "/test-singular-values-actual.svg")
-      (-> @state/*selections
-          (fx/sub-ctx state/singular-valuess-svg)))
+      (-> @*selections
+          (fx/sub-ctx singular-valuess-svg)))
 
 (defn
   observation-svg
@@ -2656,7 +2658,7 @@ count)
                           observation-idx
                           ".svg"))))
 ;;#_
-(let [cycle-length 12 #_(fx/sub-ctx @state/*selections
+(let [cycle-length 12 #_(fx/sub-ctx @*selections
                                cycle-length)]
   (->> [0 1 2]
        (mapv (fn [cycle-num]
@@ -2681,12 +2683,12 @@ count)
        flatten
        (mapv (fn [index]
                ;;index #_
-               (-> @state/*selections
-                   (fx/sub-ctx state/observation-svg (int index)))))))
+               (-> @*selections
+                   (fx/sub-ctx observation-svg (int index)))))))
 ;; => [3 4 5 9 10 11 15 16 17 21 22 23 27 28 29 33 34 35]
 
 #_
-(let [cycle-length (fx/sub-ctx @state/*selections
+(let [cycle-length (fx/sub-ctx @*selections
                                cycle-length)]
   (->> [0 1 2]
        (mapv (fn [cycle-num]
@@ -2731,12 +2733,12 @@ count)
                     dec)]))
        flatten
        (mapv (fn [index]
-               (-> @state/*selections
-                   (fx/sub-ctx state/observation-svg (int index)))))))
+               (-> @*selections
+                   (fx/sub-ctx observation-svg (int index)))))))
 
 
-(-> @state/*selections
-    (fx/sub-ctx state/region-matrix))
+(-> @*selections
+    (fx/sub-ctx region-matrix))
   
 (defn
   all-svg
@@ -2768,12 +2770,12 @@ count)
                    datamats/to-geogrid-vec))
       (spitsvgstream "precipitation-all.svg")))
 ;;#_ ;;unused
-(if (-> @state/*selections
+(if (-> @*selections
         (fx/sub-ctx datafile-strs)
         count
         (< 200))
-  (-> @state/*selections
-      (fx/sub-ctx state/precipitation-all-svg)))
+  (-> @*selections
+      (fx/sub-ctx precipitation-all-svg)))
 
 (defn
   noise-all-svg
@@ -2784,11 +2786,11 @@ count)
                    datamats/to-geogrid-vec))
       (spitsvgstream "noise-all.svg")))
 ;;unused
-(if (-> @state/*selections
+(if (-> @*selections
         (fx/sub-ctx num-svs)
         (< 200))
-  (-> @state/*selections
-      (fx/sub-ctx state/noise-all-svg)))
+  (-> @*selections
+      (fx/sub-ctx noise-all-svg)))
 
 (defn
   cycle-group-svg
@@ -2825,8 +2827,8 @@ count)
                                                               0.5)))
             (spitsvgstream "cycle.svg"))))))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/cycle-group-svg
+(-> @*selections
+    (fx/sub-ctx cycle-group-svg
                 0))
 
 (def
@@ -2881,8 +2883,8 @@ count)
                                 year-idx
                                 ".svg")))))))
 #_
-(-> @state/*selections
-    (fx/sub-ctx state/annual-cycle
+(-> @*selections
+    (fx/sub-ctx annual-cycle
                 0))
 
 #_
@@ -2904,12 +2906,12 @@ count)
 #_
 (geogrid4image/read-file (str "/home/kxygk/Projects/imergination/data/"
                               "World_e-Atlas-UCSD_SRTM30-plus_v8.tif")
-                         (fx/sub-ctx @state/*selections
+                         (fx/sub-ctx @*selections
                                      eas-res)
-                         (fx/sub-ctx @state/*selections
+                         (fx/sub-ctx @*selections
                                      sou-res))
 #_
-(.getType (fx/sub-ctx @state/*selections
+(.getType (fx/sub-ctx @*selections
                       elevation-geogrid))
 
 (defn
@@ -2935,7 +2937,7 @@ count)
                         (mapv #(Math/pow %
                                          2)))))))))
 #_
-(->> (-> @state/*selections
+(->> (-> @*selections
          (fx/sub-ctx power-of-sv-weights-scaled))
      (mapv (partial take 5)))
 
@@ -2958,7 +2960,7 @@ count)
            sv12
            other-svs))))
 #_
-(->> (-> @state/*selections
+(->> (-> @*selections
          (fx/sub-ctx sv12-vs-other))
      (mapv (fn [pair]
              (/ (first pair)
@@ -2996,5 +2998,5 @@ count)
         (spitsvgstream (str "power-sv12-vs-other"
                             ".svg")))))
 #_;;usused
-(-> @state/*selections
+(-> @*selections
     (fx/sub-ctx sv12-vs-other-svg))

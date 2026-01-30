@@ -1,5 +1,5 @@
 (ns
-    svg2jfx
+    kxygk.imergination.svg2jfx
   "Make a GUI node from an SVG"
   (:require [cljfx.api            :as fx]
             [cljfx.composite      :as com]

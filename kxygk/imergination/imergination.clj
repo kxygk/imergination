@@ -1,22 +1,22 @@
 (ns
-    imergination
+    kxygk.imergination.imergination
   "Core playground"
-  (:use matrix
-        locations
-        geoprim
-        geogrid
-        geogrid2svg
-        geogrid4image
-        geogrid4seq
-        svgmaps
+  (:use kxygk.imergination.matrix
+        kxygk.imergination.locations
+        [geoprim]
+        [geogrid]
+        [geogrid2svg]
+        [geogrid4image]
+        [geogrid4seq]
+        #_
         [uncomplicate.neanderthal
          core
          native])
-  (:require state
-            plot
-            svgmaps
-            geojson2svg
-            quickthing
+  (:require [kxygk.imergination.state :as state]
+            [kxygk.imergination.datamats :as datamats]
+            [kxygk.imergination.plot :as plot]
+            [geojson2svg]
+            [quickthing]
             #_(thi.ng.geom
               [core                          :as geom]
               [matrix                        :as matrix])
@@ -24,9 +24,6 @@
             [cljfx.api       :as fx]
             [clj-curl.easy                   :as curl-easy]
             [clj-curl.opts                   :as curl-opts]
-            [uncomplicate.neanderthal.core   :as neand]
-            [uncomplicate.neanderthal.linalg :as linalg]
-            [uncomplicate.neanderthal.vect-math :as vect-math]
             [thi.ng.geom.viz.core            :as viz]
             [thi.ng.geom.svg.core            :as svg]))
 ;; jackson is a dependency that gets pulled in at the wrong version for unclear reasons..
@@ -459,7 +456,7 @@
           vec-of-maps
           10)]])))
 
-
+#_
 (defn
   print-region-maps
   ([input-region
@@ -565,7 +562,7 @@
                                        secon-element)))
                                  first-sv
                                  secon-sv))]
-     (println
+     #_(println
        "total sum is "
        (neand/sum
          (:matrix region-rains-matrix))
@@ -693,13 +690,13 @@
 (print-region-maps
   locations/two-seas-region)
 
-
+#_
 (print-region-maps
   locations/krabi-region
     [91
      95])
 
-
+#_
 (def month-projections
   (print-region-maps
     locations/krabi-skinny-region

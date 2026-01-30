@@ -1,4 +1,4 @@
-(ns dist
+(ns kxygk.imergination.dist
   "poking at the rain distributions.."
   (:require [clojure.java.io :as io]
             [cljfx.api       :as fx]

@@ -1,10 +1,10 @@
 (ns
-    core
+    kxygk.imergination.core
   "The GUI state and renderer are initialized and launched"
   (:require [cljfx.api :as fx]
-            event
-            gui
-            state))
+            [kxygk.imergination.event :as event]
+            [kxygk.imergination.gui :as gui]
+            [kxygk.imergination.state :as state]))
 
 (set!
   *warn-on-reflection*

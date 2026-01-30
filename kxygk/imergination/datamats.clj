@@ -1,7 +1,7 @@
-(ns datamats
-  (:require matrix
-            geogrid
-            geogrid4seq))
+(ns kxygk.imergination.datamats
+  (:require [kxygk.imergination.matrix :as matrix]
+            [geogrid]
+            [geogrid4seq]))
 
 (defn from-geogrids
   "Read in a vector of geogrids into one large `matrix`"

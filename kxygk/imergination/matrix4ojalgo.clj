@@ -1,8 +1,8 @@
-(ns matrix4ojalgo
+(ns kxygk.imergination.matrix4ojalgo
   "Implements the Matrix Protocol using the ojAlgo library
   This was generated from the Neanderthal backend with an LLM.
   Results were then confirmed to be the same"
-  (:require matrix)
+  (:require [kxygk.imergination.matrix :as matrix])
   (:import [org.ojalgo.matrix.store Primitive64Store MatrixStore]
            [org.ojalgo.function.constant PrimitiveMath]
            [org.ojalgo.function BinaryFunction]))

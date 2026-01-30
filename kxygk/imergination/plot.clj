@@ -1,8 +1,9 @@
 (ns
-    plot
+    kxygk.imergination.plot
   "Some project-specific plotting fuctions"
   (:use     geoprim)
-  (:require matrix
+  (:require [kxygk.imergination.matrix :as matrix]
+            [kxygk.imergination.bisect :as bisect]
             [geogrid]
             [geogrid2svg]
             [geojson2svg]

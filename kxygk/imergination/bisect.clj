@@ -1,5 +1,5 @@
 (ns
-    bisect
+    kxygk.imergination.bisect
   "Algorithms for bisecting a set of points"
   (:use [clojure.math]))
 

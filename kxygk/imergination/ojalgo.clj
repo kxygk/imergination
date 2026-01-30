@@ -1,5 +1,5 @@
 (ns
-    ojalgo
+    kxygk.imergination.ojalgo
   "The matrix of all the data
   and operations on it..
   in a JVM based `backend`"
