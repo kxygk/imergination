@@ -9,7 +9,7 @@
   (data [matrix])
   (mrows [matrix])
   (ncols [matrix])
-  (cols  [matrix])
+;;  (cols  [matrix])
   (row [matrix
          index])
   (col [matrix
@@ -305,6 +305,15 @@ with the first 0,0 flipped to -1"
   [somevec]
   (/ (self-inner-product somevec)
      (count somevec)))
+
+(defn
+  cols
+  [data-matrix]
+  (->> data-matrix
+       ncols
+       range
+       (mapv #(col data-matrix
+                   %))))
 
 (defn
   abs-sums-of-cols

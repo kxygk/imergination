@@ -12,6 +12,7 @@
     (vec (flatten (seq neand-matrix))))
   (mrows [_] (ncore/mrows neand-matrix))
   (ncols [_] (ncore/ncols neand-matrix))
+  #_
   (cols  [_] (->> neand-matrix
                   ncore/cols
                   (mapv #(-> %
