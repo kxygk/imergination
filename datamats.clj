@@ -181,9 +181,15 @@
   {:sv matrix
   :weights vector}"
   [datamats]
-  (merge (invert-sv1 (matrix/svd (-> datamats
-                                     :matrix)))
-         datamats))
+  (let [raw-svd (matrix/svd (-> datamats
+                                :matrix))]
+    (if (pos? (apply +
+                     (-> raw-svd
+                         (singular-vector 0))))
+      (merge raw-svd
+             datamats)
+      (merge (invert-sv1 raw-svd)
+             datamats))))
   
 (defn
   svd-to-weights
