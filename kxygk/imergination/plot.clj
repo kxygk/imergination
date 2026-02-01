@@ -12,17 +12,12 @@
             [thi.ng.geom.viz.core :as viz]
             [thi.ng.geom.svg.core :as svg]))
 
-(def
-  shoreline-filestr
-  "Hardcoded path to a shoreline file.. TODO"
-  "./data/shoreline-coarse.json")
-
 (defn
   shoreline-map
   "Given a region and vector of geopoints(POIS)
   Draw a simple shoreline map"
   [region
-   shoreline-filestr
+   shoreline-str
    & [{:keys [pois
               label-top-right
               display-width
@@ -40,9 +35,8 @@
                             region)
                           (svg/group {}
                                      nil))
-                        (geojson2svg/read-file
-                          shoreline-filestr
-                          region)
+                        (geojson2svg/read-json-str shoreline-str
+                                                   region)
                         (if pois
                           (svgmaps/points-of-interest
                             pois

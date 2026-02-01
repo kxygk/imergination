@@ -89,7 +89,7 @@
   (atom (fx/create-context (merge {;; Defaults
                                    :window-width                   1080.0
                                    :row-height                     360
-                                   :shoreline-filestr              "./data/shoreline-coarse.json"
+                                   :shoreline-filestr              nil
                                    :contour-filestr                nil
                                    :non-zero-min?                  false
                                    :normalize-data?                true
@@ -163,6 +163,18 @@
 (-> @*selections
     (fx/sub-ctx region-key))
 ;; => :krabi-root-2
+
+(defn
+  shoreline
+  [context]
+  (let [shortline-filestr (fx/sub-ctx context
+                                      shoreline-filestr)]
+    (if (nil? shortline-filestr)
+      (slurp (io/resource "data/shoreline-coarse.json"))
+      (slurp (io/file shoreline-filestr)))))
+#_
+(-> @*selections
+    (fx/sub-ctx shoreline))
 
 (defn
   region
@@ -413,7 +425,7 @@
   [context]
   (plot/worldmap-region (plot/shoreline-map locations/world-region
                                             (fx/sub-ctx context
-                                                        shoreline-filestr)
+                                                        shoreline)
                                             [])
                         (-> context
                             (fx/sub-ctx region))
@@ -496,7 +508,7 @@
     (fx/sub-ctx context
                 region)
     (plot/shoreline-map (fx/sub-ctx context
-                                    shoreline-filestr)
+                                    shoreline)
                         {:axis-visible? false}))) ;; no POI
 
 (defn
@@ -518,7 +530,7 @@
     (fx/sub-ctx context
                 region)
     (plot/shoreline-map (fx/sub-ctx context
-                                    shoreline-filestr)
+                                    shoreline)
                         {:axis-visible? true
                          :display-width (fx/sub-ctx context
                                                     region-display-width)})
