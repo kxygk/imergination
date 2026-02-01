@@ -4,7 +4,9 @@
   (:require [cljfx.api :as fx]
             [kxygk.imergination.event :as event]
             [kxygk.imergination.gui :as gui]
-            [kxygk.imergination.state :as state]))
+            [kxygk.imergination.state :as state])
+  (:import javafx.application.Platform)
+  (:gen-class :main true))
 
 (set!
   *warn-on-reflection*
@@ -56,7 +58,17 @@
                                         (fx/fn->lifecycle-with-context
                                           %))}))
 
+
+(defn -main [& args]
+  ;; Make the application exit when you close all the windows
+  (Platform/setImplicitExit true)
+  (fx/mount-renderer
+    state/*selections
+    renderer))
+
+;; MANUAL REPL STUFF
 ;; `renderer` is called each time the state atom changes
+#_
 (fx/mount-renderer
   state/*selections
   renderer)
