@@ -22,7 +22,7 @@
             [kxygk.imergination.locations :as locations]))
 
 (def debug?
-  true)
+  false)
 
 (def
   config-dir
@@ -225,14 +225,15 @@
                      "custom"
                      (symbol region-key))]
     (if debug?
-      (future (spit (str config-dir
-                         "/"
-                         filename)
-                    #_(str "../imergination.wiki/"
-                           subfolder
-                           "/"
-                           filename)
-                    string))
+      (do (println "Writing to File")
+          (future (spit (str config-dir
+                             "/"
+                             filename)
+                        #_(str "../imergination.wiki/"
+                               subfolder
+                               "/"
+                               filename)
+                        string)))
       nil)
     string))
 
@@ -252,17 +253,18 @@
   And return the hiccup"
   [svg-hiccup
    filename]
-  (println (str "Making SVG: "
-                filename))
-  (let [realized-hiccup (do (println "Generating Hiccup")
-                            (doall svg-hiccup))]
-    (let [xml (do (println "Generating XML")
-                  (quickthing/svg2xml realized-hiccup))]
-      #_xml
-      (println "Writing to File")
-      (spitstream xml
-                  filename)
-      svg-hiccup)))
+  (if debug?
+    (do (println (str "Making SVG: "
+                      filename))
+        (let [realized-hiccup (do (println "Generating Hiccup")
+                                  (doall svg-hiccup))]
+          (let [xml (do (println "Generating XML")
+                        (quickthing/svg2xml realized-hiccup))]
+            #_xml
+            (spitstream xml
+                        filename)
+            svg-hiccup)))
+    svg-hiccup))
 ;; ***************************************
 
 
