@@ -7,8 +7,6 @@
             [cljfx.api       :as fx]
             [clojure.core.cache :as cache]
             [injest.path :refer [+> +>> x>> =>>]]
-            [uncomplicate.neanderthal.core :as ncore]
-            [uncomplicate.neanderthal.native  :as nnative]
             kxygk.imergination.bisect
             kxygk.imergination.geogrid4image
             kxygk.imergination.geogrid4seq
@@ -65,12 +63,12 @@
                                        state/region-matrix)
                            :matrix)
         above-data    (->> region-matrix 
-                        uncomplicate.neanderthal.core/cols
+                        matrix/cols
                         (mapv vector above?)
                         (filter first)
                         (mapv second))
         below-data    (->> region-matrix 
-                        uncomplicate.neanderthal.core/cols
+                        matrix/cols
                         (mapv vector above?)
                         (filter #(-> %
                                      first

@@ -53,7 +53,7 @@
 (def
   shoreline-filestr
   "A shoreline file"
-  "./data/shoreline-coarse.json")
+  "shoreline-coarse.json")
 
 (def
   elevation-filestr
