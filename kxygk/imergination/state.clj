@@ -11,7 +11,6 @@
             [kxygk.imergination.bisect :as bisect]
             [geogrid4image]
             [geogrid4seq]
-            [kxygk.imergination.svg2jfx]
             [kxygk.imergination.datamats :as datamats]
             #_
             kxygk.imergination.matrix4neanderthal
@@ -453,35 +452,6 @@
       (-> @*selections
           (fx/sub-ctx world-svg)))
 
-#_#_
-(defn
-  world-batik
-  "Get the shoreline as a JFX group
-  Not scaled in any way"
-  [context]
-  (let [shoreline-svg (fx/sub-ctx context
-                                  world-svg)]
-    (-> shoreline-svg
-        svg2jfx/batik-load)))
-
-(defn
-  world-batik-fullwidth
-  "Get the world shoreline as a JFX group
-  Scaled to take the width of the window"
-  [context]
-  (let [batik-group (fx/sub-ctx context
-                                world-batik)
-        scale-x     (/ (fx/sub-ctx context
-                                   window-width)
-                       360.0)
-        scale-y     (/
-                      (fx/sub-ctx context
-                                  window-width)
-                      360.0)]
-    (svg2jfx/batik-scale  batik-group
-                          scale-x
-                          scale-y)))
-
 #_        
 (defn
   region-shoreline-svg
@@ -537,28 +507,6 @@
                          :display-width (fx/sub-ctx context
                                                     region-display-width)})
     (spitsvgstream "contour.svg")))
-#_#_
-(defn
-  region-batik
-  [context]
-  (let [shoreline-svg (fx/sub-ctx context
-                                  region-svg)]
-    (-> shoreline-svg
-        svg2jfx/batik-load)))
-
-(defn
-  region-batik-halfwidth
-  "This is scaled to fit the half area box"
-  [context]
-  (let [batik-group (fx/sub-ctx context
-                                region-batik)
-        scale-x     (fx/sub-ctx context
-                                region-to-display-scale-x)
-        scale-y     (fx/sub-ctx context
-                                region-to-display-scale-y)]
-    (svg2jfx/batik-scale batik-group
-                         scale-x
-                         scale-y)))
 
 (defn
   data-dirstr
