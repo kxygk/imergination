@@ -12,8 +12,12 @@
              kxygk/geojson2svg                    {:local/root "../geojson2svg"}
              kxygk/svgmaps                        {:local/root "../svgmaps"}
              ;; extern
+             ;;#_#_
              net.clojars.john/injest              {:mvn/version "0.1.0-beta.8"
                                                    :exclusions [org.clojure/clojurescript]}
+             ;; normally brought in with `injest`
+             #_#_
+             org.clojure/core.cache {:mvn/version "1.0.207"}
              cljfx/cljfx                          {:mvn/version "1.10.6"
                                                    :exclusions  [org.openjfx/javafx-web
                                                                  org.openjfx/javafx-media]}
