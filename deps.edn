@@ -17,7 +17,12 @@
              cljfx/cljfx                          {:mvn/version "1.10.6"
                                                    :exclusions  [org.openjfx/javafx-web
                                                                  org.openjfx/javafx-media]}
-             org.openjfx/javafx-swing             {:mvn/version "15.0.1"}
+             ;; this lib pulls in `javafx-graphics`
+             ;; but so will `cljfx`..
+             ;; So check the `cljfx`'s `javafx-graphics` version and match it here
+             ;; The library is necessary to display the SVG render,
+             ;; b/c it's an older Swing element/Node
+             org.openjfx/javafx-swing             {:mvn/version "22-ea+16"}
              ;; Alternate SVG rendering "backends"
              #_#_
              com.github.hervegirod/fxsvgimage     {:mvn/version "1.1"}
