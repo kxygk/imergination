@@ -1,6 +1,5 @@
 (ns
     kxygk.imergination.eof1
-  (:use [hashp.core])
   (:require [clojure.java.io :as io]
             [cljfx.api       :as fx]
             [clojure.core.cache :as cache]

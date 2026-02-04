@@ -2,7 +2,6 @@
   "Functions to prompt for:
   Variance across the whole field
   And other related statistics"
-  (:use [hashp.core])
   (:require [clojure.java.io :as io]
             [cljfx.api       :as fx]
             [clojure.core.cache :as cache]
