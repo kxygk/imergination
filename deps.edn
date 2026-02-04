@@ -39,7 +39,9 @@
              thi.ng/color                         {:mvn/version "1.4.0"}
              thi.ng/geom                          {:mvn/version "1.0.1"
                                                    :exclusions [org.clojure/clojurescript
-                                                                org.jogamp.jogl/jogl-all]}
+                                                                cljs-log/cljs-log
+                                                                org.jogamp.jogl/jogl-all
+                                                                org.jogamp.gluegen/gluegen-rt]}
              org.ojalgo/ojalgo                    {:mvn/version "53.0.0"}
              ;; Alternate `matrix` native backend. Was weirdly slower
              #_#_#_#_
