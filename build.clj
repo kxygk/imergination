@@ -47,7 +47,7 @@
     (if (zero? (:exit result))
       (spit "jars/tree.txt" (:out result))
       (println "Error:" (:err result))))
-  (println "Bundling the uberjar ... ")
+  (println "Assembling the uberjar in /jars ... ")
   (b/uber {:class-dir class-dir
            :uber-file uber-file
            :basis     basis
@@ -56,7 +56,7 @@
 (defn bundle [_]
   (println "Cleaning old bundle...")
   (b/delete {:path "bundle"})
-  (println "Packaging with jpackage...")
+  (println "Bundling with jpackage...")
   (let [{:keys [exit
                 #_outc
                 err]}
@@ -68,5 +68,5 @@
             "--main-class" "kxygk.imergination.core"
             "--type" "app-image")]
     (if (zero? exit)
-      (println "Success! Check the /dist folder.")
+      (println "Success! Check the /bundle folder.")
       (println "Error:" err))))
