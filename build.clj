@@ -25,28 +25,33 @@
   ;; the source can be copied,
   ;; but the compilation doesn't happens from these files eitherway
   #_#_
-  (println "Copying code ... ")c
-  (b/copy-dir {:src-dirs ["."]
+  (println "Copying code ... ")
+  (b/copy-dir {:src-dirs   ["."]
                :target-dir class-dir
-               :include "kxygk/imergination/**"})
+               :include    "kxygk/imergination/**"})
   (println "Copying data ... ")
-  (b/copy-dir {:src-dirs ["."]
+  (b/copy-dir {:src-dirs   ["."]
                :target-dir class-dir
-               :include "data/**"})
+               :include    "data/**"})
   #_
-  (b/javac {:src-dirs ["src-java"] ; point to your java folders
+  (b/javac {:src-dirs  ["src-java"] ; point to your java folders
             :class-dir class-dir
-            :basis basis})
+            :basis     basis})
   (println "Compiling ...")
-  (b/compile-clj {:basis basis
-                  :src-dirs ["."]
-                  :class-dir class-dir
+  (b/compile-clj {:basis      basis
+                  :src-dirs   ["."]
+                  :class-dir  class-dir
                   :ns-compile '[kxygk.imergination.core]})
+  (println "Printing Dependency Tree..")
+  (let [result (clojure.java.shell/sh "clojure" "-Stree")]
+    (if (zero? (:exit result))
+      (spit "jars/tree.txt" (:out result))
+      (println "Error:" (:err result))))
   (println "Bundling the uberjar ... ")
   (b/uber {:class-dir class-dir
            :uber-file uber-file
-           :basis basis
-           :main 'kxygk.imergination.core})) ; The namespace with your -main function
+           :basis     basis
+           :main      'kxygk.imergination.core})) ; The namespace with your -main function
 
 (defn bundle [_]
   (println "Cleaning old bundle...")
