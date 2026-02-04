@@ -22,8 +22,6 @@
               [matrix                        :as matrix])
             #_'[thi.ng.color.core]
             [cljfx.api       :as fx]
-            [clj-curl.easy                   :as curl-easy]
-            [clj-curl.opts                   :as curl-opts]
             [thi.ng.geom.viz.core            :as viz]
             [thi.ng.geom.svg.core            :as svg]))
 ;; jackson is a dependency that gets pulled in at the wrong version for unclear reasons..
