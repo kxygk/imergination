@@ -12,6 +12,7 @@
              kxygk/geojson2svg                    {:local/root "../geojson2svg"}
              kxygk/svgmaps                        {:local/root "../svgmaps"}
              ;; extern
+             babashka/fs                          {:mvn/version "0.5.30"}
              ;;#_#_
              net.clojars.john/injest              {:mvn/version "0.1.0-beta.8"
                                                    :exclusions [org.clojure/clojurescript]}

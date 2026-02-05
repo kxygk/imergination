@@ -8,6 +8,7 @@
             [clojure.core.cache :as cache]
 ;;            [injest.path :refer [+> +>> x>> =>>]]
             [kxygk.imergination.bisect :as bisect]
+            [kxygk.imergination.zip :as zip]
             [geogrid4image]
             [geogrid4seq]
             [kxygk.imergination.datamats :as datamats]
@@ -106,10 +107,12 @@
                                    :sv-selected-idxs               [0]
                                    :noise-selected-idxs            [0]
                                    :normalized-noise-selected-idxs [0]}
-                                  (-> config-dir
-                                      (str "/config.edn")
-                                      slurp
-                                      clojure.edn/read-string))
+                                  (if (nil? config-dir)
+                                    {}
+                                    (-> config-dir
+                                        (str "/config.edn")
+                                        slurp
+                                        clojure.edn/read-string)))
                            #(cache/lru-cache-factory % :threshold 1000))))
 
 
@@ -511,9 +514,18 @@
   data-dirstr
   "The string for the path to the directory with all the data"
   [context]
-  (fx/sub-val context
-              :rain-dirstr))
-
+  (let [specified-dir (fx/sub-val context
+                                  :rain-dirstr)]
+    (if (some? specified-dir) ;; is directory specified?
+      specified-dir
+      ;; if not, unzip our backup data
+      (-> "data/imerg-late-v06b-10yrs-2011-through-2021.zip"
+          io/resource
+          zip/unzip
+          .getPath))))
+#_
+(-> @*selections
+    (fx/sub-ctx data-dirstr))"/tmp/imergination-builtin-dataset-6953663476232099408"
 
 (defn
   datafile-strs
@@ -521,13 +533,15 @@
   NOTE: This does not automatically detect if
   the directory contents have been changed"
   [context]
-  (->> ^String ;; I forget why I type hint..
-       (fx/sub-ctx
-         context
-         data-dirstr)
-       java.io.File.
-       .list
-       sort))
+  (let [maybe-dirstr (fx/sub-ctx context
+                            data-dirstr)]
+    (if (nil? maybe-dirstr)
+      ;; should fall back on to the baked in dataset
+      (println "The Default dataset was missing!")
+      (->> maybe-dirstr
+           java.io.File.
+           .list
+           sort))))
 #_
 (->> (fx/sub-ctx @*selections
                  datafile-strs)
@@ -543,6 +557,20 @@
                          "]"
                          file-str)))
      vec)
+
+(defn
+  data-locations
+  [context]
+  (let [directory (fx/sub-ctx context
+                              data-dirstr)]
+    (mapv #(clojure.java.io/file (str directory
+                                      "/"
+                                      %))
+          (fx/sub-ctx context
+                      datafile-strs))))
+#_
+(fx/sub-ctx @*selections
+            data-locations)
 
 ;; TODO Test out with caching the whole dataset..
 ;; see if the computer catches fire.. EDIT: it did
@@ -593,27 +621,21 @@
 (defn-
   lazy-world-reader
   "Returns a lazy collection for reading in all the rainmaps"
-  [file-strs
-   datadir-str
+  [file-locations
    easres
    soures]
-  (map #(do #_(println (str "Reading in .. "
-                            % ))
-            (geogrid4image/read-file (str datadir-str
-                                          % )
-                                     easres
-                                     soures))
-       file-strs))
+  (map #(do (geogrid4image/read-location %
+                                         easres
+                                         soures))
+       file-locations))
 
 (defn-
   world-geogrid-vec
   "All the data..."
   [context]
   (-> context
-      (fx/sub-ctx datafile-strs)
+      (fx/sub-ctx data-locations)
       (lazy-world-reader (fx/sub-ctx context
-                                     data-dirstr)
-                         (fx/sub-ctx context
                                      eas-res)
                          (fx/sub-ctx context
                                      sou-res))))
@@ -2488,14 +2510,15 @@
                                    (-> proj
                                        (get 2)
                                        :err-centroid-b)))))]
-    (with-open [writer (io/writer (str config-dir
-                                       "/climate-index.csv"))]
-      (println (str "Writing out climate index to CSV file .. "))
-      (csv/write-csv writer
-                     (mapv vector
-                           proj-a
-                           proj-b
-                           errors)))
+    (if debug?
+      (with-open [writer (io/writer (str config-dir
+                                         "/climate-index.csv"))]
+        (println (str "Writing out climate index to CSV file .. "))
+        (csv/write-csv writer
+                       (mapv vector
+                             proj-a
+                             proj-b
+                             errors))))
     [proj-a
      proj-b
      errors]))
