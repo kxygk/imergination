@@ -51,17 +51,22 @@
   (b/uber {:class-dir class-dir
            :uber-file uber-file
            :basis     basis
-           :main      'kxygk.imergination.core})) ; The namespace with your -main function
+           :main      'kxygk.imergination.core})
+  (b/copy-dir {:src-dirs ["jars"]
+               :target-dir "jars/uber"
+               :include "imergination-uber.jar"})
+  (b/delete {:path "jars/imergination-uber.jar"}))
 
 (defn bundle [_]
   (println "Cleaning old bundle...")
   (b/delete {:path "bundle"})
+
   (println "Bundling with jpackage...")
   (let [{:keys [exit
                 #_outc
                 err]}
         (sh "jpackage"
-            "--input" "jars"
+            "--input" "jars/uber"
             "--dest" "bundle"
             "--name" "Imergination"
             "--main-jar" "imergination-uber.jar"
