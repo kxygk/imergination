@@ -89,6 +89,14 @@
                            97.5)
                     (point 5.4
                            101.0))}
+   :tianshan    {:region (region (point 47.0
+                                        84.0)
+                                 (point 39.0
+                                        88.0))}
+   :nao {:region (region (point 80.0
+                                -100.0)
+                         (point 10.0
+                                40.0))}
    :krabi-city-region          {:region (region (point 8.5
                                                        98.0)
                                                 (point 7.5

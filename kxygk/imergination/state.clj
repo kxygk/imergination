@@ -21,13 +21,21 @@
             [kxygk.imergination.locations :as locations]))
 
 (def debug?
-  false)
+  true)
 
 (def
   config-dir
   (str "/home/kxygk/Projects/imergination.wiki/"
        #_
+       "nao-anomaly-monthly"
+       #_
        "krabi-monthly-2year"
+       #_
+       "tianshan-monthly"
+       #_
+       "tianshan-pentads-10year"
+       #_
+       "tianshan-pentads-2year"
        #_
        "krabi-daily-2year"
        #_
@@ -58,11 +66,11 @@
        "krabins-norm"
        #_
        "krab-mon-norm"
-       ;;#_
+       #_
        "krabi-monthly"
        #_
        "krabi-monthly-final-v7"
-       #_
+       ;;#_
        "krabi-monthly"
        #_
        "scs-rainbow"
@@ -545,7 +553,7 @@
 #_
 (->> (fx/sub-ctx @*selections
                  datafile-strs)
-     count)
+     )
 #_
 (->> (fx/sub-ctx @*selections
                  datafile-strs)
@@ -596,27 +604,6 @@
          0.1
          0.1))))
 
-#_
-(defn
-  sv-strs
-  "Gets listing of all possible SVs"
-  [context]
-  (let [num-of-svs (-> context
-                       (fx/sub-ctx datafile-strs)
-                       count)]
-    (let [svs        (-> num-of-svs
-                         range)
-          max-digits (-> num-of-svs
-                         clojure.math/log10
-                         clojure.math/ceil
-                         int)]
-      (mapv (fn [svindex]
-              (str "SV "
-                   (format (str "%0"
-                                max-digits
-                                "d")
-                           svindex)))
-            svs))))
 
 (defn-
   lazy-world-reader
@@ -628,6 +615,32 @@
                                          easres
                                          soures))
        file-locations))
+;; #_
+;; (geogrid4image/read-location (clojure.java.io/file
+;;                                  "/home/kxygk/Data/20CRv2c/SLP/pressure/geotiff-rot-subset/pres_only.nc-block0074-rot.tiff")
+;;                              2.0
+;;                              2.0)
+;; #_
+;; #geogrid4image.imagegrid{:norwes-point #geoprim.eassou-point{:eas 0.0,
+;;                                                              :sou 0.0},
+;;                          :image #object[java.awt.image.BufferedImage
+;;                                         0x3b76a9e5
+;;                                         "BufferedImage@3b76a9e5: type = 11 ColorModel: #pixelBits = 16 numComponents = 1 color space = java.awt.color.ICC_ColorSpace@ef7b344 transparency = 1 has alpha = false isAlphaPre = false ShortInterleavedRaster: width = 180 height = 91 #numDataElements 1"],
+;;                          :eas-res 0.2,
+;;                          :sou-res 0.2}
+;; #_
+;; (geogrid4image/read-location (clojure.java.io/file
+;;                                 "/home/kxygk/Data/imerg/monthly/late-02years/3B-MO-L.GIS.IMERG.20110401.V06B.tif")
+;;                              0.1
+;;                              0.1)
+;; #_
+;; #geogrid4image.imagegrid{:norwes-point #geoprim.eassou-point{:eas 0.0,
+;;                                                              :sou 0.0},
+;;                          :image #object[java.awt.image.BufferedImage
+;;                                         0x4d488d61
+;;                                         "BufferedImage@4d488d61: type = 11 ColorModel: #pixelBits = 16 numComponents = 1 color space = java.awt.color.ICC_ColorSpace@ef7b344 transparency = 1 has alpha = false isAlphaPre = false ShortInterleavedRaster: width = 3600 height = 1800 #numDataElements 1"],
+;;                          :eas-res 0.1,
+;;                          :sou-res 0.1}
 
 (defn-
   world-geogrid-vec
@@ -645,6 +658,22 @@
 #_
 (-> @*selections
     (fx/sub-ctx is-in-ram))
+
+(->> (-> "/home/kxygk/Data/20CRv2c/SLP/pressure/geotiff-rot-subset/pres_only.nc-block0074-rot.tiff"
+         clojure.java.io/file
+         (geogrid4image/read-location 2.0
+                                      2.0)
+         :image
+         .getData
+         .getDataBuffer
+         .getData)
+     (into-array
+       Double/TYPE)
+     seq
+     first)
+
+-8026.0
+
 
 (defn-
   region-geogrid-vec
@@ -681,7 +710,19 @@
     (fx/sub-ctx region-geogrid-vec)
     first
     keys)
+#_
+(-> @*selections
+    (fx/sub-ctx region-geogrid-vec)
+    first)
+;; #_
+;; #geogrid4image.imagegrid{:norwes-point #geoprim.eassou-point{:eas 80.0,
+;;                                                              :sou 10.0},
+;;                          :image #object[java.awt.image.BufferedImage 0x714b2122
+;;                                         "BufferedImage@714b2122: type = 11 ColorModel: #pixelBits = 16 numComponents = 1 color space = java.awt.color.ICC_ColorSpace@ef7b344 transparency = 1 has alpha = false isAlphaPre = false ShortInterleavedRaster: width = 70 height = 35 #numDataElements 1"],
+;;                          :eas-res 2.0,
+;;                          :sou-res 2.0}
 
+    
 (defn-
   bin-sum
   "Build a new `geogrid`.
@@ -945,7 +986,12 @@
                        9)
            :data-array
            vec))
-
+#_
+(-> @*selections
+           (fx/sub-ctx datafile-geogrid
+                       9)
+           :data-array
+           vec)
 ;; => 30174.0
 ;; => -32344.0
 #_
@@ -2012,7 +2058,7 @@
                                             :font-size (/ (min width
                                                                height)
                                                           9)}
-                          #_#_
+                          ;;#_#_
                           :colormap        (into quickthing/rainbow
                                                  quickthing/rainbow)
                           :display-width   (fx/sub-ctx context
@@ -2127,7 +2173,7 @@
                                             :font-size (/ (min width
                                                                height)
                                                           9)}
-                          #_#_
+                          ;;#_#_
                           :colormap        (into quickthing/rainbow
                                                  quickthing/rainbow)
                           :display-width   (fx/sub-ctx context

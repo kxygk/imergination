@@ -9,10 +9,18 @@
 
 A GUI for interactively extracting climate patterns from IMERG precipitation data
 
-This is a work in progress.. At the moment just my AGU poster giving a broad overview of the method used:
+The first release of Imergination comes in two bundles. One for Windows and one for Linux. The bundle includes a baked in monthly dataset `imerg-late-v06b-10yrs-2011-through-2021`. At the moment it launches displaying only the default region (Southern Thailand). Alternate regions can only be selected by click + drag on the top "World Map"
+
+Do note:
+
+- The application takes a little while to launch (~1-2 minutes) b/c there is a lot of data to read in
+- Similarly it takes a while to recompute a result for a new region
+- More sophisticated way to specify regions and datasources will be added over time.
 
 Feel free to get in touch at:
 
 image:../email-small.svg[]
 
+
+Old AGU poster: 
 image:https://raw.githubusercontent.com/wiki/kxygk/imergination/agu2023-poster.svg[]

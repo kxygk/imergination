@@ -41,6 +41,10 @@
         neutral-white (get rbspectrum
                            (/ (count rbspectrum)
                               2))]
+    #_ ;; maybe unneeded from the docs https://github.com/weisJ/jsvg
+    (.setRenderingHint graphics2d
+                       SVGRenderingHints/KEY_MASK_CLIP_RENDERING
+                       SVGRenderingHints/VALUE_MASK_CLIP_RENDERING_DEFAULT)
     (.setColor graphics2d
                (java.awt.Color. (float (:r neutral-white))
                                 (float (:g neutral-white))

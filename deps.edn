@@ -15,10 +15,10 @@
              babashka/fs                          {:mvn/version "0.5.30"}
              ;;#_#_
              net.clojars.john/injest              {:mvn/version "0.1.0-beta.8"
-                                                   :exclusions [org.clojure/clojurescript]}
+                                                   :exclusions  [org.clojure/clojurescript]}
              ;; normally brought in with `injest`
              #_#_
-             org.clojure/core.cache {:mvn/version "1.0.207"}
+             org.clojure/core.cache               {:mvn/version "1.0.207"}
              cljfx/cljfx                          {:mvn/version "1.10.6"
                                                    :exclusions  [org.openjfx/javafx-web
                                                                  org.openjfx/javafx-media]}
@@ -39,10 +39,10 @@
              #_#_
              thi.ng/color                         {:mvn/version "1.4.0"}
              thi.ng/geom                          {:mvn/version "1.0.1"
-                                                   :exclusions [org.clojure/clojurescript
-                                                                cljs-log/cljs-log
-                                                                org.jogamp.jogl/jogl-all
-                                                                org.jogamp.gluegen/gluegen-rt]}
+                                                   :exclusions  [org.clojure/clojurescript
+                                                                 cljs-log/cljs-log
+                                                                 org.jogamp.jogl/jogl-all
+                                                                 org.jogamp.gluegen/gluegen-rt]}
              org.ojalgo/ojalgo                    {:mvn/version "53.0.0"}
              ;; Alternate `matrix` native backend. Was weirdly slower
              #_#_#_#_
