@@ -90,14 +90,16 @@
         spacing  (/ (min width
                          height)
                     2.5)]
-    (svg/text [(- width
+    (svg/text [(/ width
+                  2.0)
+               #_(- width
                   (/  spacing
-                      6.0))
+                      2.0))
                (/ spacing
                   6.0)]
               text
               (merge {:font-size         spacing
-                      :text-anchor       "end"
+                      :text-anchor       "middle"
                       :stroke            "black"
                       :stroke-width      (/ spacing
                                             150)
