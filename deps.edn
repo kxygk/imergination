@@ -22,6 +22,12 @@
              cljfx/cljfx                          {:mvn/version "1.10.6"
                                                    :exclusions  [org.openjfx/javafx-web
                                                                  org.openjfx/javafx-media]}
+             ;; PATHOM
+             com.wsscode/pathom3                      {:mvn/version "2025.01.16-alpha"}
+             funcool/promesa                          {:mvn/version "12.0.0-RC2"}
+             kxygk/pathmore                           {:local/root "../pathmore"}
+             kxygk/pathomfx                           {:local/root "../pathomfx"}
+             ;;
              ;; this lib pulls in `javafx-graphics`
              ;; but so will `cljfx`..
              ;; So check the `cljfx`'s `javafx-graphics` version and match it here
