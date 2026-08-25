@@ -122,6 +122,7 @@
   grid-map
   "Draw a contour map with a grid overlay"
   [input-grid
+   region
    contour-svg
    & [{:keys [pois
               max-val
@@ -136,8 +137,7 @@
               label-attribs   nil
               cycle-frac      nil
               axis-visible?   false}}]]
-  (let [region             (geogrid/covered-region input-grid)
-        local-rain-grid    (geogrid/subregion input-grid
+  (let [local-rain-grid    (geogrid/subregion input-grid
                                               region)
         {:keys [overruns]} (geogrid/adjusted-crop-region-to-grid region
                                                                  local-rain-grid)]
