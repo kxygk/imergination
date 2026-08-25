@@ -7,6 +7,7 @@
 (defprotocol Primitives
   "An interface for matrix libraries to do what the subset of things we need"
   (data [matrix])
+  (copy [matrix])
   (mrows [matrix])
   (ncols [matrix])
 ;;  (cols  [matrix])

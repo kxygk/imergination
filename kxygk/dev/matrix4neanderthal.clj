@@ -10,6 +10,8 @@
   matrix/Primitives
   (data [_]
     (vec (flatten (seq neand-matrix))))
+  (copy [_]
+    (->Matrix (ncore/copy neand-matrix)))
   (mrows [_] (ncore/mrows neand-matrix))
   (ncols [_] (ncore/ncols neand-matrix))
   #_

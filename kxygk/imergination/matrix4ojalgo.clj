@@ -14,10 +14,15 @@
     ;; Primitive64Store that HAS the methods we need.
     (.copy org.ojalgo.matrix.store.Primitive64Store/FACTORY store)))
 
+(defn- copy-store [store]
+  (.copy org.ojalgo.matrix.store.Primitive64Store/FACTORY store))
+
 (defrecord Matrix [oj-matrix]
   matrix/Primitives
   (data [_]
     (vec (.toRawCopy1D oj-matrix)))
+  (copy [_]
+    (->Matrix (copy-store oj-matrix)))
   (mrows [_]
     (int (.countRows oj-matrix)))
   (ncols [_]
@@ -104,3 +109,9 @@
 
 ;; Register the ojAlgo backend
 (matrix/set-factory! (->Factory))
+
+(defmethod print-method Matrix [m writer]
+  (.write writer (str "#kxygk.imergination.matrix4ojalgo/Matrix "
+                      {:rows (matrix/mrows m)
+                       :cols (matrix/ncols m)
+                       :data (matrix/data m)})))

@@ -480,6 +480,7 @@
   [svd]
   (let [truncated-sigma (-> svd
                             :sigma
+                            matrix/copy
                             (matrix/set-value! 0
                                                0
                                                0.0)
