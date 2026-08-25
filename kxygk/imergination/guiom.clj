@@ -269,11 +269,11 @@
                        :refs    {::loading-ui {:fx/type        pathprom/now
                                                :env            stateom/env
                                                :inputmap       value
-                                               :tx             [:contour-map-svg]
+                                               :tx             [:contour-svg]
                                                :realized-ui-fn (fn [pathom-map]
                                                                  {:fx/type imagepane/svg
                                                                   :svg     (-> pathom-map
-                                                                               :contour-map-svg)})}}
+                                                                               :contour-svg)})}}
                        :desc    {:fx/type main-vertical-display
                                  :state   value}}}})
 

@@ -379,37 +379,32 @@
                                   (spitsvgstream "world.svg"))))
 #_(time (check :world-svg))
 
-(pco/defresolver $region-svg-hiccup
+(pco/defresolver $contour-bare-svg
+  "A bare contour of the region. No legends or axis"
   [{:keys [shoreline
            region]}]
-  {:region-svg-hiccup (-> region
-                          (plot/shoreline-map shoreline
-                                              {:axis-visible? false}))}) ;; no POI
+  {:contour-bare-svg (-> region
+                         (plot/shoreline-map shoreline
+                                             {:axis-visible? false})
+                         #_ ;; not interesting
+                         (spitsvgstream "contour-bare.svg"))})
 #_
 (-> @(p.a.eql/process env
                       @*selections
-                      [:region-svg-hiccup]))
-
-(def $region-svg
-  (pbir/single-attr-resolver :region-svg-hiccup
-                             :region-svg
-                             #(-> %
-                                  (spitsvgstream "region.svg"))))
-#_
-(-> @(p.a.eql/process env
-                      @*selections
-                      [:region-svg]))
+                      [:contour-svg]))
 
 ;; TODO: Why do I have one with a size (`contour`) and one without (`region`)
-(pco/defresolver $contour-map-svg
+(pco/defresolver $contour-svg
+  "A contour on a map (with lat/lon). Use as loading placeholder"
   [{:keys [shoreline
            region]}]
-  {:contour-map-svg (-> region
-                        (plot/shoreline-map shoreline
-                                            {:axis-visible? true})
-                        (spitsvgstream "contour.svg"))}) ;; no POI
+  {:contour-svg (-> region
+                    (plot/shoreline-map shoreline
+                                        {:axis-visible? true})
+                    #_ ;; not interesting
+                    (spitsvgstream "contour.svg"))})
 #_
-(check :contour-map-svg)
+(check :contour-svg)
 
 (def $data-dirstr
   (pbir/single-attr-resolver :rain-dirstr
@@ -789,15 +784,15 @@
 (pco/defresolver $$datafile-svg
   [{:keys [datafile-geogrid
            region
-           region-svg-hiccup
+           contour-svg
            region-min-max
-           :contour-map-svg
+           :contour-svg
            id]}]
   {:datafile-svg (if (nil? id)
-                   contour-map-svg
+                   contour-svg
                    (-> datafile-geogrid
                        (plot/grid-map region
-                                      region-svg-hiccup
+                                      contour-svg
                                       {:max-val (second region-min-max)})
                        (spitsvgstream (str "data-file-"
                                            id
@@ -807,16 +802,16 @@
   [inputs]
   {::pco/input  [:region
                  :region-matrix
-                 :region-svg-hiccup
+                 :contour-svg
                  :region-min-max
                  :first-datafile-idx
-                 :contour-map-svg]
+                 :contour-svg]
    ::pco/outout [{:first-datafile-svg [:region
                                        :region-matrix
-                                       :region-svg-hiccup
+                                       :contour-svg
                                        :region-min-max
                                        :first-datafile-idx
-                                       :contour-map-svg
+                                       :contour-svg
                                        :id]}]}
   {:first-datafile-svg (merge inputs
                               {:id (:first-datafile-idx inputs)})})
@@ -870,14 +865,14 @@
   [{:keys [sv-index
            datafile-strs
            region
-           region-svg
+           contour-svg
            singular-vector-geogrid
-           region-svg-hiccup]}]
+           contour-svg]}]
   {:singular-vector-svg (if (empty? datafile-strs)
-                          region-svg
+                          contour-svg
                           (-> singular-vector-geogrid
                               (plot/grid-map region
-                                             region-svg-hiccup
+                                             contour-svg
                                              {:label-top-right (str "SV"
                                                                     (inc sv-index))
                                               :label-attribs   {:fill      "black"
@@ -893,17 +888,17 @@
   [inputs]
   {::pco/input  [:datafile-strs
                  :region
-                 :region-svg
+                 :contour-svg
                  :region-svd
                  :region-geogrid-params
-                 :region-svg-hiccup]
+                 :contour-svg]
    ::pco/output [{:first-svec-svg [:sv-index
                                    :datafile-strs
                                    :region
-                                   :region-svg
+                                   :contour-svg
                                    :region-svd
                                    :region-geogrid-params
-                                   :region-svg-hiccup]}]}
+                                   :contour-svg]}]}
   {:first-svec-svg (merge inputs
                           {:sv-index 0})})
 #_(check {:first-svec-svg [:singular-vector-svg]})
@@ -912,37 +907,37 @@
   [inputs]
   {::pco/input  [:datafile-strs
                  :region
-                 :region-svg
+                 :contour-svg
                  :region-svd
                  :region-geogrid-params
-                 :region-svg-hiccup]
+                 :contour-svg]
    ::pco/output [{:second-svec-svg [:datafile-strs
                                     :region
-                                    :region-svg
+                                    :contour-svg
                                     :region-svd
                                     :region-geogrid-params
-                                    :region-svg-hiccup]}]}
+                                    :contour-svg]}]}
   {:second-svec-svg (merge inputs
                            {:sv-index 1})})
 #_(check :second-svec-svg)
 
 
 (pco/defresolver $first-selected-sv-svg
-  [{:keys [contour-map-svg
+  [{:keys [contour-svg
            first-svec-selected-idx]
     :as   inputs}]
   {::pco/input  [:first-svec-selected-idx
                  :datafile-strs
-                 :region-svg
+                 :contour-svg
                  :singular-vector-geogrid
-                 :region-svg-hiccup]
+                 :contour-svg]
    ::pco/output [{:first-selected-sv-svg [:sv-index
                                           :datafile-strs
-                                          :region-svg
+                                          :contour-svg
                                           :singular-vector-geogrid
-                                          :region-svg-hiccup]}]}
+                                          :contour-svg]}]}
   {:first-selected-sv-svg (if (nil? first-svec-selected-idx)
-                            contour-map-svg ;; BROKEN ; doesn't match output keys. Unclear how to fix
+                            contour-svg ;; BROKEN ; doesn't match output keys. Unclear how to fix
                             (merge inputs
                                    {:sv-index (:first-svec-selected-idx inputs)}))})
 
@@ -1025,15 +1020,15 @@
 (pco/defresolver $$noise-svg
   [{:keys [index
            region
-           contour-map-svg
+           contour-svg
            noise-matrix-2d
-           region-svg-hiccup]}]
+           contour-svg]}]
   {:noise-svg (if (nil? index)
-                contour-map-svg
+                contour-svg
                 (-> (datamats/extract-grid noise-matrix-2d
                                            index)
                     (plot/grid-map region
-                                   region-svg-hiccup) ;; maybe no need?
+                                   contour-svg) ;; maybe no need?
                     (spitsvgstream (str "noise-"
                                         index
                                         "-file.svg"))))})
@@ -1057,15 +1052,15 @@
   [inputs]
   {::pco/input  [:region
                  :first-noise-selected-idx
-                 :contour-map-svg
+                 :contour-svg
                  :noise-matrix-2d
-                 :region-svg-hiccup]
+                 :contour-svg]
    ::pco/output [{:first-noise-selected-svg [#_:noise-svg ;; will convert to this!
                                              :index ;; injected here
                                              :region
-                                             :contour-map-svg
+                                             :contour-svg
                                              :noise-matrix-2d
-                                             :region-svg-hiccup]}]}
+                                             :contour-svg]}]}
   {:first-noise-selected-svg (merge inputs
                                     {:index (:first-noise-selected-idx inputs)})})
 #_(check {:first-noise-selected-svg [:noise-svg]})
@@ -1082,16 +1077,16 @@
 (pco/defresolver $$noise-scaled-to-sv1-svg
   [{:keys [index
            region
-           contour-map-svg
+           contour-svg
            noise-matrix-scaled-to-sv1
-           region-svg-hiccup
+           contour-svg
            region-display-width]}]
   {:noise-scaled-to-sv1-svg (if (nil? index)
-                              contour-map-svg
+                              contour-svg
                               (-> (datamats/extract-grid noise-matrix-scaled-to-sv1
                                                          index)
                                   (plot/grid-map region
-                                                 region-svg-hiccup)
+                                                 contour-svg)
                                   (spitsvgstream (str "noise-sv1-"
                                                       index
                                                       "-file.svg"))))})
@@ -1110,16 +1105,16 @@
 (pco/defresolver $$noise-scaled-to-sv2-svg
   [{:keys [index
            region
-           contour-map-svg
+           contour-svg
            noise-matrix-scaled-to-sv2
-           region-svg-hiccup
+           contour-svg
            region-display-width]}]
   {:noise-scaled-to-sv2-svg (if (nil? index)
-                              contour-map-svg
+                              contour-svg
                               (-> (datamats/extract-grid noise-matrix-scaled-to-sv2
                                                          index)
                                   (plot/grid-map region
-                                                 region-svg-hiccup)
+                                                 contour-svg)
                                   (spitsvgstream (str "noise-sv2-"
                                                       index
                                                       "-file.svg"))))})
@@ -1396,10 +1391,10 @@
   [{:keys [region
            region-geogrid-params
            top-pattern
-           region-svg-hiccup]}]
+           contour-svg]}]
   {::pco/input  [:region-geogrid-params
                  {:top-pattern [:singular-vector-mixture]}
-                 :region-svg-hiccup]
+                 :contour-svg]
    ::pco/output [:top-pattern-svg]}
   {:top-pattern-svg (let [input-grid (geogrid4seq/build-grid region-geogrid-params
                                                              (-> top-pattern
@@ -1408,7 +1403,7 @@
                              height] (geoprim/dimension (geogrid/covered-region input-grid))]
                         (-> input-grid
                             (plot/grid-map region
-                                           region-svg-hiccup
+                                           contour-svg
                                            {:label-top-right "Top Pattern"
                                             :label-attribs   {:fill      "#00aa88"
                                                               ;; TODO: Ugly Font Size
@@ -1443,11 +1438,11 @@
            region
            region-geogrid-params
            top-pattern-weighted-noise
-           region-svg-hiccup]}]
+           contour-svg]}]
   {:top-pattern-weighted-noise-svg (-> (geogrid4seq/build-grid region-geogrid-params
                                                                top-pattern-weighted-noise)
                                        (plot/grid-map region
-                                                      region-svg-hiccup)
+                                                      contour-svg)
                                        (spitsvgstream (str "top-pattern-weighted-noise-"
                                                            index
                                                            ".svg")))})
@@ -1484,10 +1479,10 @@
   [{:keys [region
            region-geogrid-params
            bot-pattern
-           region-svg-hiccup]}]
+           contour-svg]}]
   {::pco/input  [:region-geogrid-params
                  {:bot-pattern [:singular-vector-mixture]}
-                 :region-svg-hiccup]
+                 :contour-svg]
    ::pco/output [:bot-pattern-svg]}
   {:bot-pattern-svg (let [input-grid (geogrid4seq/build-grid region-geogrid-params
                                                              (-> bot-pattern
@@ -1496,7 +1491,7 @@
                              height] (geoprim/dimension (geogrid/covered-region input-grid))]
                         (-> input-grid
                             (plot/grid-map region
-                                           region-svg-hiccup
+                                           contour-svg
                                            {:label-top-right "Bottom Pattern"
                                             :label-attribs   {:fill      "#aa8800"
                                                               ;; TODO: Ugly Font Size
@@ -1531,11 +1526,11 @@
            region
            region-geogrid-params
            bot-pattern-weighted-noise
-           region-svg-hiccup]}]
+           contour-svg]}]
   {:bot-pattern-weighted-noise-svg (-> (geogrid4seq/build-grid region-geogrid-params
                                                                bot-pattern-weighted-noise)
                                        (plot/grid-map region
-                                                      region-svg-hiccup)
+                                                      contour-svg)
                                        (spitsvgstream (str "bot-pattern-weighted-noise-"
                                                            index
                                                            ".svg")))})
@@ -1637,11 +1632,11 @@
   [{:keys [index
            region
            climate-noise-matrix-2d-normalized
-           region-svg-hiccup]}]
+           contour-svg]}]
   {:climate-noise-svg (-> (datamats/extract-grid  climate-noise-matrix-2d-normalized
                                                   index)
                           (plot/grid-map region
-                                         region-svg-hiccup)
+                                         contour-svg)
                           (spitsvgstream (str "climate-noise-"
                                               index
                                               "-file.svg")))})
@@ -1658,7 +1653,7 @@
                                          first-normalized-noise-selected-idx)]
     (if (nil? first-selections-idx)
       (fx/sub-ctx context
-                  contour-map-svg)
+                  contour-svg)
       (fx/sub-ctx context
                   climate-noise-svg
                   first-selections-idx))))
@@ -1799,13 +1794,13 @@
   [{:keys [observation-index
            region
            region-matrix
-           region-svg-hiccup
+           contour-svg
            cycle-length]}]
   {:observation-svg (->  region-matrix
                          datamats/to-geogrid-vec
                          (get observation-index)
                          (plot/grid-map region
-                                        region-svg-hiccup
+                                        contour-svg
                                         {:label-top-right (str (inc observation-index))
                                          #_#_
                                          :max-val         (->  context
@@ -1848,9 +1843,8 @@
                      $region-to-display-scale-y
                      $world-svg-hiccup
                      $world-svg
-                     $region-svg-hiccup
-                     $region-svg
-                     $contour-map-svg
+                     $contour-bare-svg
+                     $contour-svg
                      input-env ;; stuff related to reading in the data.. this is slow
                      $region-geogrid-params
                      $num-svs
@@ -2056,7 +2050,7 @@ NOTE: I Think I already do this in `sv-proj` now?"
                   sval-one
                   sval-two)
       (plot/grid-map (fx/sub-ctx context
-                                 region-svg-hiccup)
+                                 contour-svg)
                      {:display-width (fx/sub-ctx context
                                                  region-display-width)})))
 
@@ -2106,7 +2100,7 @@ NOTE: I Think I already do this in `sv-proj` now?"
                                grid]
                             (plot/grid-map grid
                                            (fx/sub-ctx context
-                                                       region-svg-hiccup)
+                                                       contour-svg)
                                            {:label-top-right (str (inc idx))
                                             :max-val         (->  context
                                                                   (fx/sub-ctx region-min-max)
@@ -2165,7 +2159,7 @@ NOTE: I Think I already do this in `sv-proj` now?"
                                  grid]
                                 (plot/grid-map grid
                                                (fx/sub-ctx context
-                                                           region-svg-hiccup)
+                                                           contour-svg)
                                                {:label-top-right (str (inc idx))
                                                 :cycle-frac      (/ idx
                                                                     12.0)
@@ -2218,7 +2212,7 @@ NOTE: I Think I already do this in `sv-proj` now?"
                                  grid]
                                 (plot/grid-map grid
                                                (fx/sub-ctx context
-                                                           region-svg-hiccup)
+                                                           contour-svg)
                                                {:label-top-right (get month-map
                                                                       (inc idx))
                                                 :label-attribs   {:font-size 1.5}
