@@ -57,6 +57,7 @@
   TODO: Make something a bit more generic.."
   [world-map
    region
+   #_#_
    & [{:keys [display-width]
        :or   {display-width 360}}]]
   (let [{:keys [norwes
@@ -77,6 +78,7 @@
                             :fill-opacity "0.25"}))
       [360.0
        180.0]
+      #_
       display-width)))
 
 (defn
@@ -125,7 +127,6 @@
               max-val
               label-top-right
               label-attribs
-              display-width
               cycle-frac
               colormap
               axis-visible?]
@@ -133,7 +134,6 @@
               max-val         nil
               label-top-right ""
               label-attribs   nil
-              display-width   360
               cycle-frac      nil
               axis-visible?   false}}]]
   (let [region             (geogrid/covered-region input-grid)
@@ -141,32 +141,32 @@
                                               region)
         {:keys [overruns]} (geogrid/adjusted-crop-region-to-grid region
                                                                  local-rain-grid)]
-    (-> (svg/group {}
-                   (if input-grid ;; TODO: Make it work without a grid..
-                     (geogrid2svg/to-heatmap local-rain-grid
-                                             (cond-> overruns
-                                               (some? max-val)  (assoc :max-val
-                                                                       max-val)
-                                               (some? colormap) (assoc :colormap
-                                                                       colormap)))
-                     (svg/group {}
-                                nil))
-                   (if axis-visible?
-                     (svgmaps/latlon-axis region)
-                     (svg/group {}
-                                nil))
-                   (if contour-svg
-                     contour-svg
-                     (svg/group {}
-                                nil))
-                   (svgmaps/points-of-interest pois
-                                               region)
-                   (map-label region
-                              label-top-right
-                              (merge {:fill (quickthing/color-cycle cycle-frac)}
-                                     label-attribs)))
-        (quickthing/svg-wrap (dimension region)
-                             display-width))))
+    (let [grp (svg/group {}
+                         (if input-grid ;; TODO: Make it work without a grid..
+                           (geogrid2svg/to-heatmap local-rain-grid
+                                                   (cond-> overruns
+                                                     (some? max-val)  (assoc :max-val
+                                                                             max-val)
+                                                     (some? colormap) (assoc :colormap
+                                                                             colormap)))
+                           (svg/group {}
+                                      nil))
+                         (if axis-visible?
+                           (svgmaps/latlon-axis region)
+                           (svg/group {}
+                                      nil))
+                         (if contour-svg
+                           contour-svg
+                           (svg/group {}
+                                      nil))
+                         (svgmaps/points-of-interest pois
+                                                     region)
+                         (map-label region
+                                    label-top-right
+                                    (merge {:fill (quickthing/color-cycle cycle-frac)}
+                                           label-attribs)))]
+            (quickthing/svg-wrap grp
+                                 (dimension region)))))
 
 (defn
   sv-plot
