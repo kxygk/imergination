@@ -45,6 +45,46 @@
                   @stateom/*selections
                   [{:contour-svg [:imagebuf]}])
 
+(def map-clicks
+  (atom {}))
+
+(defn region-rectangle
+[{:keys [value]}]
+(let [x1 (:start-x value)
+      y1 (:start-y value)
+      x2 (:ended-x value)
+      y2 (:ended-y value)]
+    (if (and x1
+             x2
+             y1
+             y2)
+      {:fx/type           :rectangle
+       :x                 (min x1 x2)
+       :y                 (min y1 y2)
+       :width             (abs (- x2 x1))
+       :height            (abs (- y2 y1))
+       :fill              :transparent
+       :stroke            :red
+       :stroke-width      2
+       :mouse-transparent true}
+      {:fx/type           :rectangle
+       :x                 0
+       :y                 0
+       :width             0
+       :height            0
+       :fill              :transparent
+       :stroke            :red
+       :stroke-width      2
+       :mouse-transparent true})))
+
+(defn clamp
+  "clamp a number between `minimum` and `maximum`"
+  [number
+   minimum
+   maximum]
+  (max minimum
+       (min maximum
+            number)))
 
 (defn
   worldmap
@@ -53,23 +93,120 @@
   - filepath to contour file
   - region limits"
   [{:keys [state]}]
-  {:fx/type           :v-box
-   :fill-width        true
-   :style             {:-fx-background-color :blue}
-   #_#_#_#_
-   :on-mouse-pressed  {:effect event-worldmap-mouse-press}
-   :on-mouse-released {:effect event-worldmap-mouse-release}
-   :children          [{:fx/type        pathprom/later
-                        :env            pathom-env
-                        :inputmap       state
-                        :tx             [{:world-svg [:imagebuf]}]
-                        :loading-ui     {:fx/type :label
-                                         :text    "Loading..."}
-                        :realized-ui-fn (fn [pathom-map]
-                                          {:fx/type  imagepane/imagebuf
-                                           :imagebuf (-> pathom-map
-                                                         :world-svg
-                                                         :imagebuf)})}]})
+  {:fx/type          :stack-pane
+   :alignment        :top-left
+   #_#_
+   :fill-width       true
+   :style            {:-fx-background-color :blue}
+   :on-mouse-pressed (fn event-worldmap-mouse-press
+                       [event]
+                       (let [pick-result (.getPickResult event)
+                             img-view    (.getIntersectedNode pick-result)]
+                         (when (instance? javafx.scene.image.ImageView
+                                          img-view)
+                           (let [point        (.getIntersectedPoint pick-result)
+                                 click-x      (.getX point)
+                                 click-y      (.getY point)
+                                 image-width  (.getFitWidth img-view)
+                                 image-height (.getFitHeight img-view)]
+                             (when (instance? javafx.scene.image.ImageView
+                                              img-view)
+                               (swap! map-clicks
+                                      #(merge %
+                                              {:start-x   click-x
+                                               :start-y   click-y
+                                               :ended-x   nil
+                                               :ended-y   nil
+                                               :eas-first (* 360
+                                                             (/ click-x
+                                                                image-width))
+                                               :sou-first (* 180
+                                                             (/ click-y
+                                                                image-height))})))))))
+   :on-mouse-dragged (fn event-worldmap-mouse-dragged
+                       [event]
+                       (let [pick-result (.getPickResult event)
+                             img-view    (.getIntersectedNode pick-result)]
+                         (if (or (nil? img-view)
+                                 (not (instance? javafx.scene.image.ImageView
+                                                 img-view))) ;; left the ImageView
+                           (reset! map-clicks
+                                   {})
+                           (let [point        (.getIntersectedPoint pick-result)
+                                 click-x      (.getX point)
+                                 click-y      (.getY point)
+                                 image-width  (.getFitWidth img-view)
+                                 image-height (.getFitHeight img-view)]
+                             (if (:start-x @map-clicks)
+                               (do (swap! map-clicks
+                                          #(merge %
+                                                  {:ended-x    click-x
+                                                   :ended-y    click-y
+                                                   :eas-second (* 360
+                                                                  (/ click-x
+                                                                     image-width))
+                                                   :sou-second (* 180
+                                                                  (/ click-y
+                                                                     image-height))}))))))))
+
+   :on-mouse-released (fn event-worldmap-mouse-released
+                        [event]
+                        (let [{:keys [eas-first
+                                      eas-second
+                                      sou-first
+                                      sou-second]} @map-clicks]
+                          (when (and eas-first
+                                     eas-second
+                                     sou-first
+                                     sou-second
+                                     (not= eas-first
+                                           eas-second)
+                                     (not= sou-first
+                                           sou-second))
+                            (#_
+                              println
+                              ;;#_#_#_#_
+                              swap! stateom/*selections
+                              assoc
+                              :region
+                              (geoprim/region (geoprim/point-eassou (clamp (min eas-first
+                                                                                eas-second)
+                                                                           0
+                                                                           360)
+                                                                    (clamp (min sou-first
+                                                                                sou-second)
+                                                                           0
+                                                                           180))
+                                              (geoprim/point-eassou (clamp (max eas-first
+                                                                                eas-second)
+                                                                           0
+                                                                           360)
+                                                                    (clamp (max sou-first
+                                                                                sou-second)
+                                                                           0
+                                                                           180))))))
+                        (reset! map-clicks
+                                {}))
+
+   :on-mouse-exited (fn [_]
+                      (reset! map-clicks
+                              {}))
+   :children        [{:fx/type        pathprom/later
+                      :env            pathom-env
+                      :inputmap       state
+                      :tx             [{:world-with-region-highlight-svg [:imagebuf]}]
+                      :loading-ui     {:fx/type fx/ext-get-ref
+                                       :ref     ::world}
+                      :realized-ui-fn (fn [pathom-map]
+                                        {:fx/type  imagepane/imagebuf
+                                         :imagebuf (-> pathom-map
+                                                       :world-with-region-highlight-svg
+                                                       :imagebuf)})}
+                     {:fx/type           :pane
+                      :mouse-transparent true
+                      :children          [{:fx/type fx/ext-watcher
+                                           :ref     map-clicks
+                                           :desc    {:fx/type region-rectangle}}]}]})
 #_
 @(p.a.eql/process pathom-env
                   @stateom/*selections
@@ -306,7 +443,16 @@
    :height  600
    :scene   {:fx/type :scene
              :root    {:fx/type fx/ext-let-refs
-                       :refs    {::loading-ui {:fx/type        pathprom/now
+                       :refs    {::world      {:fx/type        pathprom/now
+                                               :env            pathom-env
+                                               :inputmap       value
+                                               :tx             [{:world-svg [:imagebuf]}]
+                                               :realized-ui-fn (fn [pathom-map]
+                                                                 {:fx/type  imagepane/imagebuf
+                                                                  :imagebuf (-> pathom-map
+                                                                                :world-svg
+                                                                                :imagebuf)})}
+                                 ::loading-ui {:fx/type        pathprom/now
                                                :env            pathom-env
                                                :inputmap       value
                                                :tx             [{:contour-svg [:imagebuf]}]
