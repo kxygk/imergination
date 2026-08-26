@@ -741,6 +741,7 @@
 (pco/defresolver $$datafile-geogrid
   [{:keys [datafile-id
            region-matrix]}]
+  {:inject-cache :lru4}
   {:datafile-geogrid (datamats/extract-grid region-matrix
                                             datafile-id)})
 
@@ -786,7 +787,9 @@
                 :region
                 {:contour-svg [:hiccup]}
                 :region-min-max]
-   ::pco/output [:hiccup]}
+   ::pco/output [:hiccup]
+   #_#_ ;; prolly can regenerate each time you look at a new data
+   :inject-cache :lru1}
   (if (nil? datafile-id)
     contour-svg
     {:hiccup (-> datafile-geogrid
@@ -819,6 +822,7 @@
 (pco/defresolver $$singular-vector
   [{:keys [sv-index
            region-svd]}]
+  {:inject-cache :lru4}
   {:singular-vector (datamats/singular-vector region-svd
                                               sv-index)})
 
@@ -844,6 +848,7 @@
   [{:keys [#_sv-index ;; used indirectly
            singular-vector
            region-geogrid-params]}]
+  {:inject-cache :lru4}
   {:singular-vector-geogrid (geogrid4seq/build-grid region-geogrid-params
                                                     singular-vector)})
 #_(check :singular-vector-geogrid
@@ -861,7 +866,8 @@
                 :region
                 {:contour-svg [:hiccup]}
                 :singular-vector-geogrid]
-   ::pco/output [:hiccup]}
+   ::pco/output [:hiccup]
+   :inject-cache :lru4}
    {:hiccup (if (empty? datafile-strs)
               contour-svg
               (-> singular-vector-geogrid
@@ -937,6 +943,7 @@
 (pco/defresolver $$sv-weights
   [{:keys [sv-index
            region-svd]}]
+  {:inject-cache :lru4}
   {:sv-weights (datamats/svd-to-weights region-svd
                                         sv-index)})
 #_(check :sv-weights
@@ -1018,7 +1025,8 @@
                 :region
                 {:contour-svg [:hiccup]}
                 :noise-matrix-2d]
-   ::pco/output [:hiccup]}
+   ::pco/output [:hiccup]
+   :inject-cache :lru1}
   {:hiccup (if (nil? noise-index)
                 contour-svg
                 {:hiccup (-> (datamats/extract-grid noise-matrix-2d
@@ -1076,7 +1084,8 @@
                 :region
                  {:contour-svg [:hiccup]}
                 :noise-matrix-scaled-to-sv1]
-   ::pco/output [:hiccup]}
+   ::pco/output [:hiccup]
+   :inject-cache :lru1}
   {:hiccup (if (nil? noise-sv1-index)
              contour-svg
              (-> (datamats/extract-grid noise-matrix-scaled-to-sv1
@@ -1107,7 +1116,8 @@
                 :region
                  {:contour-svg [:hiccup]}
                 :noise-matrix-scaled-to-sv2]
-   ::pco/output [:hiccup]}
+   ::pco/output [:hiccup]
+   :inject-cache :lru4}
   {:hiccup (if (nil? noise-sv2-index)
              contour-svg
              (-> (datamats/extract-grid noise-matrix-scaled-to-sv2
@@ -1132,6 +1142,7 @@
 (pco/defresolver $$singular-value
   [{:keys [sv-index
            singular-values]}]
+  {:inject-cache :lru4}
   {:singular-value (-> singular-values
                        (get sv-index)
                        second)})
@@ -1349,7 +1360,8 @@
                  :svec-two
                  :sval-one
                  :sval-two]
-   ::pco/output [:singular-vector-mixture]}
+   ::pco/output [:singular-vector-mixture]
+   :inject-cache :lru4}
   {:singular-vector-mixture (mapv (fn [svec1-point
                                        svec2-point]
                                     (/ (+ (* svec1-point
@@ -1847,7 +1859,7 @@
                      $region-geogrid-vec
                      $region-matrix])
       (pcp/with-plan-cache pathom-plan-cache*)
-      pcr/with-resolver-cache))
+      kxygk.pathmore.cache/inject-for-all-resolvers))
 (def env
   (-> (pci/register {::p.a.eql/parallel? true}
                     [$shoreline
@@ -1927,7 +1939,7 @@
                      $singular-values-svg
                      $$observation-svg])
       (pcp/with-plan-cache pathom-plan-cache*)
-      pcr/with-resolver-cache))
+      kxygk.pathmore.cache/inject-for-all-resolvers))
 
 (defn check
   "simple util func to check a key in this file"

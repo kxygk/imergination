@@ -31,13 +31,14 @@
                     [stateom/env
                      (pbir/single-attr-resolver :hiccup
                                                 :imagebuf
+                                                ;; Note: No caching b/c imagebuf is huge
+                                                ;; And `pathprom` caches this part
                                                 (fn render-svg-hiccup
                                                   [svg-hiccup]
                                                   (-> svg-hiccup
                                                       quickthing/svg2xml
                                                       svg2jfx/jsvg-jxfimg)))])
-      (pcp/with-plan-cache stateom/pathom-plan-cache*)
-      pcr/with-resolver-cache))
+      (pcp/with-plan-cache stateom/pathom-plan-cache*)))
 
 #_
  @(p.a.eql/process pathom-env
