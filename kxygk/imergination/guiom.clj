@@ -236,6 +236,8 @@
                                                                       :datafile-idxs
                                                                       selected-indices))}
                       :desc    {:fx/type :list-view
+                                :min-height  0
+                                :pref-height 0
                                 :items   (:datafile-strs-formatted pathom-map)}})})
 
 (defn
@@ -245,6 +247,7 @@
   [{:keys [state]}]
   {:fx/type  :v-box
    :style    {:-fx-background-color :green}
+   :min-height  0
    :children [{:fx/type        pathprom/later
                :env            pathom-env
                :inputmap       state
@@ -264,7 +267,8 @@
                                        :data-dirstr)}
               {:fx/type     datadir-list
                :state       state
-               :v-box/vgrow :always}
+               :v-box/vgrow :always
+               :min-height  0}
               ]})
 
 (defn
