@@ -466,3 +466,8 @@
       {:fx/type   :label
        :text      (str "Unknown SVG type: " (class jfx-object))
        :text-fill :red})))
+
+(defn imagebuf [{:keys [imagebuf]}]
+  {:fx/type fx/ext-instance-factory
+   :create  (fn []
+              (wrap-image-with-pane imagebuf))})

@@ -156,7 +156,7 @@
                            (svg/group {}
                                       nil))
                          (if contour-svg
-                           contour-svg
+                           (:hiccup contour-svg)
                            (svg/group {}
                                       nil))
                          (svgmaps/points-of-interest pois

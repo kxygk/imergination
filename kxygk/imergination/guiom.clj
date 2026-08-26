@@ -4,16 +4,46 @@
   (:require [clojure.java.io :as io]
             [cljfx.api       :as fx]
             [cljfx.ext.list-view :as fx.ext.list-view]
+            [com.wsscode.pathom3.connect.built-in.resolvers :as pbir]
+            [com.wsscode.pathom3.interface.smart-map :as psm]
+            [com.wsscode.pathom3.connect.runner :as pcr]
+            [com.wsscode.pathom3.connect.operation :as pco]
+            [com.wsscode.pathom3.interface.async.eql :as p.a.eql]
+            [com.wsscode.pathom3.interface.eql :as p.eql]
+            [com.wsscode.pathom3.connect.planner :as pcp]
+            [com.wsscode.pathom3.connect.indexes :as pci]
             [quickthing]
             [geoprim]
+            [kxygk.imergination.svg2jfx :as svg2jfx]
             [kxygk.pathomfx.pathprom :as pathprom]
             [kxygk.imergination.stateom :as stateom]
             [kxygk.imergination.imagepane :as imagepane])
   (:gen-class :main true))`
 
+
+
 (set!
   *warn-on-reflection*
   true)
+
+(def pathom-env
+  (-> (pci/register {::p.a.eql/parallel? true}
+                    [stateom/env
+                     (pbir/single-attr-resolver :hiccup
+                                                :imagebuf
+                                                (fn render-svg-hiccup
+                                                  [svg-hiccup]
+                                                  (-> svg-hiccup
+                                                      quickthing/svg2xml
+                                                      svg2jfx/jsvg-jxfimg)))])
+      (pcp/with-plan-cache stateom/pathom-plan-cache*)
+      pcr/with-resolver-cache))
+
+#_
+ @(p.a.eql/process pathom-env
+                   @stateom/*selections
+                   [{:contour-svg [:imagebuf]}])
+
 
 (defn
   worldmap
@@ -29,15 +59,20 @@
    :on-mouse-pressed  {:effect event-worldmap-mouse-press}
    :on-mouse-released {:effect event-worldmap-mouse-release}
    :children          [{:fx/type        pathprom/later
-                        :env            stateom/env
+                        :env            pathom-env
                         :inputmap       state
-                        :tx             [:world-svg]
+                        :tx             [{:world-svg [:imagebuf]}]
                         :loading-ui     {:fx/type :label
                                          :text    "Loading..."}
                         :realized-ui-fn (fn [pathom-map]
-                                          {:fx/type imagepane/svg
-                                           :svg     (-> pathom-map
-                                                        :world-svg)})}]})
+                                          {:fx/type imagepane/imagebuf
+                                           :imagebuf     (-> pathom-map
+                                                             :world-svg
+                                                             :imagebuf)})}]})
+#_
+ @(p.a.eql/process pathom-env
+                   @stateom/*selections
+                   [{:world-svg [:imagebuf]}])
 
 (defn
   datadir-list
@@ -47,7 +82,7 @@
   for details.."
   [{:keys [state]}]
   {:fx/type        pathprom/later
-   :env            stateom/env
+   :env            pathom-env
    :inputmap       state
    :tx             [:datafile-strs-formatted]
    :loading-ui     {:fx/type :list-view
@@ -73,7 +108,7 @@
   {:fx/type  :v-box
    :style    {:-fx-background-color :green}
    :children [{:fx/type        pathprom/later
-               :env            stateom/env
+               :env            pathom-env
                :inputmap       state
                :tx             [:data-dirstr]
                :loading-ui     {:fx/type :text-field
@@ -105,16 +140,19 @@
    :fill-width true
    :style      {:-fx-background-color :red}
    :children   [{:fx/type        pathprom/later
-                 :env            stateom/env
+                 :env            pathom-env
                  :inputmap       state
-                 :tx             [{:first-datafile-svg [:datafile-svg]}]
+                 :tx             [{:first-datafile-svg [:imagebuf]}]
                  :loading-ui     {:fx/type fx/ext-get-ref
                                   :ref     ::loading-ui}
                  :realized-ui-fn (fn [pathom-map]
-                                   {:fx/type imagepane/svg
-                                    :svg     (-> pathom-map
-                                                 :first-datafile-svg
-                                                 :datafile-svg)})}]})
+                                   {:fx/type  imagepane/imagebuf
+                                    :imagebuf (-> pathom-map
+                                                  :first-datafile-svg
+                                                  :imagebuf)})}]})
+@(p.a.eql/process pathom-env
+                  @stateom/*selections
+                  [{:first-datafile-svg [:imagebuf]}])
 
 
 (defn
@@ -128,16 +166,16 @@
    :fill-width true
    :style      {:-fx-background-color :red}
    :children   [{:fx/type        pathprom/later
-                 :env            stateom/env
+                 :env            pathom-env
                  :inputmap       state
-                 :tx             [{:first-svec-svg [:singular-vector-svg]}]
+                 :tx             [{:first-svec-svg [:imagebuf]}]
                  :loading-ui     {:fx/type fx/ext-get-ref
                                   :ref     ::loading-ui}
                  :realized-ui-fn (fn [pathom-map]
-                                   {:fx/type imagepane/svg
-                                    :svg     (-> pathom-map
+                                   {:fx/type imagepane/imagebuf
+                                    :imagebuf     (-> pathom-map
                                                  :first-svec-svg
-                                                 :singular-vector-svg)})}]})
+                                                 :imagebuf)})}]})
 
 
 (defn
@@ -151,16 +189,16 @@
    :fill-width true
    :style      {:-fx-background-color :red}
    :children   [{:fx/type        pathprom/later
-                 :env            stateom/env
+                 :env            pathom-env
                  :inputmap       state
-                 :tx             [{:second-svec-svg [:singular-vector-svg]}]
+                 :tx             [{:second-svec-svg [:imagebuf]}]
                  :loading-ui     {:fx/type fx/ext-get-ref
                                   :ref     ::loading-ui}
                  :realized-ui-fn (fn [pathom-map]
-                                   {:fx/type imagepane/svg
-                                    :svg     (-> pathom-map
+                                   {:fx/type imagepane/imagebuf
+                                    :imagebuf     (-> pathom-map
                                                  :second-svec-svg
-                                                 :singular-vector-svg)})}]})
+                                                 :imagebuf)})}]})
 
 #_
 (defn
@@ -225,6 +263,7 @@
                                         :state            state
                                         :grid-pane/row    1
                                         :grid-pane/column 1}
+                                       #_#_
                                        {:fx/type          firstsv
                                         :state            state
                                         :grid-pane/row    2
@@ -267,13 +306,14 @@
    :scene   {:fx/type :scene
              :root    {:fx/type fx/ext-let-refs
                        :refs    {::loading-ui {:fx/type        pathprom/now
-                                               :env            stateom/env
+                                               :env            pathom-env
                                                :inputmap       value
-                                               :tx             [:contour-svg]
+                                               :tx             [{:contour-svg [:imagebuf]}]
                                                :realized-ui-fn (fn [pathom-map]
-                                                                 {:fx/type imagepane/svg
-                                                                  :svg     (-> pathom-map
-                                                                               :contour-svg)})}}
+                                                                 {:fx/type  imagepane/imagebuf
+                                                                  :imagebuf (-> pathom-map
+                                                                                :contour-svg
+                                                                                :imagebuf)})}}
                        :desc    {:fx/type main-vertical-display
                                  :state   value}}}})
 
