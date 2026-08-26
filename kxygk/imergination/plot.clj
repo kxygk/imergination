@@ -55,11 +55,11 @@
   "Adds a region to the world map
   The world map goes EAS 0-360 and SOU 0-180
   TODO: Make something a bit more generic.."
-  [world-map
-   region
-   #_#_
-   & [{:keys [display-width]
-       :or   {display-width 360}}]]
+  ([world-map]
+   (worldmap-region world-map
+                    nil))
+  ([world-map
+   region]
   (let [{:keys [norwes
                 soueas]} region
         x-start          (:eas norwes)
@@ -68,18 +68,20 @@
     (quickthing/svg-wrap
       (svg/group {}
                  world-map
-                 (svg/rect [x-start
-                            y-start]
-                           (- (:eas soueas)
-                              x-start)
-                           (- (:sou soueas)
-                              y-start)
-                           {:fill         "red"
-                            :fill-opacity "0.25"}))
+                 (if region
+                   (svg/rect [x-start
+                              y-start]
+                             (- (:eas soueas)
+                                x-start)
+                             (- (:sou soueas)
+                                y-start)
+                             {:fill         "red"
+                              :fill-opacity "0.25"})
+                   (svg/group {}))) ;; dummy
       [360.0
        180.0]
       #_
-      display-width)))
+      display-width))))
 
 (defn
   map-label

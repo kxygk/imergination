@@ -358,15 +358,25 @@
                        :sou-res]))
 
 (pco/defresolver $world-svg
-  [{:keys [shoreline
-           region
-           display-width]}]
+  [{:keys [shoreline]}]
   {::pco/output [{:world-svg [:hiccup]}]}
   {:world-svg {:hiccup (-> locations/world-region
                            (plot/shoreline-map shoreline
                                                [])
-                           (plot/worldmap-region region)
                            (spitsvgstream "world.svg"))}})
+#_
+(check :world-svg)
+
+
+(pco/defresolver $world-with-region-highlight-svg
+  [{:keys [shoreline
+           region]}]
+  {::pco/output [{:world-with-region-highlight-svg [:hiccup]}]}
+  {:world-with-region-highlight-svg {:hiccup (-> locations/world-region
+                           (plot/shoreline-map shoreline
+                                               [])
+                           (plot/worldmap-region region)
+                           (spitsvgstream "world-with-region.svg"))}})
 #_
 (check :world-svg)
 
@@ -1880,6 +1890,7 @@
                      $region-to-display-scale-x
                      $region-to-display-scale-y
                      $world-svg
+                     $world-with-region-highlight-svg
                      $contour-bare-svg
                      $contour-svg
                      input-env ;; stuff related to reading in the data.. this is slow
