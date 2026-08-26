@@ -422,19 +422,6 @@
     }
    })
 
-
-{:fx/type fx/ext-let-refs
- :refs    {::button-a {:fx/type :button
-                       :text    "Press Alt+A to focus on me"}}
- :desc    {:fx/type  :v-box
-           :children [{:fx/type          :label
-                       :text             "Mnemonic _A"
-                       :mnemonic-parsing true
-                       :label-for        {:fx/type fx/ext-get-ref
-                                          :ref     ::button-a}}
-                      {:fx/type fx/ext-get-ref
-                       :ref     ::button-a}]}}
-
 (defn app-root
   "The absolute root of the Cljfx application.
    This provides the OS Window (Stage) and Canvas (Scene).
