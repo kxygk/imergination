@@ -377,10 +377,10 @@
            region]}]
   {::pco/output [{:contour-bare-svg [:hiccup]}]}
   {:contour-bare-svg {:hiccup (-> region
-                         (plot/shoreline-map shoreline
-                                             {:axis-visible? false})
-                          #_;; not interesting
-                         (spitsvgstream "contour-bare.svg"))}})
+                                  (plot/shoreline-map shoreline
+                                                      {:axis-visible? false})
+                                  #_;; not interesting
+                                  (spitsvgstream "contour-bare.svg"))}})
 #_
 (check :contour-bare-svg)
 
@@ -393,8 +393,8 @@
   {:contour-svg {:hiccup (-> region
                              (plot/shoreline-map shoreline
                                                  {:axis-visible? true})
-                     ;; not interesting
-                    (spitsvgstream "contour.svg"))}})
+                             ;; not interesting
+                             (spitsvgstream "contour.svg"))}})
 #_
 (check :contour-svg)
 
@@ -782,12 +782,12 @@
            region
            contour-svg
            region-min-max]}]
-  {::pco/input [:datafile-id
-                :datafile-geogrid
-                :region
-                {:contour-svg [:hiccup]}
-                :region-min-max]
-   ::pco/output [:hiccup]
+  {::pco/input   [:datafile-id
+                  :datafile-geogrid
+                  :region
+                  {:contour-svg [:hiccup]}
+                  :region-min-max]
+   ::pco/output  [:hiccup]
    #_#_ ;; prolly can regenerate each time you look at a new data
    :inject-cache :lru1}
   (if (nil? datafile-id)
@@ -861,26 +861,26 @@
            region
            contour-svg
            singular-vector-geogrid]}]
-  {::pco/input [:sv-index
-                :datafile-strs
-                :region
-                {:contour-svg [:hiccup]}
-                :singular-vector-geogrid]
-   ::pco/output [:hiccup]
+  {::pco/input   [:sv-index
+                  :datafile-strs
+                  :region
+                  {:contour-svg [:hiccup]}
+                  :singular-vector-geogrid]
+   ::pco/output  [:hiccup]
    :inject-cache :lru4}
-   {:hiccup (if (empty? datafile-strs)
-              contour-svg
-              (-> singular-vector-geogrid
-                  (plot/grid-map region
-                                 contour-svg
-                                 {:label-top-right (str "SV"
-                                                        (inc sv-index))
-                                  :label-attribs   {:fill      "black"
-                                                    :stroke    "white" #_#_
-                                                    :font-size 1.1}})
-                  (spitsvgstream (str "sv-"
-                                      sv-index
-                                      ".svg"))))})
+  {:hiccup (if (empty? datafile-strs)
+             contour-svg
+             (-> singular-vector-geogrid
+                 (plot/grid-map region
+                                contour-svg
+                                {:label-top-right (str "SV"
+                                                       (inc sv-index))
+                                 :label-attribs   {:fill      "black"
+                                                   :stroke    "white" #_#_
+                                                   :font-size 1.1}})
+                 (spitsvgstream (str "sv-"
+                                     sv-index
+                                     ".svg"))))})
 #_(check :hiccup
          {:sv-index 1})
 
@@ -1021,21 +1021,21 @@
            region
            contour-svg
            noise-matrix-2d]}]
-  {::pco/input [:noise-index
-                :region
-                {:contour-svg [:hiccup]}
-                :noise-matrix-2d]
-   ::pco/output [:hiccup]
+  {::pco/input   [:noise-index
+                  :region
+                  {:contour-svg [:hiccup]}
+                  :noise-matrix-2d]
+   ::pco/output  [:hiccup]
    :inject-cache :lru1}
   {:hiccup (if (nil? noise-index)
-                contour-svg
-                {:hiccup (-> (datamats/extract-grid noise-matrix-2d
-                                                    noise-index)
-                             (plot/grid-map region
-                                            contour-svg) ;; maybe no need?
-                             (spitsvgstream (str "noise-"
-                                                 noise-index
-                                                 "-file.svg")))})})
+             contour-svg
+             {:hiccup (-> (datamats/extract-grid noise-matrix-2d
+                                                 noise-index)
+                          (plot/grid-map region
+                                         contour-svg) ;; maybe no need?
+                          (spitsvgstream (str "noise-"
+                                              noise-index
+                                              "-file.svg")))})})
 #_(check :hiccup
          {:noise-index 0})
 
@@ -1080,11 +1080,11 @@
            region
            contour-svg
            noise-matrix-scaled-to-sv1]}]
-  {::pco/input  [:noise-sv1-index
-                :region
-                 {:contour-svg [:hiccup]}
-                :noise-matrix-scaled-to-sv1]
-   ::pco/output [:hiccup]
+  {::pco/input   [:noise-sv1-index
+                  :region
+                  {:contour-svg [:hiccup]}
+                  :noise-matrix-scaled-to-sv1]
+   ::pco/output  [:hiccup]
    :inject-cache :lru1}
   {:hiccup (if (nil? noise-sv1-index)
              contour-svg
@@ -1112,11 +1112,11 @@
            region
            contour-svg
            noise-matrix-scaled-to-sv2]}]
-  {::pco/input  [:noise-sv2-index
-                :region
-                 {:contour-svg [:hiccup]}
-                :noise-matrix-scaled-to-sv2]
-   ::pco/output [:hiccup]
+  {::pco/input   [:noise-sv2-index
+                  :region
+                  {:contour-svg [:hiccup]}
+                  :noise-matrix-scaled-to-sv2]
+   ::pco/output  [:hiccup]
    :inject-cache :lru4}
   {:hiccup (if (nil? noise-sv2-index)
              contour-svg
@@ -1354,13 +1354,13 @@
            svec-two
            sval-one
            sval-two]}]
-  {::pco/input  [{:first-svec [:singular-vector]}
-                 {:second-svec [:singular-vector]}
-                 :svec-one
-                 :svec-two
-                 :sval-one
-                 :sval-two]
-   ::pco/output [:singular-vector-mixture]
+  {::pco/input   [{:first-svec [:singular-vector]}
+                  {:second-svec [:singular-vector]}
+                  :svec-one
+                  :svec-two
+                  :sval-one
+                  :sval-two]
+   ::pco/output  [:singular-vector-mixture]
    :inject-cache :lru4}
   {:singular-vector-mixture (mapv (fn [svec1-point
                                        svec2-point]
@@ -1426,7 +1426,7 @@
                                                      :colormap        (into quickthing/rainbow
                                                                             quickthing/rainbow)})
                                      (spitsvgstream "top-pattern.svg"))))}})
-  #_(check :top-pattern-svg)
+#_(check :top-pattern-svg)
 
 
 (pco/defresolver $$top-pattern-weighted-noise
@@ -1521,7 +1521,7 @@
                                                      :colormap        (into quickthing/rainbow
                                                                             quickthing/rainbow)})
                                      (spitsvgstream "bot-pattern.svg"))))}})
-  #_(check :bot-pattern-svg)
+#_(check :bot-pattern-svg)
 
 
 (pco/defresolver $$bot-pattern-weighted-noise
@@ -1655,10 +1655,10 @@
            region
            contour-svg
            climate-noise-matrix-2d-normalized]}]
-  {::pco/input [:climate-noise-index
-                :region
-                {:contour-svg [:hiccup]}
-                :climate-noise-matrix-2d-normalized]
+  {::pco/input  [:climate-noise-index
+                 :region
+                 {:contour-svg [:hiccup]}
+                 :climate-noise-matrix-2d-normalized]
    ::pco/output [:hiccup]}
   {:hiccup (-> (datamats/extract-grid  climate-noise-matrix-2d-normalized
                                        climate-noise-index)
@@ -1713,8 +1713,8 @@
                                                    cycle-length
                                                    cycle-phase)
                                        (spitsvgstream "indeces-vars.svg"))}})
-  #_(:climate-noise-var-svg (check :climate-noise-var-svg
-                                   {:index 6}))
+#_(:climate-noise-var-svg (check :climate-noise-var-svg
+                                 {:index 6}))
 
 (def $pattern-proj-partitioned
   (pbir/single-attr-resolver :pattern-proj
@@ -1793,7 +1793,7 @@
                                                                  (/ window-width
                                                                     (count proj-a)))})
                                     (spitsvgstream "indeces.svg")))}})
-  #_(check {:pattern-proj-svg [:hiccup]})
+#_(check {:pattern-proj-svg [:hiccup]})
 
 
 (def $singular-values-stats
@@ -1818,7 +1818,7 @@
                                                       (* 1.0
                                                          row-height))
                                      (spitsvgstream "singular-values.svg"))}})
-  #_(check :singular-values-svg)
+#_(check :singular-values-svg)
 
 (pco/defresolver $$observation-svg
   [{:keys [observation-index

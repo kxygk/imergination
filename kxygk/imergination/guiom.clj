@@ -41,9 +41,9 @@
       (pcp/with-plan-cache stateom/pathom-plan-cache*)))
 
 #_
- @(p.a.eql/process pathom-env
-                   @stateom/*selections
-                   [{:contour-svg [:imagebuf]}])
+@(p.a.eql/process pathom-env
+                  @stateom/*selections
+                  [{:contour-svg [:imagebuf]}])
 
 
 (defn
@@ -66,14 +66,14 @@
                         :loading-ui     {:fx/type :label
                                          :text    "Loading..."}
                         :realized-ui-fn (fn [pathom-map]
-                                          {:fx/type imagepane/imagebuf
-                                           :imagebuf     (-> pathom-map
-                                                             :world-svg
-                                                             :imagebuf)})}]})
+                                          {:fx/type  imagepane/imagebuf
+                                           :imagebuf (-> pathom-map
+                                                         :world-svg
+                                                         :imagebuf)})}]})
 #_
- @(p.a.eql/process pathom-env
-                   @stateom/*selections
-                   [{:world-svg [:imagebuf]}])
+@(p.a.eql/process pathom-env
+                  @stateom/*selections
+                  [{:world-svg [:imagebuf]}])
 
 (defn
   datadir-list
@@ -173,10 +173,10 @@
                  :loading-ui     {:fx/type fx/ext-get-ref
                                   :ref     ::loading-ui}
                  :realized-ui-fn (fn [pathom-map]
-                                   {:fx/type imagepane/imagebuf
-                                    :imagebuf     (-> pathom-map
-                                                 :first-svec-svg
-                                                 :imagebuf)})}]})
+                                   {:fx/type  imagepane/imagebuf
+                                    :imagebuf (-> pathom-map
+                                                  :first-svec-svg
+                                                  :imagebuf)})}]})
 
 
 (defn
@@ -196,10 +196,10 @@
                  :loading-ui     {:fx/type fx/ext-get-ref
                                   :ref     ::loading-ui}
                  :realized-ui-fn (fn [pathom-map]
-                                   {:fx/type imagepane/imagebuf
-                                    :imagebuf     (-> pathom-map
-                                                 :second-svec-svg
-                                                 :imagebuf)})}]})
+                                   {:fx/type  imagepane/imagebuf
+                                    :imagebuf (-> pathom-map
+                                                  :second-svec-svg
+                                                  :imagebuf)})}]})
 
 #_
 (defn
