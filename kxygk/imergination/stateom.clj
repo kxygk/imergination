@@ -466,10 +466,18 @@
   [file-locations
    easres
    soures]
-  (map #(do (geogrid4image/read-location %
-                                         easres
-                                         soures))
-       file-locations))
+  (let [num-files (count file-locations)]
+    (map-indexed (fn read-in-a-file
+                   [index
+                    file-location]
+                   (do (println (str "Reading in file "
+                                     (inc index)
+                                     " of "
+                                     num-files))
+                       (geogrid4image/read-location file-location
+                                                    easres
+                                                    soures)))
+                 file-locations)))
 ;; #_
 ;; (geogrid4image/read-location (clojure.java.io/file
 ;;                                  "/home/kxygk/Data/20CRv2c/SLP/pressure/geotiff-rot-subset/pres_only.nc-block0074-rot.tiff")
