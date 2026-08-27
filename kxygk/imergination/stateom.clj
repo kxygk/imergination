@@ -727,6 +727,25 @@
                              datamats/num-svs))
 ;;(check :num-svs)
 
+(def $sv-strs
+  (pbir/single-attr-resolver :num-svs
+                             :sv-strs
+                             (fn generate-sv-strs
+                               [num-of-svs]
+                               (let [svs        (-> num-of-svs
+                                                    range)
+                                     max-digits (-> num-of-svs
+                                                    clojure.math/log10
+                                                    clojure.math/ceil
+                                                    int)]
+                                 (mapv (fn [svindex]
+                                         (str "SV "
+                                              (format (str "%0"
+                                                           max-digits
+                                                           "d")
+                                                      svindex)))
+                                       svs)))))
+
 (def $region-svd
   (pbir/single-attr-resolver :region-matrix
                              :region-svd
@@ -939,7 +958,7 @@
 #_(check {:second-svec-svg [:hiccup]})
 
 
-(pco/defresolver $first-selected-sv-svg
+(pco/defresolver $first-svec-selected-svg
   [{:keys [first-svec-selected-idx
            contour-svg]
     :as   inputs}]
@@ -948,16 +967,16 @@
                  :region-matrix
                  :region
                  :datafile-strs]
-   ::pco/output [{:first-selected-sv-svg [:sv-index
+   ::pco/output [{:first-svec-selected-svg [:sv-index
                                           {:contour-svg [:hiccup]}
                                           :region-matrix
                                           :region
                                           :datafile-strs]}]}
-  {:first-selected-sv-svg (if (nil? first-svec-selected-idx)
+  {:first-svec-selected-svg (if (nil? first-svec-selected-idx)
                             contour-svg ;; BROKEN ; doesn't match output keys. Unclear how to fix
                             (merge inputs
                                    {:sv-index (:first-svec-selected-idx inputs)}))})
-#_(check {:first-selected-sv-svg [:hiccup]})
+#_(check {:first-svec-selected-svg [:hiccup]})
 
 (pco/defresolver $$sv-weights
   [{:keys [sv-index
@@ -1898,6 +1917,7 @@
                      input-env ;; stuff related to reading in the data.. this is slow
                      $region-geogrid-params
                      $num-svs
+                     $sv-strs
                      $region-svd
                      $region-min-max
                      $first-datafile-idx
@@ -1914,7 +1934,7 @@
                      $$singular-vector-svg
                      $first-svec-svg
                      $second-svec-svg
-                     $first-selected-sv-svg
+                     $first-svec-selected-svg
                      $$sv-weights
                      $sv-proj-vec
                      $sv12-plot-svg

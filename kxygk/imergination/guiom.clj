@@ -344,32 +344,62 @@
                                                   :second-svec-svg
                                                   :imagebuf)})}]})
 
-#_
 (defn
   svlist
   "Lists have to be wrapped in an `extension lifecycle`..
   (I don't understand why)
   see: `cljfx/examples/e27_selection_models.clj`
   for details.."
-  [{:keys [fx/context]}]
-  (let [select-file-effect {:effect (fn [snapshot
-                                         event]
-                                      (-> snapshot
-                                          (fx/swap-context assoc
-                                                           :sv-selected-idxs
-                                                           (:fx/event event))))}]
-    {:fx/type fx.ext.list-view/with-selection-props
-     :props   {:selection-mode              :multiple
-               :on-selected-indices-changed select-file-effect}
-     :desc    {:fx/type      :list-view
-               #_#_
-               :cell-factory {:fx/cell-type :list-cell
-                              :describe     (fn [path]
-                                              {:text path})}
-               :max-height   (fx/sub-ctx context
-                                         state/region-display-height)
-               :items        (->> (fx/sub-ctx context
-                                              state/sv-strs))}}))
+  [{:keys [state]}]
+  {:fx/type        pathprom/later
+   :env            pathom-env
+   :inputmap       state
+   :tx             [:sv-strs]
+   :loading-ui     {:fx/type :list-view
+                    :items   ["Loading..."]}
+   :realized-ui-fn (fn [pathom-map]
+                     {:fx/type fx.ext.list-view/with-selection-props
+                      :style   {:-fx-background-color :red}
+                      :props   {:selection-mode              :multiple
+                                :on-selected-indices-changed (fn update-datafile-selections
+                                                               [selected-indices]
+                                                               (swap! stateom/*selections
+                                                                      assoc
+                                                                      :sv-selected-idxs
+                                                                      selected-indices))}
+                      :desc    {:fx/type     :list-view
+                                :min-height  0
+                                :pref-height 0
+                                :items       (:sv-strs pathom-map)}})})
+
+#_
+@(p.a.eql/process pathom-env
+                  @stateom/*selections
+                  [{:contour-svg [:imagebuf]}])
+
+
+(defn
+  svpreview
+  "Where we select the data to read in..
+  We can inspect how it looks in our region
+  TODO: revisit why I can't do this with `svg` and need to use `svg2jfx/xml`.
+  With the `svg` element it doesn't update properly in the GUI"
+  [{:keys [state]}]
+  {:fx/type    :v-box
+   :fill-width true
+   :style      {:-fx-background-color :red}
+   :children   [{:fx/type        pathprom/later
+                 :env            pathom-env
+                 :inputmap       state
+                 :tx             [{:first-svec-selected-svg [:imagebuf]}]
+                 :loading-ui     {:fx/type fx/ext-get-ref
+                                  :ref     ::loading-ui}
+                 :realized-ui-fn (fn [pathom-map]
+                                   {:fx/type  imagepane/imagebuf
+                                    :imagebuf (-> pathom-map
+                                                  :first-svec-selected-svg
+                                                  :imagebuf)})}]})
+
 
 (defn
   main-vertical-display
@@ -407,7 +437,6 @@
                                         :state            state
                                         :grid-pane/row    1
                                         :grid-pane/column 1}
-                                       #_#_
                                        {:fx/type          firstsv
                                         :state            state
                                         :grid-pane/row    2
@@ -416,10 +445,14 @@
                                         :state            state
                                         :grid-pane/row    2
                                         :grid-pane/column 1}
-                                       #_
                                        {:fx/type          svlist
+                                        :state state
                                         :grid-pane/row    3
                                         :grid-pane/column 0}
+                                       {:fx/type          svpreview
+                                        :state state
+                                        :grid-pane/row    3
+                                        :grid-pane/column 1}
                                        ]}]
     }
    })
