@@ -374,10 +374,10 @@
            region]}]
   {::pco/output [{:world-with-region-highlight-svg [:hiccup]}]}
   {:world-with-region-highlight-svg {:hiccup (-> locations/world-region
-                           (plot/shoreline-map shoreline
-                                               [])
-                           (plot/worldmap-region region)
-                           (spitsvgstream "world-with-region.svg"))}})
+                                                 (plot/shoreline-map shoreline
+                                                                     [])
+                                                 (plot/worldmap-region region)
+                                                 (spitsvgstream "world-with-region.svg"))}})
 #_
 (check :world-svg)
 
@@ -395,7 +395,6 @@
 #_
 (check :contour-bare-svg)
 
-;; TODO: Why do I have one with a size (`contour`) and one without (`region`)
 (pco/defresolver $contour-svg
   "A contour on a map (with lat/lon). Use as loading placeholder"
   [{:keys [shoreline
@@ -407,7 +406,13 @@
                              ;; not interesting
                              (spitsvgstream "contour.svg"))}})
 #_
-(check :contour-svg)
+(let [shoreline (check :shoreline)]
+  (time (check :contour-svg
+               (assoc shoreline
+                      :region
+                      (:region (:java locations/regions))))))
+
+
 
 (def $data-dirstr
   (pbir/single-attr-resolver :rain-dirstr
@@ -968,14 +973,14 @@
                  :region
                  :datafile-strs]
    ::pco/output [{:first-svec-selected-svg [:sv-index
-                                          {:contour-svg [:hiccup]}
-                                          :region-matrix
-                                          :region
-                                          :datafile-strs]}]}
+                                            {:contour-svg [:hiccup]}
+                                            :region-matrix
+                                            :region
+                                            :datafile-strs]}]}
   {:first-svec-selected-svg (if (nil? first-svec-selected-idx)
-                            contour-svg ;; BROKEN ; doesn't match output keys. Unclear how to fix
-                            (merge inputs
-                                   {:sv-index (:first-svec-selected-idx inputs)}))})
+                              contour-svg ;; BROKEN ; doesn't match output keys. Unclear how to fix
+                              (merge inputs
+                                     {:sv-index (:first-svec-selected-idx inputs)}))})
 #_(check {:first-svec-selected-svg [:hiccup]})
 
 (pco/defresolver $$sv-weights
@@ -1982,6 +1987,12 @@
       (pcp/with-plan-cache pathom-plan-cache*)
       kxygk.pathmore.cache/inject-for-all-resolvers
       kxygk.pathmore.async/wrap-all-resolvers-async))
+
+#_
+(time
+  (p.a.eql/process env
+                   @*selections
+                   [{:first-datafile-svg [:imagebuf]}]))
 
 (defn check
   "simple util func to check a key in this file"

@@ -35,11 +35,11 @@
 
 (defn contour-ui
   [{:keys [value]}]
-   (if value
-     {:fx/type  imagepane/imagebuf
-      :imagebuf value}
-     {:fx/type :stack-pane
-      :style   {:-fx-background-color "#eee7e9"}}))
+  (if value
+    {:fx/type  imagepane/imagebuf
+     :imagebuf value}
+    {:fx/type :stack-pane
+     :style   {:-fx-background-color "#eee7e9"}}))
 
 (defn contour-loading-ui
   [_]
@@ -68,15 +68,22 @@
                   @stateom/*selections
                   [{:contour-svg [:imagebuf]}])
 
+
+#_
+(time
+  (p.a.eql/process pathom-env
+                   @stateom/*selections
+                   [{:first-datafile-svg [:imagebuf]}]))
+
 (def map-clicks
   (atom {}))
 
 (defn region-rectangle
-[{:keys [value]}]
-(let [x1 (:start-x value)
-      y1 (:start-y value)
-      x2 (:ended-x value)
-      y2 (:ended-y value)]
+  [{:keys [value]}]
+  (let [x1 (:start-x value)
+        y1 (:start-y value)
+        x2 (:ended-x value)
+        y2 (:ended-y value)]
     (if (and x1
              x2
              y1
@@ -186,28 +193,25 @@
                                            eas-second)
                                      (not= sou-first
                                            sou-second))
-                            (#_
-                              println
-                              ;;#_#_#_#_
-                              swap! stateom/*selections
-                              assoc
-                              :region
-                              (geoprim/region (geoprim/point-eassou (clamp (min eas-first
-                                                                                eas-second)
-                                                                           0
-                                                                           360)
-                                                                    (clamp (min sou-first
-                                                                                sou-second)
-                                                                           0
-                                                                           180))
-                                              (geoprim/point-eassou (clamp (max eas-first
-                                                                                eas-second)
-                                                                           0
-                                                                           360)
-                                                                    (clamp (max sou-first
-                                                                                sou-second)
-                                                                           0
-                                                                           180))))))
+                            ( swap! stateom/*selections
+                             assoc
+                             :region
+                             (geoprim/region (geoprim/point-eassou (clamp (min eas-first
+                                                                               eas-second)
+                                                                          0
+                                                                          360)
+                                                                   (clamp (min sou-first
+                                                                               sou-second)
+                                                                          0
+                                                                          180))
+                                             (geoprim/point-eassou (clamp (max eas-first
+                                                                               eas-second)
+                                                                          0
+                                                                          360)
+                                                                   (clamp (max sou-first
+                                                                               sou-second)
+                                                                          0
+                                                                          180))))))
                         (reset! map-clicks
                                 {}))
 
@@ -235,8 +239,10 @@
                   @stateom/*selections
                   [{:world-svg [:imagebuf]}])
 
+
+
 (defn
-  datadir-list
+  datadirlist
   "Lists have to be wrapped in an `extension lifecycle`..
   (I don't understand why)
   see: `cljfx/examples/e27_selection_models.clj`
@@ -246,10 +252,10 @@
    :env            pathom-env
    :inputmap       state
    :tx             [:datafile-strs-formatted]
-   :loading-ui     {:fx/type :list-view
+   :loading-ui     {:fx/type     :list-view
                     :min-height  0
                     :pref-height 0
-                    :items   ["Loading..."]}
+                    :items       ["Loading..."]}
    :realized-ui-fn (fn [pathom-map]
                      {:fx/type fx.ext.list-view/with-selection-props
                       :style   {:-fx-background-color :red}
@@ -260,41 +266,39 @@
                                                                       assoc
                                                                       :datafile-idxs
                                                                       selected-indices))}
-                      :desc    {:fx/type :list-view
+                      :desc    {:fx/type     :list-view
                                 :min-height  0
                                 :pref-height 0
-                                :items   (:datafile-strs-formatted pathom-map)}})})
+                                :items       (:datafile-strs-formatted pathom-map)}})})
 
 (defn
   datadir
   "Where we select the data to read in..
   We can inspect how it looks in our region"
   [{:keys [state]}]
-  {:fx/type  :v-box
-   :style    {:-fx-background-color :green}
-   :min-height  0
-   :children [{:fx/type        pathprom/later
-               :env            pathom-env
-               :inputmap       state
-               :tx             [:data-dirstr]
-               :loading-ui     {:fx/type :text-field
-                                :disable true
-                                :text    "Loading..."}
-               :realized-ui-fn (fn [pathom-map]
-                                 {:fx/type :text-field
+  {:fx/type    :v-box
+   :style      {:-fx-background-color :green}
+   :min-height 0
+   :children   [{:fx/type        pathprom/later
+                 :env            pathom-env
+                 :inputmap       state
+                 :tx             [:data-dirstr]
+                 :loading-ui     {:fx/type :text-field
                                   :disable true
-                                  :text    (:data-dirstr pathom-map)})}
-              #_
-              {:fx/type :text-field
-               :disable true
-               ;;                :alignment :center-left
-               :text    (stateom/fetch state
-                                       :data-dirstr)}
-              {:fx/type     datadir-list
-               :state       state
-               :v-box/vgrow :always
-               :min-height  0}
-              ]})
+                                  :text    "Loading..."}
+                 :realized-ui-fn (fn [pathom-map]
+                                   {:fx/type :text-field
+                                    :disable true
+                                    :text    (:data-dirstr pathom-map)})}
+                {:fx/type     datadirlist
+                 :state       state
+                 :v-box/vgrow :always
+                 :min-height  0}
+                ]})
+#_
+(defn datapreview [{:keys [state]}]
+  {:fx/type  :v-box
+   :children [{:fx/type :label :text "dummy"}]})
 
 (defn
   datapreview
@@ -316,6 +320,7 @@
                                     :imagebuf (-> pathom-map
                                                   :first-datafile-svg
                                                   :imagebuf)})}]})
+#_
 @(p.a.eql/process pathom-env
                   @stateom/*selections
                   [{:first-datafile-svg [:imagebuf]}])
@@ -375,10 +380,10 @@
    :env            pathom-env
    :inputmap       state
    :tx             [:sv-strs]
-   :loading-ui     {:fx/type :list-view
+   :loading-ui     {:fx/type     :list-view
                     :min-height  0
                     :pref-height 0
-                    :items   ["Loading..."]}
+                    :items       ["Loading..."]}
    :realized-ui-fn (fn [pathom-map]
                      {:fx/type fx.ext.list-view/with-selection-props
                       :style   {:-fx-background-color :red}
@@ -467,11 +472,11 @@
                                         :grid-pane/row    2
                                         :grid-pane/column 1}
                                        {:fx/type          svlist
-                                        :state state
+                                        :state            state
                                         :grid-pane/row    3
                                         :grid-pane/column 0}
                                        {:fx/type          svpreview
-                                        :state state
+                                        :state            state
                                         :grid-pane/row    3
                                         :grid-pane/column 1}
                                        ]}]
@@ -537,3 +542,11 @@
 ;; (defn -main [& args]
 ;;   (javafx.application.Platform/setImplicitExit false)
 ;;   @app)
+
+
+#_
+(let [shoreline (check :shoreline)]
+  (time (check {:contour-svg [:imagebuf]}
+               (assoc shoreline
+                      :region
+                      (:region (:java locations/regions))))))
