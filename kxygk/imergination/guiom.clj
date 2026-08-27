@@ -27,6 +27,27 @@
   *warn-on-reflection*
   true)
 
+;; This is the "Default" view while things are loading
+;; The atom is reused around the UI.
+;; The atom is ppdated in the root
+(defonce contour-imagebuf-atom
+  (atom nil))
+
+(defn contour-ui
+  [{:keys [value]}]
+   (if value
+     {:fx/type  imagepane/imagebuf
+      :imagebuf value}
+     {:fx/type :stack-pane
+      :style   {:-fx-background-color "#eee7e9"}}))
+
+(defn contour-loading-ui
+  [_]
+  {:fx/type fx/ext-watcher
+   :ref     contour-imagebuf-atom
+   :desc    {:fx/type contour-ui}})
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (def pathom-env
   (-> (pci/register {::p.a.eql/parallel? true}
                     [stateom/env
@@ -289,8 +310,7 @@
                  :env            pathom-env
                  :inputmap       state
                  :tx             [{:first-datafile-svg [:imagebuf]}]
-                 :loading-ui     {:fx/type fx/ext-get-ref
-                                  :ref     ::loading-ui}
+                 :loading-ui     {:fx/type contour-loading-ui}
                  :realized-ui-fn (fn [pathom-map]
                                    {:fx/type  imagepane/imagebuf
                                     :imagebuf (-> pathom-map
@@ -315,8 +335,7 @@
                  :env            pathom-env
                  :inputmap       state
                  :tx             [{:first-svec-svg [:imagebuf]}]
-                 :loading-ui     {:fx/type fx/ext-get-ref
-                                  :ref     ::loading-ui}
+                 :loading-ui     {:fx/type contour-loading-ui}
                  :realized-ui-fn (fn [pathom-map]
                                    {:fx/type  imagepane/imagebuf
                                     :imagebuf (-> pathom-map
@@ -338,8 +357,7 @@
                  :env            pathom-env
                  :inputmap       state
                  :tx             [{:second-svec-svg [:imagebuf]}]
-                 :loading-ui     {:fx/type fx/ext-get-ref
-                                  :ref     ::loading-ui}
+                 :loading-ui     {:fx/type contour-loading-ui}
                  :realized-ui-fn (fn [pathom-map]
                                    {:fx/type  imagepane/imagebuf
                                     :imagebuf (-> pathom-map
@@ -396,8 +414,7 @@
                  :env            pathom-env
                  :inputmap       state
                  :tx             [{:first-svec-selected-svg [:imagebuf]}]
-                 :loading-ui     {:fx/type fx/ext-get-ref
-                                  :ref     ::loading-ui}
+                 :loading-ui     {:fx/type contour-loading-ui}
                  :realized-ui-fn (fn [pathom-map]
                                    {:fx/type  imagepane/imagebuf
                                     :imagebuf (-> pathom-map
@@ -486,11 +503,13 @@
                                                :env            pathom-env
                                                :inputmap       value
                                                :tx             [{:contour-svg [:imagebuf]}]
-                                               :realized-ui-fn (fn [pathom-map]
-                                                                 {:fx/type  imagepane/imagebuf
-                                                                  :imagebuf (-> pathom-map
-                                                                                :contour-svg
-                                                                                :imagebuf)})}}
+                                               :realized-ui-fn (fn updating-contour-atom
+                                                                 [pathom-map]
+                                                                 (reset! contour-imagebuf-atom
+                                                                         (-> pathom-map
+                                                                             :contour-svg
+                                                                             :imagebuf))
+                                                                 {:fx/type :stack-pane})}}
                        :desc    {:fx/type main-vertical-display
                                  :state   value}}}})
 
