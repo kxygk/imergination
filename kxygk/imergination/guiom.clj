@@ -226,6 +226,8 @@
    :inputmap       state
    :tx             [:datafile-strs-formatted]
    :loading-ui     {:fx/type :list-view
+                    :min-height  0
+                    :pref-height 0
                     :items   ["Loading..."]}
    :realized-ui-fn (fn [pathom-map]
                      {:fx/type fx.ext.list-view/with-selection-props
@@ -356,6 +358,8 @@
    :inputmap       state
    :tx             [:sv-strs]
    :loading-ui     {:fx/type :list-view
+                    :min-height  0
+                    :pref-height 0
                     :items   ["Loading..."]}
    :realized-ui-fn (fn [pathom-map]
                      {:fx/type fx.ext.list-view/with-selection-props
