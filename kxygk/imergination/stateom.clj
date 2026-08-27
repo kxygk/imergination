@@ -21,6 +21,7 @@
             [kxygk.imergination.locations :as locations]
             ;;
             kxygk.pathmore.cache
+            kxygk.pathmore.async
             [com.wsscode.pathom3.connect.built-in.resolvers :as pbir]
             [com.wsscode.pathom3.interface.smart-map :as psm]
             [com.wsscode.pathom3.connect.runner :as pcr]
@@ -192,14 +193,14 @@
                      (symbol region-key))]
     (if debug?
       (do (println "Writing to File")
-          (future (spit (str config-dir
-                             "/"
-                             filename)
-                        #_(str "../imergination.wiki/"
-                               subfolder
-                               "/"
-                               filename)
-                        string)))
+          (p/vthread (spit (str config-dir
+                                "/"
+                                filename)
+                           #_(str "../imergination.wiki/"
+                                  subfolder
+                                  "/"
+                                  filename)
+                           string)))
       nil)
     string))
 
@@ -1869,7 +1870,8 @@
 (identity @*selections)
 ;;;
 (def input-env
-  (-> (pci/register [$data-dirstr
+  (-> (pci/register {::p.a.eql/parallel? true}
+                    [$data-dirstr
                      $datafile-strs
                      $datafile-strs-formatted
                      $data-locations
@@ -1958,7 +1960,8 @@
                      $singular-values-svg
                      $$observation-svg])
       (pcp/with-plan-cache pathom-plan-cache*)
-      kxygk.pathmore.cache/inject-for-all-resolvers))
+      kxygk.pathmore.cache/inject-for-all-resolvers
+      kxygk.pathmore.async/wrap-all-resolvers-async))
 
 (defn check
   "simple util func to check a key in this file"

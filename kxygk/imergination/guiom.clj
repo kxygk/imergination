@@ -14,6 +14,7 @@
             [com.wsscode.pathom3.connect.indexes :as pci]
             [quickthing]
             [geoprim]
+            kxygk.pathmore.async
             [kxygk.imergination.svg2jfx :as svg2jfx]
             [kxygk.pathomfx.pathprom :as pathprom]
             [kxygk.imergination.stateom :as stateom]
@@ -38,7 +39,8 @@
                                                   (-> svg-hiccup
                                                       quickthing/svg2xml
                                                       svg2jfx/jsvg-jxfimg)))])
-      (pcp/with-plan-cache stateom/pathom-plan-cache*)))
+      (pcp/with-plan-cache stateom/pathom-plan-cache*)
+      kxygk.pathmore.async/wrap-all-resolvers-async))
 
 #_
 @(p.a.eql/process pathom-env
