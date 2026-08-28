@@ -178,9 +178,9 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
    :fill-width       true
    :style            {:-fx-background-color :blue}
    :on-mouse-pressed (fn event-worldmap-mouse-press
-                       [event]
+                       [^javafx.scene.input.MouseEvent event]
                        (let [pick-result (.getPickResult event)
-                             img-view    (.getIntersectedNode pick-result)]
+                             ^javafx.scene.image.ImageView img-view    (.getIntersectedNode pick-result)]
                          (when (instance? javafx.scene.image.ImageView
                                           img-view)
                            (let [point        (.getIntersectedPoint pick-result)
@@ -203,9 +203,9 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                              (/ click-y
                                                                 image-height))})))))))
    :on-mouse-dragged (fn event-worldmap-mouse-dragged
-                       [event]
+                       [^javafx.scene.input.MouseEvent event]
                        (let [pick-result (.getPickResult event)
-                             img-view    (.getIntersectedNode pick-result)]
+                             ^javafx.scene.image.ImageView img-view    (.getIntersectedNode pick-result)]
                          (if (or (nil? img-view)
                                  (not (instance? javafx.scene.image.ImageView
                                                  img-view))) ;; left the ImageView
@@ -227,9 +227,8 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                    :sou-second (* 180
                                                                   (/ click-y
                                                                      image-height))}))))))))
-
    :on-mouse-released (fn event-worldmap-mouse-released
-                        [event]
+                        [^javafx.scene.input.MouseEvent event]
                         (let [{:keys [eas-first
                                       eas-second
                                       sou-first
@@ -263,7 +262,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                                           180))))))
                         (reset! map-clicks
                                 {}))
-
    :on-mouse-exited (fn [_]
                       (reset! map-clicks
                               {}))
