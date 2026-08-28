@@ -27,53 +27,102 @@
   *warn-on-reflection*
   true)
 
-;; This is the "Default" view while things are loading
-;; The atom is reused around the UI.
-;; The atom is ppdated in the root
-(defonce contour-imagebuf-atom
-  (atom nil))
+(pco/defresolver $svg2imagebuf
+  [{:keys [hiccup]}]
+  {::pco/output  [:imagebuf]
+   ::pco/cache?   false}
+  {:imagebuf (-> hiccup
+                 quickthing/svg2xml
+                 svg2jfx/jsvg-jxfimg)})
 
-(defn contour-ui
-  [{:keys [value]}]
-  (if value
-    {:fx/type  imagepane/imagebuf
-     :imagebuf value}
-    {:fx/type :stack-pane
-     :style   {:-fx-background-color "#eee7e9"}}))
+(pco/defresolver $worldmap-imagebuf
+  "Special resolver with a LRU1 cache.
+The rendered contour is used all over the place in the UI.
+TODO: Make this somehow use the `$svg2imagebuf` resolver.."
+  [{:keys [world-svg]}]
+  {::pco/input   [{:world-svg [:hiccup]}]
+   ::pco/output  [:world-imagebuf]}
+  {:world-imagebuf (-> world-svg
+                         :hiccup
+                         quickthing/svg2xml
+                         svg2jfx/jsvg-jxfimg)})
 
-(defn contour-loading-ui
-  [_]
-  {:fx/type fx/ext-watcher
-   :ref     contour-imagebuf-atom
-   :desc    {:fx/type contour-ui}})
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(pco/defresolver $contour-imagebuf
+  "Special resolver with a LRU1 cache.
+The rendered contour is used all over the place in the UI
+TODO: Make this somehow use the `$svg2imagebuf` resolver.."
+  [{:keys [contour-svg]}]
+  {::pco/input   [{:contour-svg [:hiccup]}]
+   ::pco/output  [:contour-imagebuf]}
+  (println "CONTOUR-IMAGEBUF resolver running")
+  {:contour-imagebuf (-> contour-svg
+                         :hiccup
+                         quickthing/svg2xml
+                         svg2jfx/jsvg-jxfimg)})
 
 (def pathom-env
   (-> (pci/register {::p.a.eql/parallel? true}
                     [stateom/env
-                     (pbir/single-attr-resolver :hiccup
-                                                :imagebuf
-                                                ;; Note: No caching b/c imagebuf is huge
-                                                ;; And `pathprom` caches this part
-                                                (fn render-svg-hiccup
-                                                  [svg-hiccup]
-                                                  (-> svg-hiccup
-                                                      quickthing/svg2xml
-                                                      svg2jfx/jsvg-jxfimg)))])
+                     $svg2imagebuf
+                     $worldmap-imagebuf
+                     $contour-imagebuf])
       (pcp/with-plan-cache stateom/pathom-plan-cache*)
+      kxygk.pathmore.cache/inject-for-all-resolvers
       kxygk.pathmore.async/wrap-all-resolvers-async))
 
-#_
+;;#_
 @(p.a.eql/process pathom-env
                   @stateom/*selections
-                  [{:contour-svg [:imagebuf]}])
+                  [:world-imagebuf])
+
+;;#_
+@(p.a.eql/process pathom-env
+                  @stateom/*selections
+                  [:contour-imagebuf])
+
+(time @(p.a.eql/process pathom-env @stateom/*selections [:first-datafile-svg]))
 
 
-#_
-(time
-  (p.a.eql/process pathom-env
-                   @stateom/*selections
-                   [{:first-datafile-svg [:imagebuf]}]))
+(defn world-loading-ui
+  [{:keys [state]}]
+  {:fx/type   :stack-pane
+   :style     {:-fx-background-color "#2d2d2d"}
+   :children  [{:fx/type   :label
+                :text      "Loading map..."
+                :text-fill :white}]})
+
+(defn contour-loading-ui
+  [{:keys [state]}]
+  {:fx/type   :stack-pane
+   :style     {:-fx-background-color "#2d2d2d"}
+   :children  [{:fx/type   :label
+                :text      "Loading contour..."
+                :text-fill :white}]})
+
+#_#_
+(defn world-loading-ui
+  [{:keys [state]}]
+  {:fx/type        pathprom/now
+   :env            pathom-env
+   :inputmap       state
+   :tx             [:world-imagebuf]
+   :realized-ui-fn (fn [pathom-map]
+                     {:fx/type  imagepane/imagebuf
+                      :imagebuf (-> pathom-map
+                                    :world-imagebuf)})})
+
+
+(defn contour-loading-ui
+  [{:keys [state]}]
+  {:fx/type        pathprom/now
+   :env            pathom-env
+   :inputmap       state
+   :tx             [:contour-imagebuf]
+   :realized-ui-fn (fn [pathom-map]
+                     {:fx/type  imagepane/imagebuf
+                      :imagebuf (-> pathom-map
+                                    :contour-imagebuf)})})
+
 
 (def map-clicks
   (atom {}))
@@ -222,8 +271,8 @@
                       :env            pathom-env
                       :inputmap       state
                       :tx             [{:world-with-region-highlight-svg [:imagebuf]}]
-                      :loading-ui     {:fx/type fx/ext-get-ref
-                                       :ref     ::world}
+                      :loading-ui     {:fx/type world-loading-ui
+                                       :state state}
                       :realized-ui-fn (fn [pathom-map]
                                         {:fx/type  imagepane/imagebuf
                                          :imagebuf (-> pathom-map
@@ -314,7 +363,8 @@
                  :env            pathom-env
                  :inputmap       state
                  :tx             [{:first-datafile-svg [:imagebuf]}]
-                 :loading-ui     {:fx/type contour-loading-ui}
+                 :loading-ui     {:fx/type contour-loading-ui
+                                  :state state}
                  :realized-ui-fn (fn [pathom-map]
                                    {:fx/type  imagepane/imagebuf
                                     :imagebuf (-> pathom-map
@@ -340,7 +390,8 @@
                  :env            pathom-env
                  :inputmap       state
                  :tx             [{:first-svec-svg [:imagebuf]}]
-                 :loading-ui     {:fx/type contour-loading-ui}
+                 :loading-ui     {:fx/type contour-loading-ui
+                                  :state state}
                  :realized-ui-fn (fn [pathom-map]
                                    {:fx/type  imagepane/imagebuf
                                     :imagebuf (-> pathom-map
@@ -362,7 +413,8 @@
                  :env            pathom-env
                  :inputmap       state
                  :tx             [{:second-svec-svg [:imagebuf]}]
-                 :loading-ui     {:fx/type contour-loading-ui}
+                 :loading-ui     {:fx/type contour-loading-ui
+                                  :state state}
                  :realized-ui-fn (fn [pathom-map]
                                    {:fx/type  imagepane/imagebuf
                                     :imagebuf (-> pathom-map
@@ -419,7 +471,8 @@
                  :env            pathom-env
                  :inputmap       state
                  :tx             [{:first-svec-selected-svg [:imagebuf]}]
-                 :loading-ui     {:fx/type contour-loading-ui}
+                 :loading-ui     {:fx/type contour-loading-ui
+                                  :state state}
                  :realized-ui-fn (fn [pathom-map]
                                    {:fx/type  imagepane/imagebuf
                                     :imagebuf (-> pathom-map
@@ -494,29 +547,8 @@
    :width   800
    :height  600
    :scene   {:fx/type :scene
-             :root    {:fx/type fx/ext-let-refs
-                       :refs    {::world      {:fx/type        pathprom/now
-                                               :env            pathom-env
-                                               :inputmap       value
-                                               :tx             [{:world-svg [:imagebuf]}]
-                                               :realized-ui-fn (fn [pathom-map]
-                                                                 {:fx/type  imagepane/imagebuf
-                                                                  :imagebuf (-> pathom-map
-                                                                                :world-svg
-                                                                                :imagebuf)})}
-                                 ::loading-ui {:fx/type        pathprom/now
-                                               :env            pathom-env
-                                               :inputmap       value
-                                               :tx             [{:contour-svg [:imagebuf]}]
-                                               :realized-ui-fn (fn updating-contour-atom
-                                                                 [pathom-map]
-                                                                 (reset! contour-imagebuf-atom
-                                                                         (-> pathom-map
-                                                                             :contour-svg
-                                                                             :imagebuf))
-                                                                 {:fx/type :stack-pane})}}
-                       :desc    {:fx/type main-vertical-display
-                                 :state   value}}}})
+             :root    {:fx/type main-vertical-display
+                                 :state   value}}})
 
 (defn root-state-watcher
   "This `fx/ext-watcher` is an element that just watches an IRef.
