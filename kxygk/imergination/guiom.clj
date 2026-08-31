@@ -29,8 +29,8 @@
 
 (pco/defresolver $svg2imagebuf
   [{:keys [hiccup]}]
-  {::pco/output  [:imagebuf]
-   ::pco/cache?   false}
+  {::pco/output [:imagebuf]
+   ::pco/cache? false}
   {:imagebuf (-> hiccup
                  quickthing/svg2xml
                  svg2jfx/jsvg-jxfimg)})
@@ -40,20 +40,20 @@
 The rendered contour is used all over the place in the UI.
 TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   [{:keys [world-svg]}]
-  {::pco/input   [{:world-svg [:hiccup]}]
-   ::pco/output  [:world-imagebuf]}
+  {::pco/input  [{:world-svg [:hiccup]}]
+   ::pco/output [:world-imagebuf]}
   {:world-imagebuf (-> world-svg
-                         :hiccup
-                         quickthing/svg2xml
-                         svg2jfx/jsvg-jxfimg)})
+                       :hiccup
+                       quickthing/svg2xml
+                       svg2jfx/jsvg-jxfimg)})
 
 (pco/defresolver $contour-imagebuf
   "Special resolver with a LRU1 cache.
 The rendered contour is used all over the place in the UI
 TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   [{:keys [contour-svg]}]
-  {::pco/input   [{:contour-svg [:hiccup]}]
-   ::pco/output  [:contour-imagebuf]}
+  {::pco/input  [{:contour-svg [:hiccup]}]
+   ::pco/output [:contour-imagebuf]}
   (println "CONTOUR-IMAGEBUF resolver running")
   {:contour-imagebuf (-> contour-svg
                          :hiccup
@@ -80,26 +80,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                   @stateom/*selections
                   [:contour-imagebuf])
 
-(time @(p.a.eql/process pathom-env @stateom/*selections [:first-datafile-svg]))
 
-
-(defn world-loading-ui
-  [{:keys [state]}]
-  {:fx/type   :stack-pane
-   :style     {:-fx-background-color "#2d2d2d"}
-   :children  [{:fx/type   :label
-                :text      "Loading map..."
-                :text-fill :white}]})
-
-(defn contour-loading-ui
-  [{:keys [state]}]
-  {:fx/type   :stack-pane
-   :style     {:-fx-background-color "#2d2d2d"}
-   :children  [{:fx/type   :label
-                :text      "Loading contour..."
-                :text-fill :white}]})
-
-#_#_
 (defn world-loading-ui
   [{:keys [state]}]
   {:fx/type        pathprom/now
@@ -172,61 +153,58 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   - filepath to contour file
   - region limits"
   [{:keys [state]}]
-  {:fx/type          :stack-pane
-   :alignment        :top-left
-   #_#_
-   :fill-width       true
-   :style            {:-fx-background-color :blue}
-   :on-mouse-pressed (fn event-worldmap-mouse-press
-                       [^javafx.scene.input.MouseEvent event]
-                       (let [pick-result (.getPickResult event)
-                             ^javafx.scene.image.ImageView img-view    (.getIntersectedNode pick-result)]
-                         (when (instance? javafx.scene.image.ImageView
-                                          img-view)
-                           (let [point        (.getIntersectedPoint pick-result)
-                                 click-x      (.getX point)
-                                 click-y      (.getY point)
-                                 image-width  (.getFitWidth img-view)
-                                 image-height (.getFitHeight img-view)]
-                             (when (instance? javafx.scene.image.ImageView
-                                              img-view)
-                               (swap! map-clicks
-                                      #(merge %
-                                              {:start-x   click-x
-                                               :start-y   click-y
-                                               :ended-x   nil
-                                               :ended-y   nil
-                                               :eas-first (* 360
-                                                             (/ click-x
-                                                                image-width))
-                                               :sou-first (* 180
-                                                             (/ click-y
-                                                                image-height))})))))))
-   :on-mouse-dragged (fn event-worldmap-mouse-dragged
-                       [^javafx.scene.input.MouseEvent event]
-                       (let [pick-result (.getPickResult event)
-                             ^javafx.scene.image.ImageView img-view    (.getIntersectedNode pick-result)]
-                         (if (or (nil? img-view)
-                                 (not (instance? javafx.scene.image.ImageView
-                                                 img-view))) ;; left the ImageView
-                           (reset! map-clicks
-                                   {})
-                           (let [point        (.getIntersectedPoint pick-result)
-                                 click-x      (.getX point)
-                                 click-y      (.getY point)
-                                 image-width  (.getFitWidth img-view)
-                                 image-height (.getFitHeight img-view)]
-                             (if (:start-x @map-clicks)
-                               (do (swap! map-clicks
-                                          #(merge %
-                                                  {:ended-x    click-x
-                                                   :ended-y    click-y
-                                                   :eas-second (* 360
-                                                                  (/ click-x
-                                                                     image-width))
-                                                   :sou-second (* 180
-                                                                  (/ click-y
-                                                                     image-height))}))))))))
+  {:fx/type           :stack-pane
+   :alignment         :top-left
+   :on-mouse-pressed  (fn event-worldmap-mouse-press
+                        [^javafx.scene.input.MouseEvent event]
+                        (let [pick-result                            (.getPickResult event)
+                              ^javafx.scene.image.ImageView img-view (.getIntersectedNode pick-result)]
+                          (when (instance? javafx.scene.image.ImageView
+                                           img-view)
+                            (let [point        (.getIntersectedPoint pick-result)
+                                  click-x      (.getX point)
+                                  click-y      (.getY point)
+                                  image-width  (.getFitWidth img-view)
+                                  image-height (.getFitHeight img-view)]
+                              (when (instance? javafx.scene.image.ImageView
+                                               img-view)
+                                (swap! map-clicks
+                                       #(merge %
+                                               {:start-x   click-x
+                                                :start-y   click-y
+                                                :ended-x   nil
+                                                :ended-y   nil
+                                                :eas-first (* 360
+                                                              (/ click-x
+                                                                 image-width))
+                                                :sou-first (* 180
+                                                              (/ click-y
+                                                                 image-height))})))))))
+   :on-mouse-dragged  (fn event-worldmap-mouse-dragged
+                        [^javafx.scene.input.MouseEvent event]
+                        (let [pick-result                            (.getPickResult event)
+                              ^javafx.scene.image.ImageView img-view (.getIntersectedNode pick-result)]
+                          (if (or (nil? img-view)
+                                  (not (instance? javafx.scene.image.ImageView
+                                                  img-view))) ;; left the ImageView
+                            (reset! map-clicks
+                                    {})
+                            (let [point        (.getIntersectedPoint pick-result)
+                                  click-x      (.getX point)
+                                  click-y      (.getY point)
+                                  image-width  (.getFitWidth img-view)
+                                  image-height (.getFitHeight img-view)]
+                              (if (:start-x @map-clicks)
+                                (do (swap! map-clicks
+                                           #(merge %
+                                                   {:ended-x    click-x
+                                                    :ended-y    click-y
+                                                    :eas-second (* 360
+                                                                   (/ click-x
+                                                                      image-width))
+                                                    :sou-second (* 180
+                                                                   (/ click-y
+                                                                      image-height))}))))))))
    :on-mouse-released (fn event-worldmap-mouse-released
                         [^javafx.scene.input.MouseEvent event]
                         (let [{:keys [eas-first
@@ -262,25 +240,25 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                                           180))))))
                         (reset! map-clicks
                                 {}))
-   :on-mouse-exited (fn [_]
-                      (reset! map-clicks
-                              {}))
-   :children        [{:fx/type        pathprom/later
-                      :env            pathom-env
-                      :inputmap       state
-                      :tx             [{:world-with-region-highlight-svg [:imagebuf]}]
-                      :loading-ui     {:fx/type world-loading-ui
-                                       :state state}
-                      :realized-ui-fn (fn [pathom-map]
-                                        {:fx/type  imagepane/imagebuf
-                                         :imagebuf (-> pathom-map
-                                                       :world-with-region-highlight-svg
-                                                       :imagebuf)})}
-                     {:fx/type           :pane
-                      :mouse-transparent true
-                      :children          [{:fx/type fx/ext-watcher
-                                           :ref     map-clicks
-                                           :desc    {:fx/type region-rectangle}}]}]})
+   :on-mouse-exited   (fn [_]
+                        (reset! map-clicks
+                                {}))
+   :children          [{:fx/type        pathprom/later
+                        :env            pathom-env
+                        :inputmap       state
+                        :tx             [{:world-with-region-highlight-svg [:imagebuf]}]
+                        :loading-ui     {:fx/type world-loading-ui
+                                         :state   state}
+                        :realized-ui-fn (fn [pathom-map]
+                                          {:fx/type  imagepane/imagebuf
+                                           :imagebuf (-> pathom-map
+                                                         :world-with-region-highlight-svg
+                                                         :imagebuf)})}
+                       {:fx/type           :pane
+                        :mouse-transparent true
+                        :children          [{:fx/type fx/ext-watcher
+                                             :ref     map-clicks
+                                             :desc    {:fx/type region-rectangle}}]}]})
 #_
 @(p.a.eql/process pathom-env
                   @stateom/*selections
@@ -305,7 +283,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                     :items       ["Loading..."]}
    :realized-ui-fn (fn [pathom-map]
                      {:fx/type fx.ext.list-view/with-selection-props
-                      :style   {:-fx-background-color :red}
                       :props   {:selection-mode              :multiple
                                 :on-selected-indices-changed (fn update-datafile-selections
                                                                [selected-indices]
@@ -324,15 +301,17 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   We can inspect how it looks in our region"
   [{:keys [state]}]
   {:fx/type    :v-box
-   :style      {:-fx-background-color :green}
    :min-height 0
    :children   [{:fx/type        pathprom/later
                  :env            pathom-env
                  :inputmap       state
                  :tx             [:data-dirstr]
-                 :loading-ui     {:fx/type :text-field
-                                  :disable true
-                                  :text    "Loading..."}
+                 :loading-ui     {:fx/type fx.ext.list-view/with-selection-props
+                                  :props   {:selection-mode :multiple}
+                                  :desc    {:fx/type     :list-view
+                                            :min-height  0
+                                            :pref-height 0
+                                            :items       ["Loading..."]}}
                  :realized-ui-fn (fn [pathom-map]
                                    {:fx/type :text-field
                                     :disable true
@@ -342,10 +321,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                  :v-box/vgrow :always
                  :min-height  0}
                 ]})
-#_
-(defn datapreview [{:keys [state]}]
-  {:fx/type  :v-box
-   :children [{:fx/type :label :text "dummy"}]})
 
 (defn
   datapreview
@@ -356,7 +331,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   [{:keys [state]}]
   {:fx/type    :v-box
    :fill-width true
-   :style      {:-fx-background-color :red}
    :children   [{:fx/type        pathprom/later
                  :env            pathom-env
                  :inputmap       state
@@ -383,7 +357,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   [{:keys [state]}]
   {:fx/type    :v-box
    :fill-width true
-   :style      {:-fx-background-color :red}
    :children   [{:fx/type        pathprom/later
                  :env            pathom-env
                  :inputmap       state
@@ -406,7 +379,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   [{:keys [state]}]
   {:fx/type    :v-box
    :fill-width true
-   :style      {:-fx-background-color :red}
    :children   [{:fx/type        pathprom/later
                  :env            pathom-env
                  :inputmap       state
@@ -436,7 +408,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                     :items       ["Loading..."]}
    :realized-ui-fn (fn [pathom-map]
                      {:fx/type fx.ext.list-view/with-selection-props
-                      :style   {:-fx-background-color :red}
                       :props   {:selection-mode              :multiple
                                 :on-selected-indices-changed (fn update-datafile-selections
                                                                [selected-indices]
@@ -449,12 +420,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                 :pref-height 0
                                 :items       (:sv-strs pathom-map)}})})
 
-#_
-@(p.a.eql/process pathom-env
-                  @stateom/*selections
-                  [{:contour-svg [:imagebuf]}])
-
-
 (defn
   svpreview
   "Where we select the data to read in..
@@ -464,7 +429,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   [{:keys [state]}]
   {:fx/type    :v-box
    :fill-width true
-   :style      {:-fx-background-color :red}
    :children   [{:fx/type        pathprom/later
                  :env            pathom-env
                  :inputmap       state
@@ -487,7 +451,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   [{:keys [state]}]
   {:fx/type    :v-box
    :fill-width true
-   :style      {:-fx-background-color :red}
    :children   [{:fx/type        pathprom/later
                  :env            pathom-env
                  :inputmap       state
@@ -510,7 +473,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   [{:keys [state]}]
   {:fx/type    :v-box
    :fill-width true
-   :style      {:-fx-background-color :red}
    :children   [{:fx/type        pathprom/later
                  :env            pathom-env
                  :inputmap       state
@@ -532,7 +494,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   [{:keys [state]}]
   {:fx/type    :v-box
    :fill-width true
-   :style      {:-fx-background-color :red}
    :children   [{:fx/type        pathprom/later
                  :env            pathom-env
                  :inputmap       state
@@ -562,7 +523,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                     :items       ["Loading..."]}
    :realized-ui-fn (fn [pathom-map]
                      {:fx/type fx.ext.list-view/with-selection-props
-                      :style   {:-fx-background-color :red}
                       :props   {:selection-mode              :multiple
                                 :on-selected-indices-changed (fn update-datafile-selections
                                                                [selected-indices]
@@ -584,7 +544,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   [{:keys [state]}]
   {:fx/type    :v-box
    :fill-width true
-   :style      {:-fx-background-color :red}
    :children   [{:fx/type        pathprom/later
                  :env            pathom-env
                  :inputmap       state
@@ -614,7 +573,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                     :items       ["Loading..."]}
    :realized-ui-fn (fn [pathom-map]
                      {:fx/type fx.ext.list-view/with-selection-props
-                      :style   {:-fx-background-color :red}
                       :props   {:selection-mode              :multiple
                                 :on-selected-indices-changed (fn update-datafile-selections
                                                                [selected-indices]
@@ -636,7 +594,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   [{:keys [state]}]
   {:fx/type    :v-box
    :fill-width true
-   :style      {:-fx-background-color :red}
    :children   [{:fx/type        pathprom/later
                  :env            pathom-env
                  :inputmap       state
