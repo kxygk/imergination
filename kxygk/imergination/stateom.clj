@@ -484,8 +484,8 @@
    easres
    soures]
   (let [num-files (count file-locations)]
-    (map-indexed (fn read-in-a-file
     #_(println "FILE-READ thread:" (.getName (Thread/currentThread)))
+    (vec (map-indexed (fn read-in-a-file
                    [index
                     file-location]
                    (do (println (str "Reading "
@@ -495,7 +495,7 @@
                        (geogrid4image/read-location file-location
                                                     easres
                                                     soures)))
-                 file-locations)))
+                 file-locations))))
 ;; #_
 ;; (geogrid4image/read-location (clojure.java.io/file
 ;;                                  "/home/kxygk/Data/20CRv2c/SLP/pressure/geotiff-rot-subset/pres_only.nc-block0074-rot.tiff")
