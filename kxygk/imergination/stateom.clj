@@ -1072,15 +1072,15 @@
                   :noise-matrix-2d]
    ::pco/output  [:hiccup]
    :inject-cache :lru1}
-  {:hiccup (if (nil? noise-index)
-             contour-svg
-             {:hiccup (-> (datamats/extract-grid noise-matrix-2d
-                                                 noise-index)
-                          (plot/grid-map region
-                                         contour-svg) ;; maybe no need?
-                          (spitsvgstream (str "noise-"
-                                              noise-index
-                                              "-file.svg")))})})
+  (if (nil? noise-index)
+    contour-svg
+    {:hiccup (-> (datamats/extract-grid noise-matrix-2d
+                                        noise-index)
+                 (plot/grid-map region
+                                contour-svg) ;; maybe no need?
+                 (spitsvgstream (str "noise-"
+                                     noise-index
+                                     "-file.svg")))}))
 #_(check :hiccup
          {:noise-index 0})
 
