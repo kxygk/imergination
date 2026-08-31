@@ -348,10 +348,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
 
 (defn
   firstsv
-  "Where we select the data to read in..
-  We can inspect how it looks in our region
-  TODO: revisit why I can't do this with `svg` and need to use `svg2jfx/xml`.
-  With the `svg` element it doesn't update properly in the GUI"
+  ""
   [{:keys [state]}]
   {:fx/type    :v-box
    :fill-width true
@@ -370,10 +367,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
 
 (defn
   secondsv
-  "Where we select the data to read in..
-  We can inspect how it looks in our region
-  TODO: revisit why I can't do this with `svg` and need to use `svg2jfx/xml`.
-  With the `svg` element it doesn't update properly in the GUI"
+  ""
   [{:keys [state]}]
   {:fx/type    :v-box
    :fill-width true
@@ -391,10 +385,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
 
 (defn
   svlist
-  "Lists have to be wrapped in an `extension lifecycle`..
-  (I don't understand why)
-  see: `cljfx/examples/e27_selection_models.clj`
-  for details.."
+  ""
   [{:keys [state]}]
   {:fx/type        pathprom/later
    :env            pathom-env
@@ -420,10 +411,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
 
 (defn
   svpreview
-  "Where we select the data to read in..
-  We can inspect how it looks in our region
-  TODO: revisit why I can't do this with `svg` and need to use `svg2jfx/xml`.
-  With the `svg` element it doesn't update properly in the GUI"
+  ""
   [{:keys [state]}]
   {:fx/type    :v-box
    :fill-width true
@@ -442,10 +430,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
 
 (defn
   sv-projections
-  "Where we select the data to read in..
-  We can inspect how it looks in our region
-  TODO: revisit why I can't do this with `svg` and need to use `svg2jfx/xml`.
-  With the `svg` element it doesn't update properly in the GUI"
+  ""
   [{:keys [state]}]
   {:fx/type    :v-box
    :fill-width true
@@ -464,10 +449,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
 
 (defn
   top-pattern
-  "Where we select the data to read in..
-  We can inspect how it looks in our region
-  TODO: revisit why I can't do this with `svg` and need to use `svg2jfx/xml`.
-  With the `svg` element it doesn't update properly in the GUI"
+  ""
   [{:keys [state]}]
   {:fx/type    :v-box
    :fill-width true
@@ -485,10 +467,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
 
 (defn
   bottom-pattern
-  "Where we select the data to read in..
-  We can inspect how it looks in our region
-  TODO: revisit why I can't do this with `svg` and need to use `svg2jfx/xml`.
-  With the `svg` element it doesn't update properly in the GUI"
+  ""
   [{:keys [state]}]
   {:fx/type    :v-box
    :fill-width true
@@ -506,10 +485,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
 
 (defn
   noiselist
-  "Lists have to be wrapped in an `extension lifecycle`..
-  (I don't understand why)
-  see: `cljfx/examples/e27_selection_models.clj`
-  for details.."
+  ""
   [{:keys [state]}]
   {:fx/type        pathprom/later
    :env            pathom-env
@@ -535,10 +511,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
 
 (defn
   noisepreview
-  "Where we select the data to read in..
-  We can inspect how it looks in our region
-  TODO: revisit why I can't do this with `svg` and need to use `svg2jfx/xml`.
-  With the `svg` element it doesn't update properly in the GUI"
+  ""
   [{:keys [state]}]
   {:fx/type    :v-box
    :fill-width true
@@ -556,10 +529,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
 
 (defn
   climatenoiselist
-  "Lists have to be wrapped in an `extension lifecycle`..
-  (I don't understand why)
-  see: `cljfx/examples/e27_selection_models.clj`
-  for details.."
+  ""
   [{:keys [state]}]
   {:fx/type        pathprom/later
    :env            pathom-env
@@ -585,10 +555,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
 
 (defn
   climatenoisepreview
-  "Where we select the data to read in..
-  We can inspect how it looks in our region
-  TODO: revisit why I can't do this with `svg` and need to use `svg2jfx/xml`.
-  With the `svg` element it doesn't update properly in the GUI"
+  ""
   [{:keys [state]}]
   {:fx/type    :v-box
    :fill-width true
