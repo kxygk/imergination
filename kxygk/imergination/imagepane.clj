@@ -421,6 +421,8 @@
        :text-fill :red})))
 
 (defn imagebuf [{:keys [imagebuf]}]
-  {:fx/type fx/ext-instance-factory
-   :create  (fn []
-              (wrap-image-with-pane imagebuf))})
+  {:fx/type fx/ext-recreate-on-key-changed
+   :key     imagebuf
+   :desc    {:fx/type fx/ext-instance-factory
+             :create  (fn []
+                        (wrap-image-with-pane imagebuf))}})
