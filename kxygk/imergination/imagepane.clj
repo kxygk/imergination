@@ -47,23 +47,26 @@
     (when-let [p (.getParent node)]
       (.requestLayout p))))
 
-(defn- region-parent-width
-  "Takes a `Node`,
-  finds its parents,
-  asks its width.
-  If `nil` parent or negative,
-  returns `0.0`"
+(defn- region-ancestor-width
   ^double
   [^javafx.scene.Node node]
-  (let [p (.getParent node)]
-    (if (instance? javafx.scene.layout.Region
-                   p)
-      (let [pw (.getWidth ^javafx.scene.layout.Region p)]
-        (if (> pw
-               0.0)
-          pw
-          0.0))
-      0.0)))
+  (loop [current (.getParent node)
+         depth   0]
+    (if (nil? current)
+      (do (svg-aspect-dbg "ancestor-width: hit nil at depth" depth)
+          0.0)
+      (if (instance? javafx.scene.layout.Region current)
+        (let [w (.getWidth ^javafx.scene.layout.Region current)]
+          (svg-aspect-dbg "ancestor-width: depth" depth
+                          "class" (.getSimpleName (class current))
+                          "width" w)
+          (if (> w 0.0)
+            w
+            (recur (.getParent current) (inc depth))))
+        (do (svg-aspect-dbg "ancestor-width: depth" depth
+                            "class" (.getSimpleName (class current))
+                            "not a Region, skipping")
+            (recur (.getParent current) (inc depth)))))))
 
 (defn- effective-width-info
   "Checks a proposed width,
@@ -83,7 +86,7 @@
         [(.getWidth node)
          :current-width]
         :else
-        (let [pw (region-parent-width node)]
+        (let [pw (region-ancestor-width node)]
           (if (> pw
                  0.0)
             [pw
@@ -162,57 +165,7 @@
                           expected-h)
            (.relocate img-view
                       0.0
-                      0.0)
-           ;; If the pane height itself is still stale,
-           ;; ask the parent to re-evaluate layout.
-           (when (and (> h
-                         0.0)
-                      (not (close-double? h
-                                          expected-h
-                                          0.5)))
-             (request-layout-parent! ^javafx.scene.Node this))))))
-    #_
-    (^void layoutChildren []
-     (let [w (.getWidth ^javafx.scene.layout.Region
-                        this)
-           h (.getHeight ^javafx.scene.layout.Region
-                         this)]
-       (svg-aspect-dbg "layoutChildren w:"
-                       w
-                       "h:"
-                       h)
-       (if (and (> w
-                   0.0)
-                (> h
-                   0.0))
-         (do
-           (.setFitWidth img-view
-                         w)
-           (.setFitHeight img-view
-                          h)
-           (.relocate img-view
-                      0.0
-                      0.0))
-         (when (> w
-                  0.0)
-           (let [img (.getImage img-view)
-                 r   (image-ratio img)]
-             (when (> r
-                      0.0)
-               (let [calc-h (double (* w
-                                       r))]
-                 (svg-aspect-dbg "layoutChildren fallback"
-                                 "w:"
-                                 w
-                                 "calc-h:"
-                                 calc-h)
-                 (.setFitWidth img-view
-                               w)
-                 (.setFitHeight img-view
-                                calc-h)
-                 (.relocate img-view
-                            0.0
-                            0.0))))))))))
+                      0.0)))))))
 
 (defn- wrap-image-with-pane
   "A `Pane` that wraps an `ImageView` tha wraps an `image`
@@ -370,7 +323,7 @@
                                     0.0)
                                  (.getWidth pane)
                                  :else
-                                 (region-parent-width pane))]
+                                 (region-ancestor-width pane))]
                      (when (> w
                               0.0)
                        (force-width! "imageProperty"
@@ -392,7 +345,7 @@
                    (.requestLayout pane)
                    #_
                    (request-layout-chain! pane)
-                   (let [pw (region-parent-width pane)]
+                   (let [pw (region-ancestor-width pane)]
                      (when (> pw
                               0.0)
                        (force-width! "parentProperty"
