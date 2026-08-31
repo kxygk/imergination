@@ -571,6 +571,44 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                   :first-climate-noise-selected-svg
                                                   :imagebuf)})}]})
 
+
+(defn
+  climate-index
+  ""
+  [{:keys [state]}]
+  {:fx/type    :v-box
+   :fill-width true
+   :children   [{:fx/type        pathprom/later
+                 :env            pathom-env
+                 :inputmap       state
+                 :tx             [{:pattern-proj-svg [:imagebuf]}]
+                 :loading-ui     {:fx/type :text
+                                  :text ":loading"}
+                 :realized-ui-fn (fn [pathom-map]
+                                   {:fx/type  imagepane/imagebuf
+                                    :imagebuf (-> pathom-map
+                                                  :pattern-proj-svg
+                                                  :imagebuf)})}]})
+
+(defn
+  noise-index
+  ""
+  [{:keys [state]}]
+  {:fx/type    :v-box
+   :fill-width true
+   :children   [{:fx/type        pathprom/later
+                 :env            pathom-env
+                 :inputmap       state
+                 :tx             [{:climate-noise-var-svg [:imagebuf]}]
+                 :loading-ui     {:fx/type :text
+                                  :text ":loading"}
+                 :realized-ui-fn (fn [pathom-map]
+                                   {:fx/type  imagepane/imagebuf
+                                    :imagebuf (-> pathom-map
+                                                  :climate-noise-var-svg
+                                                  :imagebuf)})}]})
+
+
 (defn
   main-vertical-display
   "Tha main vertical window"
@@ -632,30 +670,30 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                         :state            state
                                         :grid-pane/row    6
                                         :grid-pane/column 1}
-                                       #_
                                        {:fx/type               climate-index
-                                        :grid-pane/row         8
+                                        :state state
+                                        :grid-pane/row         7
                                         :grid-pane/row-span    1
                                         :grid-pane/column      0
                                         :grid-pane/column-span 2}
                                        {:fx/type          noiselist
                                         :state            state
-                                        :grid-pane/row    7
+                                        :grid-pane/row    8
                                         :grid-pane/column 0}
                                        {:fx/type          noisepreview
                                         :state            state
-                                        :grid-pane/row    7
+                                        :grid-pane/row    8
                                         :grid-pane/column 1}
                                        {:fx/type          climatenoiselist
                                         :state            state
-                                        :grid-pane/row    10
+                                        :grid-pane/row    9
                                         :grid-pane/column 0}
                                        {:fx/type          climatenoisepreview
                                         :state            state
-                                        :grid-pane/row    10
+                                        :grid-pane/row    9
                                         :grid-pane/column 1}
-                                       #_
                                        {:fx/type               noise-index
+                                        :state state
                                         :grid-pane/row         11
                                         :grid-pane/row-span    1
                                         :grid-pane/column      0
