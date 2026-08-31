@@ -112,26 +112,26 @@
 (def
   *selections
   (atom (merge {;; Defaults
-                :window-width                   1080.0
-                :row-height                     360
-                :shoreline-filestr              nil
-                :contour-filestr                nil
-                :non-zero-min?                  false
-                :normalize-data?                true
-                #_#_#_#_:rain-dirstr            "/home/kxygk/Data/sst/monthly/geotiff-rot/"
-                :elevation-filestr              "./data/World_e-Atlas-UCSD_SRTM30-plus_v8.tif"
-                :bin-size                       1
-                :cycle-length                   12
-                :cycle-phase                    0
-                :eas-res                        0.1
-                :sou-res                        0.1
-                :region-key                     :krabi-root-2
-                :is-in-ram                      false
-                :mouse-click                    nil
-                :datafile-idxs                  [0]
-                :sv-selected-idxs               [0]
-                :noise-selected-idxs            [0]
-                :normalized-noise-selected-idxs [0]}
+                :window-width                1080.0
+                :row-height                  360
+                :shoreline-filestr           nil
+                :contour-filestr             nil
+                :non-zero-min?               false
+                :normalize-data?             true
+                #_#_#_#_:rain-dirstr         "/home/kxygk/Data/sst/monthly/geotiff-rot/"
+                :elevation-filestr           "./data/World_e-Atlas-UCSD_SRTM30-plus_v8.tif"
+                :bin-size                    1
+                :cycle-length                12
+                :cycle-phase                 0
+                :eas-res                     0.1
+                :sou-res                     0.1
+                :region-key                  :krabi-root-2
+                :is-in-ram                   false
+                :mouse-click                 nil
+                :datafile-idxs               [0]
+                :sv-selected-idxs            [0]
+                :noise-selected-idxs         [0]
+                :climate-noise-selected-idxs [0]}
                (if (nil? config-dir)
                  {}
                  (-> config-dir
@@ -1090,11 +1090,11 @@
                              first))
 #_(check :first-noise-selected-idx)
 
-(def $first-normalized-noise-selected-idx
-  (pbir/single-attr-resolver :noise-selected-idxs
-                             :first-normalized-noise-selected-idx
+(def $first-climate-noise-selected-idx
+  (pbir/single-attr-resolver :climate-noise-selected-idxs
+                             :first-climate-noise-selected-idx
                              first))
-#_(check :first-normalized-noise-selected-idx)
+#_(check :first-climate-noise-selected-idx)
 
 (pco/defresolver $first-noise-selected-svg
   [inputs]
@@ -1344,16 +1344,10 @@
        keys)
 
 (pco/defresolver $sv-proj-svg
-  [{:keys [window-width
-           sv-bisection]}]
+  [{:keys [sv-bisection]}]
   {::pco/output [{:sv-proj-svg [:hiccup]}]}
-  {:sv-proj-svg {:hiccup (-> (plot/sv-plot (* 0.750
-                                              window-width)
-                                           (* 1.5
-                                              window-width)
-                                           #_(* 4.0
-                                                (fx/sub-ctx context
-                                                            row-height))
+  {:sv-proj-svg {:hiccup (-> (plot/sv-plot 400
+                                           800
                                            sv-bisection)
                              (spitsvgstream "sv-projs.svg"))}})
 #_(check :sv-proj-svg)
@@ -1716,6 +1710,20 @@
          {:climate-noise-index 6})
 
 
+(pco/defresolver $first-climate-noise-selected-svg
+  [inputs]
+  {::pco/input  [:first-climate-noise-selected-idx
+                 :region
+                 {:contour-svg [:hiccup]}
+                 :climate-noise-matrix-2d-normalized]
+   ::pco/output [{:first-climate-noise-selected-svg [:climate-noise-index
+                                                     :region
+                                                     {:contour-svg [:hiccup]}
+                                                     :climate-noise-matrix-2d-normalized]}]}
+  {:first-climate-noise-selected-svg (merge inputs
+                                            {:climate-noise-index (:first-climate-noise-selected-idx inputs)})})
+#_(check {:first-climate-noise-selected-svg [:hiccup]})
+
 #_
 (defn
   first-normalized-noise-selected-svg
@@ -1950,7 +1958,7 @@
                      $noise-vars
                      $$noise-svg
                      $first-noise-selected-idx
-                     $first-normalized-noise-selected-idx
+                     $first-climate-noise-selected-idx
                      $first-noise-selected-svg
                      $noise-matrix-scaled-to-sv1
                      $$noise-scaled-to-sv1-svg
@@ -1979,6 +1987,7 @@
                      $binary-index-vector
                      $climate-noise-matrix-2d-normalized
                      $$climate-noise-svg
+                     $first-climate-noise-selected-svg
                      $climate-noise-vars
                      $climate-noise-var-svg
                      $pattern-proj-partitioned

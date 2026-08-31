@@ -362,7 +362,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                  :inputmap       state
                  :tx             [{:first-datafile-svg [:imagebuf]}]
                  :loading-ui     {:fx/type contour-loading-ui
-                                  :state state}
+                                  :state   state}
                  :realized-ui-fn (fn [pathom-map]
                                    {:fx/type  imagepane/imagebuf
                                     :imagebuf (-> pathom-map
@@ -389,7 +389,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                  :inputmap       state
                  :tx             [{:first-svec-svg [:imagebuf]}]
                  :loading-ui     {:fx/type contour-loading-ui
-                                  :state state}
+                                  :state   state}
                  :realized-ui-fn (fn [pathom-map]
                                    {:fx/type  imagepane/imagebuf
                                     :imagebuf (-> pathom-map
@@ -412,7 +412,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                  :inputmap       state
                  :tx             [{:second-svec-svg [:imagebuf]}]
                  :loading-ui     {:fx/type contour-loading-ui
-                                  :state state}
+                                  :state   state}
                  :realized-ui-fn (fn [pathom-map]
                                    {:fx/type  imagepane/imagebuf
                                     :imagebuf (-> pathom-map
@@ -470,13 +470,184 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                  :inputmap       state
                  :tx             [{:first-svec-selected-svg [:imagebuf]}]
                  :loading-ui     {:fx/type contour-loading-ui
-                                  :state state}
+                                  :state   state}
                  :realized-ui-fn (fn [pathom-map]
                                    {:fx/type  imagepane/imagebuf
                                     :imagebuf (-> pathom-map
                                                   :first-svec-selected-svg
                                                   :imagebuf)})}]})
 
+
+(defn
+  sv-projections
+  "Where we select the data to read in..
+  We can inspect how it looks in our region
+  TODO: revisit why I can't do this with `svg` and need to use `svg2jfx/xml`.
+  With the `svg` element it doesn't update properly in the GUI"
+  [{:keys [state]}]
+  {:fx/type    :v-box
+   :fill-width true
+   :style      {:-fx-background-color :red}
+   :children   [{:fx/type        pathprom/later
+                 :env            pathom-env
+                 :inputmap       state
+                 :tx             [{:sv-proj-svg [:imagebuf]}]
+                 :loading-ui     {:fx/type contour-loading-ui
+                                  :state   state}
+                 :realized-ui-fn (fn [pathom-map]
+                                   {:fx/type  imagepane/imagebuf
+                                    :imagebuf (-> pathom-map
+                                                  :sv-proj-svg
+                                                  :imagebuf)})}]})
+
+
+(defn
+  top-pattern
+  "Where we select the data to read in..
+  We can inspect how it looks in our region
+  TODO: revisit why I can't do this with `svg` and need to use `svg2jfx/xml`.
+  With the `svg` element it doesn't update properly in the GUI"
+  [{:keys [state]}]
+  {:fx/type    :v-box
+   :fill-width true
+   :style      {:-fx-background-color :red}
+   :children   [{:fx/type        pathprom/later
+                 :env            pathom-env
+                 :inputmap       state
+                 :tx             [{:top-pattern-svg [:imagebuf]}]
+                 :loading-ui     {:fx/type contour-loading-ui
+                                  :state   state}
+                 :realized-ui-fn (fn [pathom-map]
+                                   {:fx/type  imagepane/imagebuf
+                                    :imagebuf (-> pathom-map
+                                                  :top-pattern-svg
+                                                  :imagebuf)})}]})
+
+(defn
+  bottom-pattern
+  "Where we select the data to read in..
+  We can inspect how it looks in our region
+  TODO: revisit why I can't do this with `svg` and need to use `svg2jfx/xml`.
+  With the `svg` element it doesn't update properly in the GUI"
+  [{:keys [state]}]
+  {:fx/type    :v-box
+   :fill-width true
+   :style      {:-fx-background-color :red}
+   :children   [{:fx/type        pathprom/later
+                 :env            pathom-env
+                 :inputmap       state
+                 :tx             [{:bot-pattern-svg [:imagebuf]}]
+                 :loading-ui     {:fx/type contour-loading-ui
+                                  :state   state}
+                 :realized-ui-fn (fn [pathom-map]
+                                   {:fx/type  imagepane/imagebuf
+                                    :imagebuf (-> pathom-map
+                                                  :bot-pattern-svg
+                                                  :imagebuf)})}]})
+
+(defn
+  noiselist
+  "Lists have to be wrapped in an `extension lifecycle`..
+  (I don't understand why)
+  see: `cljfx/examples/e27_selection_models.clj`
+  for details.."
+  [{:keys [state]}]
+  {:fx/type        pathprom/later
+   :env            pathom-env
+   :inputmap       state
+   :tx             [:datafile-strs-formatted]
+   :loading-ui     {:fx/type     :list-view
+                    :min-height  0
+                    :pref-height 0
+                    :items       ["Loading..."]}
+   :realized-ui-fn (fn [pathom-map]
+                     {:fx/type fx.ext.list-view/with-selection-props
+                      :style   {:-fx-background-color :red}
+                      :props   {:selection-mode              :multiple
+                                :on-selected-indices-changed (fn update-datafile-selections
+                                                               [selected-indices]
+                                                               (swap! stateom/*selections
+                                                                      assoc
+                                                                      :noise-selected-idxs
+                                                                      selected-indices))}
+                      :desc    {:fx/type     :list-view
+                                :min-height  0
+                                :pref-height 0
+                                :items       (:datafile-strs-formatted pathom-map)}})})
+
+(defn
+  noisepreview
+  "Where we select the data to read in..
+  We can inspect how it looks in our region
+  TODO: revisit why I can't do this with `svg` and need to use `svg2jfx/xml`.
+  With the `svg` element it doesn't update properly in the GUI"
+  [{:keys [state]}]
+  {:fx/type    :v-box
+   :fill-width true
+   :style      {:-fx-background-color :red}
+   :children   [{:fx/type        pathprom/later
+                 :env            pathom-env
+                 :inputmap       state
+                 :tx             [{:first-noise-selected-svg [:imagebuf]}]
+                 :loading-ui     {:fx/type contour-loading-ui
+                                  :state   state}
+                 :realized-ui-fn (fn [pathom-map]
+                                   {:fx/type  imagepane/imagebuf
+                                    :imagebuf (-> pathom-map
+                                                  :first-noise-selected-svg
+                                                  :imagebuf)})}]})
+
+(defn
+  climatenoiselist
+  "Lists have to be wrapped in an `extension lifecycle`..
+  (I don't understand why)
+  see: `cljfx/examples/e27_selection_models.clj`
+  for details.."
+  [{:keys [state]}]
+  {:fx/type        pathprom/later
+   :env            pathom-env
+   :inputmap       state
+   :tx             [:datafile-strs-formatted]
+   :loading-ui     {:fx/type     :list-view
+                    :min-height  0
+                    :pref-height 0
+                    :items       ["Loading..."]}
+   :realized-ui-fn (fn [pathom-map]
+                     {:fx/type fx.ext.list-view/with-selection-props
+                      :style   {:-fx-background-color :red}
+                      :props   {:selection-mode              :multiple
+                                :on-selected-indices-changed (fn update-datafile-selections
+                                                               [selected-indices]
+                                                               (swap! stateom/*selections
+                                                                      assoc
+                                                                      :climate-noise-selected-idxs
+                                                                      selected-indices))}
+                      :desc    {:fx/type     :list-view
+                                :min-height  0
+                                :pref-height 0
+                                :items       (:datafile-strs-formatted pathom-map)}})})
+
+(defn
+  climatenoisepreview
+  "Where we select the data to read in..
+  We can inspect how it looks in our region
+  TODO: revisit why I can't do this with `svg` and need to use `svg2jfx/xml`.
+  With the `svg` element it doesn't update properly in the GUI"
+  [{:keys [state]}]
+  {:fx/type    :v-box
+   :fill-width true
+   :style      {:-fx-background-color :red}
+   :children   [{:fx/type        pathprom/later
+                 :env            pathom-env
+                 :inputmap       state
+                 :tx             [{:first-climate-noise-selected-svg [:imagebuf]}]
+                 :loading-ui     {:fx/type contour-loading-ui
+                                  :state   state}
+                 :realized-ui-fn (fn [pathom-map]
+                                   {:fx/type  imagepane/imagebuf
+                                    :imagebuf (-> pathom-map
+                                                  :first-climate-noise-selected-svg
+                                                  :imagebuf)})}]})
 
 (defn
   main-vertical-display
@@ -530,6 +701,48 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                         :state            state
                                         :grid-pane/row    3
                                         :grid-pane/column 1}
+                                       {:fx/type               sv-projections
+                                        :state                 state
+                                        :grid-pane/row         4
+                                        :grid-pane/row-span    2
+                                        :grid-pane/column      0
+                                        :grid-pane/column-span 2}
+                                       {:fx/type          top-pattern
+                                        :state            state
+                                        :grid-pane/row    6
+                                        :grid-pane/column 0}
+                                       {:fx/type          bottom-pattern
+                                        :state            state
+                                        :grid-pane/row    6
+                                        :grid-pane/column 1}
+                                       #_
+                                       {:fx/type               climate-index
+                                        :grid-pane/row         8
+                                        :grid-pane/row-span    1
+                                        :grid-pane/column      0
+                                        :grid-pane/column-span 2}
+                                       {:fx/type          noiselist
+                                        :state            state
+                                        :grid-pane/row    7
+                                        :grid-pane/column 0}
+                                       {:fx/type          noisepreview
+                                        :state            state
+                                        :grid-pane/row    7
+                                        :grid-pane/column 1}
+                                       {:fx/type          climatenoiselist
+                                        :state            state
+                                        :grid-pane/row    10
+                                        :grid-pane/column 0}
+                                       {:fx/type          climatenoisepreview
+                                        :state            state
+                                        :grid-pane/row    10
+                                        :grid-pane/column 1}
+                                       #_
+                                       {:fx/type               noise-index
+                                        :grid-pane/row         11
+                                        :grid-pane/row-span    1
+                                        :grid-pane/column      0
+                                        :grid-pane/column-span 2}
                                        ]}]
     }
    })
@@ -546,7 +759,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
    :height  600
    :scene   {:fx/type :scene
              :root    {:fx/type main-vertical-display
-                                 :state   value}}})
+                       :state   value}}})
 
 (defn root-state-watcher
   "This `fx/ext-watcher` is an element that just watches an IRef.
