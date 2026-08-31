@@ -563,6 +563,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
        :state   stateom/*selections}
       fx/create-component
       fx/on-fx-thread))
+(println "Launching!")
 
 #_
 @(com.wsscode.pathom3.interface.async.eql/process stateom/env

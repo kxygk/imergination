@@ -192,7 +192,7 @@
                      "custom"
                      (symbol region-key))]
     (if debug?
-      (do (println "Writing to File")
+      (do #_(println "Writing to File")
           (p/vthread (spit (str config-dir
                                 "/"
                                 filename)
@@ -221,11 +221,11 @@
   [svg-hiccup
    filename]
   (if debug?
-    (do (println (str "Making SVG: "
+    (do (println (str "Writing.. "
                       filename))
-        (let [realized-hiccup (do (println "Generating Hiccup")
+        (let [realized-hiccup (do #_(println "Generating Hiccup")
                                   (doall svg-hiccup))]
-          (let [xml (do (println "Generating XML")
+          (let [xml (do #_(println "Generating XML")
                         (quickthing/svg2xml realized-hiccup))]
             #_xml
             (spitstream xml
@@ -400,6 +400,7 @@
   [{:keys [shoreline
            region]}]
   {::pco/output [{:contour-svg [:hiccup]}]}
+  (println "CONTOUR-SVG resolver running, region:" (some-> region .hashCode))
   {:contour-svg {:hiccup (-> region
                              (plot/shoreline-map shoreline
                                                  {:axis-visible? true})
@@ -484,9 +485,10 @@
    soures]
   (let [num-files (count file-locations)]
     (map-indexed (fn read-in-a-file
+    #_(println "FILE-READ thread:" (.getName (Thread/currentThread)))
                    [index
                     file-location]
-                   (do (println (str "Reading in file "
+                   (do (println (str "Reading "
                                      (inc index)
                                      " of "
                                      num-files))

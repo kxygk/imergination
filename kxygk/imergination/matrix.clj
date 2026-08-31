@@ -64,7 +64,8 @@
    num-cols
    data-vec]
   (if-let [factory @matrix-factory]
-    (do (println (str "Factory type is: "
+    (do #_ ;; Enable to check which backend is used
+        (println (str "Factory type is: "
                       (type factory)))
         (build-matrix factory
                       num-rows
