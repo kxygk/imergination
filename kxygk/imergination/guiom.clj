@@ -264,8 +264,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                   @stateom/*selections
                   [{:world-svg [:imagebuf]}])
 
-
-
 (defn
   datadirlist
   "Lists have to be wrapped in an `extension lifecycle`..
@@ -618,12 +616,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
    {:fx/type    :v-box
     :style      {:-fx-background-color "#eee7e9"}
     :fill-width true
-    :children   [#_{:fx/type worldmap
-                    :state   state}
-                 {:fx/type            :grid-pane
-                  #_#_
-                  :row-constraints    [{:fx/type :row-constraints :percent-height 50}
-                                       {:fx/type :row-constraints :percent-height 50}]
+    :children   [{:fx/type            :grid-pane
                   :column-constraints [{:fx/type       :column-constraints
                                         :percent-width 100/2}
                                        {:fx/type       :column-constraints

@@ -362,28 +362,6 @@
                                    (nil? (.getScene pane))
                                    (not @cleaned?))
                           (cleanup!)))))))))
-      #_
-      (reset! scene-listener
-              (reify javafx.beans.value.ChangeListener
-                (^void changed [_
-                                ^javafx.beans.value.ObservableValue obs
-                                ^Object old-val
-                                ^Object new-val]
-                 (svg-aspect-dbg "sceneProperty changed:"
-                                 "old:"
-                                 (class old-val)
-                                 "new:"
-                                 (class new-val))
-
-                 (when (and old-val
-                            (nil? new-val)
-                            (not @cleaned?))
-                   (javafx.application.Platform/runLater
-                     (reify Runnable
-                       (^void run [_]
-                        (when (and (nil? (.getScene pane))
-                                   (not @cleaned?))
-                          (cleanup!)))))))))
       (.addListener (.widthProperty pane)
                     @width-listener)
       (.addListener (.heightProperty pane)
@@ -391,10 +369,7 @@
       (.addListener (.imageProperty img-view)
                     @image-listener)
       (.addListener (.parentProperty pane)
-                    @parent-listener)
-      #_
-      (.addListener (.sceneProperty pane)
-                    @scene-listener))
+                    @parent-listener))
     (doto pane
       (.setMinWidth 0.0)
       (.setMinHeight 0.0)
