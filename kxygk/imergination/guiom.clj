@@ -608,6 +608,36 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                   :climate-noise-var-svg
                                                   :imagebuf)})}]})
 
+(defn
+  section-title
+  [{:keys [text]}]
+  {:fx/type   :stack-pane
+   :alignment :center
+   :padding   {:top 8 :bottom 8}
+   :style     {:-fx-background-color "#b0b0b0"}
+   :children  [{:fx/type :label
+                :text    text
+                :style   {:-fx-font-size   16
+                          :-fx-font-weight "bold"}}]})
+
+(defn grid-rows
+  "Arranged GUI elements in a GRID automatically
+  Because managing indices is annoying"
+  [rows]
+  (->> rows
+       (map-indexed (fn go-over-each-row
+                      [row-idx
+                       row]
+                      (map-indexed
+                        (fn arrange-elements-in-columns
+                          [col-idx
+                           child]
+                          (merge child
+                                 {:grid-pane/row    row-idx
+                                  :grid-pane/column col-idx}))
+                        row)))
+       flatten
+       vec))
 
 (defn
   main-vertical-display
@@ -626,81 +656,79 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                         :percent-width 100/2}
                                        {:fx/type       :column-constraints
                                         :percent-width 100/2}]
-                  :children           [{:fx/type               worldmap
-                                        :state                 state
-                                        :grid-pane/row         0
-                                        :grid-pane/column      0
-                                        :grid-pane/column-span 2}
-                                       {:fx/type          datadir
-                                        :alignment        :top-center
-                                        :state            state
-                                        :grid-pane/row    1
-                                        :grid-pane/column 0}
-                                       {:fx/type          datapreview
-                                        :state            state
-                                        :grid-pane/row    1
-                                        :grid-pane/column 1}
-                                       {:fx/type          firstsv
-                                        :state            state
-                                        :grid-pane/row    2
-                                        :grid-pane/column 0}
-                                       {:fx/type          secondsv
-                                        :state            state
-                                        :grid-pane/row    2
-                                        :grid-pane/column 1}
-                                       {:fx/type          svlist
-                                        :state            state
-                                        :grid-pane/row    3
-                                        :grid-pane/column 0}
-                                       {:fx/type          svpreview
-                                        :state            state
-                                        :grid-pane/row    3
-                                        :grid-pane/column 1}
-                                       {:fx/type               sv-projections
-                                        :state                 state
-                                        :grid-pane/row         4
-                                        :grid-pane/row-span    2
-                                        :grid-pane/column      0
-                                        :grid-pane/column-span 2}
-                                       {:fx/type          top-pattern
-                                        :state            state
-                                        :grid-pane/row    6
-                                        :grid-pane/column 0}
-                                       {:fx/type          bottom-pattern
-                                        :state            state
-                                        :grid-pane/row    6
-                                        :grid-pane/column 1}
-                                       {:fx/type               climate-index
-                                        :state state
-                                        :grid-pane/row         7
-                                        :grid-pane/row-span    1
-                                        :grid-pane/column      0
-                                        :grid-pane/column-span 2}
-                                       {:fx/type          noiselist
-                                        :state            state
-                                        :grid-pane/row    8
-                                        :grid-pane/column 0}
-                                       {:fx/type          noisepreview
-                                        :state            state
-                                        :grid-pane/row    8
-                                        :grid-pane/column 1}
-                                       {:fx/type          climatenoiselist
-                                        :state            state
-                                        :grid-pane/row    9
-                                        :grid-pane/column 0}
-                                       {:fx/type          climatenoisepreview
-                                        :state            state
-                                        :grid-pane/row    9
-                                        :grid-pane/column 1}
-                                       {:fx/type               noise-index
-                                        :state state
-                                        :grid-pane/row         11
-                                        :grid-pane/row-span    1
-                                        :grid-pane/column      0
-                                        :grid-pane/column-span 2}
-                                       ]}]
-    }
-   })
+                  :children           (grid-rows [[{:fx/type               worldmap
+                                                    :state                 state
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type               section-title
+                                                    :text                  "Region Bounds DUMMY"
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type               section-title
+                                                    :text                  "Observations"
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type   datadir
+                                                    :alignment :top-center
+                                                    :state     state}
+                                                   {:fx/type datapreview
+                                                    :state   state}]
+                                                  [{:fx/type               section-title
+                                                    :text                  "EOF1 + EOF2 (i.e. SV1 + SV2)"
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type firstsv
+                                                    :state   state}
+                                                   {:fx/type secondsv
+                                                    :state   state}]
+                                                  [{:fx/type               section-title
+                                                    :text                  "Singular Vectors"
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type svlist
+                                                    :state   state}
+                                                   {:fx/type svpreview
+                                                    :state   state}]
+                                                  [{:fx/type               section-title
+                                                    :text                  "Singular Values"
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type               climate-index
+                                                    :state                 state
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type               section-title
+                                                    :text                  "SV1 [X] SV2 [Y] Observation Projections"
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type               sv-projections
+                                                    :state                 state
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type               section-title
+                                                    :text                  "Climate Patterns"
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type top-pattern
+                                                    :state   state}
+                                                   {:fx/type bottom-pattern
+                                                    :state   state}]
+                                                  [{:fx/type               section-title
+                                                    :text                  "Climate Index"
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type               climate-index
+                                                    :state                 state
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type               section-title
+                                                    :text                  "Observation Noise (SV1 SV2 Removed)"
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type noiselist
+                                                    :state   state}
+                                                   {:fx/type noisepreview
+                                                    :state   state}]
+                                                  [{:fx/type               section-title
+                                                    :text                  "Climate Pattern Adjusted Noise"
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type climatenoiselist
+                                                    :state   state}
+                                                   {:fx/type climatenoisepreview
+                                                    :state   state}]
+                                                  [{:fx/type               section-title
+                                                    :text                  "Noise Index"
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type               noise-index
+                                                    :state                 state
+                                                    :grid-pane/column-span 2}]])}]}})
 
 (defn app-root
   "The absolute root of the Cljfx application.
