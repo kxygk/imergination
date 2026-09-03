@@ -13,6 +13,14 @@
             [thi.ng.geom.svg.core :as svg]))
 
 (defn
+  empty-svg
+  [width
+   height]
+  (quickthing/svg-wrap (svg/group {})
+                       [width
+                        height]))
+
+(defn
   shoreline-map
   "Given a region and vector of geopoints(POIS)
   Draw a simple shoreline map"

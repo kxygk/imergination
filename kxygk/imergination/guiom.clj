@@ -60,12 +60,41 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                          quickthing/svg2xml
                          svg2jfx/jsvg-jxfimg)})
 
+
+(pco/defresolver $dummy-barchart-imagebuf
+  "Special resolver with a LRU1 cache.
+The rendered contour is used all over the place in the UI
+TODO: Make this somehow use the `$svg2imagebuf` resolver.."
+  [{:keys [dummy-barchart-svg]}]
+  {::pco/input  [{:dummy-barchart-svg [:hiccup]}]
+   ::pco/output [:dummy-barchart-imagebuf]}
+  (println "BARCHART-IMAGEBUF resolver running")
+  {:dummy-barchart-imagebuf (-> dummy-barchart-svg
+                                :hiccup
+                                quickthing/svg2xml
+                                svg2jfx/jsvg-jxfimg)})
+
+(pco/defresolver $dummy-sv-proj-imagebuf
+  "Special resolver with a LRU1 cache.
+The rendered contour is used all over the place in the UI
+TODO: Make this somehow use the `$svg2imagebuf` resolver.."
+  [{:keys [dummy-sv-proj-svg]}]
+  {::pco/input  [{:dummy-sv-proj-svg [:hiccup]}]
+   ::pco/output [:dummy-sv-proj-imagebuf]}
+  (println "BARCHART-IMAGEBUF resolver running")
+  {:dummy-sv-proj-imagebuf (-> dummy-sv-proj-svg
+                               :hiccup
+                               quickthing/svg2xml
+                               svg2jfx/jsvg-jxfimg)})
+
 (def pathom-env
   (-> (pci/register {::p.a.eql/parallel? true}
                     [stateom/env
                      $svg2imagebuf
                      $worldmap-imagebuf
-                     $contour-imagebuf])
+                     $contour-imagebuf
+                     $dummy-barchart-imagebuf
+                     $dummy-sv-proj-imagebuf])
       (pcp/with-plan-cache stateom/pathom-plan-cache*)
       kxygk.pathmore.cache/inject-for-all-resolvers
       kxygk.pathmore.async/wrap-all-resolvers-async))
@@ -104,6 +133,27 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                       :imagebuf (-> pathom-map
                                     :contour-imagebuf)})})
 
+(defn barchart-loading-ui
+  [{:keys [state]}]
+  {:fx/type        pathprom/now
+   :env            pathom-env
+   :inputmap       state
+   :tx             [:dummy-barchart-imagebuf]
+   :realized-ui-fn (fn [pathom-map]
+                     {:fx/type  imagepane/imagebuf
+                      :imagebuf (-> pathom-map
+                                    :dummy-barchart-imagebuf)})})
+
+(defn sv-proj-loading-ui
+  [{:keys [state]}]
+  {:fx/type        pathprom/now
+   :env            pathom-env
+   :inputmap       state
+   :tx             [:dummy-sv-proj-imagebuf]
+   :realized-ui-fn (fn [pathom-map]
+                     {:fx/type  imagepane/imagebuf
+                      :imagebuf (-> pathom-map
+                                    :dummy-sv-proj-imagebuf)})})
 
 (def map-clicks
   (atom {}))
@@ -438,7 +488,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                  :env            pathom-env
                  :inputmap       state
                  :tx             [{:sv-proj-svg [:imagebuf]}]
-                 :loading-ui     {:fx/type contour-loading-ui
+                 :loading-ui     {:fx/type sv-proj-loading-ui
                                   :state   state}
                  :realized-ui-fn (fn [pathom-map]
                                    {:fx/type  imagepane/imagebuf
@@ -582,8 +632,8 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                  :env            pathom-env
                  :inputmap       state
                  :tx             [{:pattern-proj-svg [:imagebuf]}]
-                 :loading-ui     {:fx/type :text
-                                  :text ":loading"}
+                 :loading-ui     {:fx/type barchart-loading-ui
+                                  :state   state}
                  :realized-ui-fn (fn [pathom-map]
                                    {:fx/type  imagepane/imagebuf
                                     :imagebuf (-> pathom-map
@@ -600,8 +650,8 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                  :env            pathom-env
                  :inputmap       state
                  :tx             [{:climate-noise-var-svg [:imagebuf]}]
-                 :loading-ui     {:fx/type :text
-                                  :text ":loading"}
+                 :loading-ui     {:fx/type barchart-loading-ui
+                                  :state   state}
                  :realized-ui-fn (fn [pathom-map]
                                    {:fx/type  imagepane/imagebuf
                                     :imagebuf (-> pathom-map

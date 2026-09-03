@@ -167,6 +167,21 @@
                                  (slurp (io/file shoreline-filestr))))))
 ;; (check :shoreline)
 
+(pco/defresolver $dummy-barchart-svg
+  [{:keys [barchart-width
+           barchart-height]}]
+  {::pco/output [{:dummy-barchart-svg [:hiccup]}]}
+  {:dummy-barchart-svg {:hiccup (plot/empty-svg barchart-width
+                                               barchart-height)}})
+
+(pco/defresolver $dummy-sv-proj-svg
+  [{:keys [barchart-width
+           barchart-height]}]
+  {::pco/output [{:dummy-sv-proj-svg [:hiccup]}]}
+  {:dummy-sv-proj-svg {:hiccup (plot/empty-svg barchart-width
+                                               (* barchart-width
+                                                  2.0))}})
+
 #_
 (-> @(p.a.eql/process env
                       @*selections
@@ -1855,6 +1870,8 @@
   (-> (pci/register {::p.a.eql/parallel? true}
                     [$barchart-height
                      $barchart-width
+                     $dummy-barchart-svg
+                     $dummy-sv-proj-svg
                      $shoreline
                      $region
                      $cycle-length-bins
