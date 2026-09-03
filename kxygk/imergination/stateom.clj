@@ -272,17 +272,6 @@
                       @*selections
                       [:window-width]))
 
-(def $display-width
-  (pbir/single-attr-resolver :window-width
-                             :display-width
-                             (fn [window-width]
-                               (* 1
-                                  window-width))))
-#_
-(-> @(p.a.eql/process env
-                      @*selections
-                      [:display-width]))
-
 (def $region-xy-ratio
   (pbir/single-attr-resolver :region
                              :region-xy-ratio
@@ -295,62 +284,6 @@
 (-> @(p.a.eql/process env
                       @*selections
                       [:region-xy-ratio]))
-
-(pco/defresolver $region-display-width
-  [{:keys [window-width
-           row-height
-           region-xy-ratio]}]
-  {:region-display-width (let [half-window        (/ window-width
-                                                     2.0)
-                               max-image-height   (* row-height
-                                                     0.95)
-                               drawing-area-ratio (/ half-window
-                                                     max-image-height)
-                               image-ratio        region-xy-ratio]
-                           (if (> image-ratio
-                                  drawing-area-ratio)
-                             half-window
-                             (* image-ratio
-                                max-image-height)))})
-#_
-(-> @(p.a.eql/process env
-                      @*selections
-                      [:region-display-width]))
-
-(pco/defresolver $region-display-height
-  [{:keys [region-display-width
-           region-xy-ratio]}]
-  {:region-display-height (/ region-display-width
-                             region-xy-ratio)})
-#_
-(-> @(p.a.eql/process env
-                      @*selections
-                      [:region-display-height]))
-
-
-(pco/defresolver $region-to-display-scale-x
-  [{:keys [region
-           region-display-width]}]
-  {:region-to-display-scale-x (let [[lat
-                                     _] (geoprim/dimension region)]
-                                (/ region-display-width
-                                   lat))})
-#_
-(-> @(p.a.eql/process env
-                      @*selections
-                      [:region-to-display-scale-x]))
-
-(pco/defresolver $region-to-display-scale-y
-  [{:keys [region
-           region-display-height]}]
-  {:region-to-display-scale-y (let [[_
-                                     lon] (geoprim/dimension region)]
-                                (/ region-display-height
-                                   lon))})
-#_
-(-> @(p.a.eql/process env
-                      @*selections
-                      [:region-to-display-scale-y]))
 
 #_
 (-> @(p.a.eql/process env
@@ -1919,12 +1852,7 @@
                     [$shoreline
                      $region
                      $cycle-length-bins
-                     $display-width
                      $region-xy-ratio
-                     $region-display-width
-                     $region-display-height
-                     $region-to-display-scale-x
-                     $region-to-display-scale-y
                      $world-svg
                      $world-with-region-highlight-svg
                      $contour-bare-svg
