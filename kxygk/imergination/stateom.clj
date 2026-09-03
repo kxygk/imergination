@@ -112,8 +112,8 @@
 (def
   *selections
   (atom (merge {;; Defaults
-                :window-width                1080.0
-                :row-height                  360
+                :barchart-height-width-ratio 3.0
+                :plot-zoom-factor            360
                 :shoreline-filestr           nil
                 :contour-filestr             nil
                 :non-zero-min?               false
@@ -147,6 +147,16 @@
                        :row-height
                        :shoreline-filestr
                        :region-key]))
+
+(pco/defresolver $barchart-height
+  [{:keys [plot-zoom-factor]}]
+  {:barchart-height plot-zoom-factor})
+
+(pco/defresolver $barchart-width
+  [{:keys [plot-zoom-factor
+           barchart-height-width-ratio]}]
+  {:barchart-width (* plot-zoom-factor
+                      barchart-height-width-ratio)})
 
 (def $shoreline
   (pbir/single-attr-resolver :shoreline-filestr
@@ -939,15 +949,13 @@
 (pco/defresolver $sv12-plot-svg
   [{:keys [sv-proj-vec
            region-svd
-           window-width
-           row-height
+           barchart-width
+           barchart-height
            cycle-length
            cycle-phase]}]
   {::pco/output [{:sv12-plot-svg [:hiccup]}]}
-  {:sv12-plot-svg {:hiccup (-> (plot/sv1sv2-1scale (* 1.0
-                                                      window-width)
-                                                   (* 1.0
-                                                      row-height)
+  {:sv12-plot-svg {:hiccup (-> (plot/sv1sv2-1scale barchart-width
+                                                   barchart-height
                                                    sv-proj-vec
                                                    2011
                                                    cycle-length
@@ -958,15 +966,13 @@
 (pco/defresolver $sv12-plot-2scale-svg
   [{:keys [sv-proj-vec
            region-svd
-           window-width
-           row-height
+           barchart-width
+           barchart-height
            cycle-length
            cycle-phase]}]
   {::pco/output [{:sv12-plot-2scale-svg [:hiccup]}]}
-  {:sv12-plot-2scale-svg {:hiccup (-> (plot/sv1sv2-2scale (* 1.0
-                                                             window-width)
-                                                          (* 1.0
-                                                             row-height)
+  {:sv12-plot-2scale-svg {:hiccup (-> (plot/sv1sv2-2scale barchart-width
+                                                          barchart-height
                                                           sv-proj-vec
                                                           2011
                                                           cycle-length
@@ -1277,10 +1283,12 @@
        keys)
 
 (pco/defresolver $sv-proj-svg
-  [{:keys [sv-bisection]}]
+  [{:keys [sv-bisection
+           barchart-width]}]
   {::pco/output [{:sv-proj-svg [:hiccup]}]}
-  {:sv-proj-svg {:hiccup (-> (plot/sv-plot 400
-                                           800
+  {:sv-proj-svg {:hiccup (-> (plot/sv-plot barchart-width
+                                           (* barchart-width
+                                              2.0)
                                            sv-bisection)
                              (spitsvgstream "sv-projs.svg"))}})
 #_(check :sv-proj-svg)
@@ -1684,16 +1692,14 @@
 ;; TODO This redraws on window resize!
 ;; Should let the GUI resize and keep the same SVG/Render
 (pco/defresolver $climate-noise-var-svg
-  [{:keys [window-width
-           row-height
+  [{:keys [barchart-width
+           barchart-height
            climate-noise-vars
            cycle-length
            cycle-phase]}]
   {::pco/output [{:climate-noise-var-svg [:hiccup]}]}
-  {:climate-noise-var-svg {:hiccup (-> (plot/index (* 1.0
-                                                      window-width)
-                                                   (* 1.0
-                                                      row-height)
+  {:climate-noise-var-svg {:hiccup (-> (plot/index barchart-width
+                                                   barchart-height
                                                    climate-noise-vars
                                                    2011
                                                    cycle-length
@@ -1759,16 +1765,16 @@
 ;; Should let the GUI resize and keep the same SVG/Render
 (pco/defresolver $pattern-proj-svg
   [{:keys [pattern-proj-partitioned
-           window-width
-           row-height
+           barchart-width
+           barchart-height
            cycle-length
            cycle-phase]}]
   {::pco/output [{:pattern-proj-svg [:hiccup]}]}
   {:pattern-proj-svg {:hiccup (let [[proj-a
                                      proj-b
                                      errors] pattern-proj-partitioned]
-                                (-> (plot/indeces window-width
-                                                  row-height
+                                (-> (plot/indeces barchart-width
+                                                  barchart-height
                                                   proj-a
                                                   proj-b
                                                   errors
@@ -1776,7 +1782,7 @@
                                                   cycle-length
                                                   cycle-phase
                                                   {:bar-width (* 0.5
-                                                                 (/ window-width
+                                                                 (/ barchart-width
                                                                     (count proj-a)))})
                                     (spitsvgstream "indeces.svg")))}})
 #_(check {:pattern-proj-svg [:hiccup]})
@@ -1793,16 +1799,14 @@
 (pco/defresolver $singular-values-svg
   [{:keys [singular-values
            singular-values-stats
-           window-width
-           row-height]}]
+           barchart-width
+           barchart-height]}]
   {::pco/output [{:singular-values-svg [:hiccup]}]}
   {:singular-values-svg {:hiccup (-> (plot/sv-weights singular-values
                                                       20
                                                       singular-values-stats
-                                                      (* 1.0
-                                                         window-width)
-                                                      (* 1.0
-                                                         row-height))
+                                                      barchart-width
+                                                      barchart-height)
                                      (spitsvgstream "singular-values.svg"))}})
 #_(check :singular-values-svg)
 
@@ -1849,7 +1853,9 @@
       kxygk.pathmore.cache/inject-for-all-resolvers))
 (def env
   (-> (pci/register {::p.a.eql/parallel? true}
-                    [$shoreline
+                    [$barchart-height
+                     $barchart-width
+                     $shoreline
                      $region
                      $cycle-length-bins
                      $region-xy-ratio
