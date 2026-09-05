@@ -23,8 +23,8 @@
                                                 2.0)]
                                             "Loading..."
                                             {:text-anchor       "middle"
-                                             :font-size (/ width
-                                                           10.0)
+                                             :font-size         (/ width
+                                                                   10.0)
                                              :dominant-baseline "middle"}))
                        [width
                         height]))
@@ -76,29 +76,29 @@
    (worldmap-region world-map
                     nil))
   ([world-map
-   region]
-  (let [{:keys [norwes
-                soueas]} region
-        x-start          (:eas norwes)
-        y-start          (:sou norwes)]
-    ;;{:norwes {:eas 278.0, :sou 81.5}, :soueas {:eas 279.0, :sou 82.5}}
-    (quickthing/svg-wrap
-      (svg/group {}
-                 world-map
-                 (if region
-                   (svg/rect [x-start
-                              y-start]
-                             (- (:eas soueas)
-                                x-start)
-                             (- (:sou soueas)
-                                y-start)
-                             {:fill         "red"
-                              :fill-opacity "0.25"})
-                   (svg/group {}))) ;; dummy
-      [360.0
-       180.0]
-      #_
-      display-width))))
+    region]
+   (let [{:keys [norwes
+                 soueas]} region
+         x-start          (:eas norwes)
+         y-start          (:sou norwes)]
+     ;;{:norwes {:eas 278.0, :sou 81.5}, :soueas {:eas 279.0, :sou 82.5}}
+     (quickthing/svg-wrap
+       (svg/group {}
+                  world-map
+                  (if region
+                    (svg/rect [x-start
+                               y-start]
+                              (- (:eas soueas)
+                                 x-start)
+                              (- (:sou soueas)
+                                 y-start)
+                              {:fill         "red"
+                               :fill-opacity "0.25"})
+                    (svg/group {}))) ;; dummy
+       [360.0
+        180.0]
+       #_
+       display-width))))
 
 (defn
   map-label
@@ -114,8 +114,8 @@
     (svg/text [(/ width
                   2.0)
                #_(- width
-                  (/  spacing
-                      2.0))
+                    (/  spacing
+                        2.0))
                (/ spacing
                   6.0)]
               text
@@ -184,8 +184,8 @@
                                     label-top-right
                                     (merge {:fill (quickthing/color-cycle cycle-frac)}
                                            label-attribs)))]
-            (quickthing/svg-wrap grp
-                                 (dimension region)))))
+      (quickthing/svg-wrap grp
+                           (dimension region)))))
 
 (defn
   sv-plot
@@ -613,9 +613,9 @@
    &{:keys [error-bars?
             bar-width]
      :or   {error-bars? false
-            bar-width (* 0.5
-                         (/ width
-                            (count proj-a)))}}]
+            bar-width   (* 0.5
+                           (/ width
+                              (count proj-a)))}}]
   (let [index-a (mapv (fn [point
                            error]
                         (if (-> point

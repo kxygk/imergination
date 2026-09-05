@@ -109,6 +109,8 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                   @stateom/*selections
                   [:contour-imagebuf])
 
+#_
+(time (p.a.eql/process pathom-env @stateom/*selections [:first-datafile-svg]))
 
 (defn world-loading-ui
   [{:keys [state]}]
@@ -332,6 +334,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
    :realized-ui-fn (fn [pathom-map]
                      {:fx/type fx.ext.list-view/with-selection-props
                       :props   {:selection-mode              :multiple
+                                ;;:style      {:-fx-background-color :red}
                                 :on-selected-indices-changed (fn update-datafile-selections
                                                                [selected-indices]
                                                                (swap! stateom/*selections
@@ -729,7 +732,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
 
 (defn grid-rows
   "Arranged GUI elements in a GRID automatically
-  Because managing indices is annoying"
+  Because indices change any time things are added or reordered"
   [rows]
   (->> rows
        (map-indexed (fn go-over-each-row
@@ -817,7 +820,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                                                {:fx/type        :text-field
                                                                                 :pref-column-count 4
                                                                                 :text-formatter {:fx/type          :text-formatter
-                                                                                                 :value-converter  :double ;; disallows letters n stuff
+                                                                                                 :value-converter  :double ;; disallows letters n' stuff
                                                                                                  :value            (round-to start-lat
                                                                                                                              4)
                                                                                                  :on-value-changed (fn [new-value]
@@ -878,12 +881,12 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                                                                                      (let [new-bounds {:start-lat start-lat
                                                                                                                                        :start-lon start-lon
                                                                                                                                        :ended-lat ended-lat
-                                                                                                                                       :ended-lon new-value }]
+                                                                                                                                       :ended-lon new-value }] ;;new
                                                                                                                        (update-region! new-bounds)))}}]}]}]}))}]})
 
 (defn
   main-vertical-display
-  "Tha main vertical window"
+  "The main vertical window"
   [{:keys [state]}]
   {:fx/type      :scroll-pane
    :fit-to-width true ;; Ensures content stretches to window width
@@ -906,7 +909,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                     :padding               {:top 8 :bottom 8}
                                                     :style                 {:-fx-background-color "#b0b0b0"}
                                                     :min-height :use-pref-size
-                                                    :children              [{:fx/type :label
+                                                    :children              [{:fx/type :label ;; Kinda ugly.. but not intuitive enough otherwise
                                                                              :text    (str "[Click + Drag] to select a small region"
                                                                                            \newline
                                                                                            "--------"
@@ -1033,19 +1036,18 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
       fx/on-fx-thread))
 (println "Launching!")
 
+;; The `main` for when this is packaged I guess
+(defn -main [& args]
+  (javafx.application.Platform/setImplicitExit false)
+  @app)
+
+
+
+;; Useful debug tool:
+;; gets the stack while things are spinning
 #_
-@(com.wsscode.pathom3.interface.async.eql/process stateom/env
-                                                  @stateom/*selections
-                                                  [:world-svg])
-
-;; (defn -main [& args]
-;;   (javafx.application.Platform/setImplicitExit false)
-;;   @app)
-
-
-#_
-(let [shoreline (check :shoreline)]
-  (time (check {:contour-svg [:imagebuf]}
-               (assoc shoreline
-                      :region
-                      (:region (:java locations/regions))))))
+(doseq [[thread trace] (java.lang.Thread/getAllStackTraces)]
+  (when (.contains (.getName thread) "JavaFX")
+    (println "=== " (.getName thread) " === " (.getState thread))
+    (run! println trace)
+    (println)))

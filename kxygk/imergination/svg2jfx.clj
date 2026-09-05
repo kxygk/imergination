@@ -43,21 +43,21 @@
                           .height
                           int)
         target-width  (target-render-width)
-        zoom (max 1
-                  (int (/ target-width
-                          width)))
+        zoom          (max 1
+                           (int (/ target-width
+                                   width)))
         imgbuf        (BufferedImage. (* width
                                          zoom)
                                       (* height
                                          zoom)
                                       java.awt.image.BufferedImage/TYPE_INT_RGB)
         graphics2d    (.createGraphics imgbuf)
-     ;; output-file   (File. "test" #_file-str)
+        ;; output-file   (File. "test" #_file-str)
         rbspectrum    quickthing/red-blue-colors
         neutral-white (get rbspectrum
                            (/ (count rbspectrum)
                               2))]
-     ;; maybe unneeded from the docs https://github.com/weisJ/jsvg
+    ;; maybe unneeded from the docs https://github.com/weisJ/jsvg
     (.setRenderingHint graphics2d
                        SVGRenderingHints/KEY_SOFT_CLIPPING
                        SVGRenderingHints/VALUE_SOFT_CLIPPING_ON)
@@ -91,10 +91,10 @@
 (defn
   jsvg-jxfimg
   [svg-str]
-   (-> svg-str
-       jsvg-bufimg
-       (javafx.embed.swing.SwingFXUtils/toFXImage
-         nil)))
+  (-> svg-str
+      jsvg-bufimg
+      (javafx.embed.swing.SwingFXUtils/toFXImage
+        nil)))
 
 (defn jsvg-fxcanvas
   "Converts an SVG string directly to a JavaFX FXSVGCanvas node.

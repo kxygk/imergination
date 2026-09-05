@@ -144,7 +144,6 @@
                       [:is-in-ram
                        :non-zero-min?
                        :normalize-data?
-                       :row-height
                        :shoreline-filestr
                        :region-key]))
 
@@ -355,10 +354,6 @@
           cycle-length)
      cycle-length))
 
-#_
-(-> @(p.a.eql/process env
-                      @*selections
-                      [:window-width]))
 
 (def $region-xy-ratio
   (pbir/single-attr-resolver :region
@@ -493,10 +488,6 @@
 (-> @(p.a.eql/process env
                       @*selections
                       [:data-locations]))
-
-
-
-
 
 (defn-
   lazy-world-reader
@@ -884,6 +875,67 @@
   {:first-datafile-svg (merge inputs
                               {:datafile-id (:first-datafile-idx inputs)})})
 #_(check {:first-datafile-svg [:hiccup]})
+
+;; FLAT MODEL
+;; Just a fun experiment
+#_
+(pco/defresolver $$datafile-svg
+  [{:keys [select-datafile-svg
+           datafile-id
+           datafile-geogrid
+           region
+           contour-svg
+           region-min-max]}]
+  {::pco/input   [:select-datafile-svg
+                  :datafile-id
+                  :datafile-geogrid
+                  :region
+                  {:contour-svg [:hiccup]}
+                  :region-min-max]
+   ::pco/output  [:hiccup]
+   #_#_ ;; prolly can regenerate each time you look at a new data
+   :inject-cache :lru1}
+  (if (nil? datafile-id)
+    contour-svg
+    {:hiccup (-> datafile-geogrid
+                 (plot/grid-map region
+                                contour-svg
+                                {:max-val (second region-min-max)})
+                 (spitsvgstream (str "data-file-"
+                                     datafile-id
+                                     ".svg")))}))
+
+#_
+@(p.a.eql/process env
+                  (merge @*selections
+                         {:select-datafile-svg true
+                          datafile-id          0})
+                  [:hiccup])
+#_
+(pco/defresolver $first-datafile-svg
+  [inputs]
+  {::pco/input  [:select-first-datafile
+                 :region
+                 :region-matrix
+                 {:contour-svg [:hiccup]}
+                 :region-min-max
+                 :first-datafile-idx]
+   ::pco/output [:select-datafile
+                 :datafile-id
+                 :region
+                 :region-matrix
+                 {:contour-svg [:hiccup]}
+                 :region-min-max
+                 :first-datafile-idx]}
+  {:first-datafile-svg (dissoc (merge inputs
+                                      {:select-datafile-svg true
+                                       :datafile-id         (:first-datafile-idx inputs)})
+                               :select-first-datafile)})
+  #_
+  @(p.a.eql/process env
+                  (merge @*selections
+                         {::select-first-datafile true})
+                  [:hiccup])
 
 (pco/defresolver $$singular-vector
   [{:keys [sv-index
@@ -1743,23 +1795,6 @@
                                             {:climate-noise-index (:first-climate-noise-selected-idx inputs)})})
 #_(check {:first-climate-noise-selected-svg [:hiccup]})
 
-#_
-(defn
-  first-normalized-noise-selected-svg
-  ""
-  [context]
-  (let [first-selections-idx (fx/sub-ctx context
-                                         first-normalized-noise-selected-idx)]
-    (if (nil? first-selections-idx)
-      (fx/sub-ctx context
-                  contour-svg)
-      (fx/sub-ctx context
-                  climate-noise-svg
-                  first-selections-idx))))
-#_
-(-> @*selections
-    (fx/sub-ctx first-normalized-noise-selected-svg))
-
 (def $climate-noise-vars
   (pbir/single-attr-resolver :climate-noise-matrix-2d-normalized
                              :climate-noise-vars
@@ -1767,7 +1802,6 @@
 #_(check :climate-noise-vars)
 
 
-;; TODO This redraws on window resize!
 ;; Should let the GUI resize and keep the same SVG/Render
 (pco/defresolver $climate-noise-var-svg
   [{:keys [barchart-width
@@ -1839,8 +1873,6 @@
                                   errors]))))
 #_(check :pattern-proj-partitioned)
 
-;; TODO This redraws on window resize!
-;; Should let the GUI resize and keep the same SVG/Render
 (pco/defresolver $pattern-proj-svg
   [{:keys [pattern-proj-partitioned
            barchart-width
@@ -1910,8 +1942,6 @@
                              datamats/singular-values-stats))
 #_(check :singular-values-stats)
 
-;; TODO This redraws on window resize!
-;; Should let the GUI resize and keep the same SVG/Render
 (pco/defresolver $singular-values-svg
   [{:keys [singular-values
            singular-values-stats
@@ -2053,12 +2083,6 @@
       (pcp/with-plan-cache pathom-plan-cache*)
       kxygk.pathmore.cache/inject-for-all-resolvers
       kxygk.pathmore.async/wrap-all-resolvers-async))
-
-#_
-(time
-  (p.a.eql/process env
-                   @*selections
-                   [{:first-datafile-svg [:imagebuf]}]))
 
 (defn check
   "simple util func to check a key in this file"
