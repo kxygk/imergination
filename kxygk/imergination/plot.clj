@@ -16,7 +16,16 @@
   empty-svg
   [width
    height]
-  (quickthing/svg-wrap (svg/group {})
+  (quickthing/svg-wrap (svg/group {}
+                                  (svg/text [(/ width
+                                                2.0)
+                                             (/ height
+                                                2.0)]
+                                            "Loading..."
+                                            {:text-anchor       "middle"
+                                             :font-size (/ width
+                                                           10.0)
+                                             :dominant-baseline "middle"}))
                        [width
                         height]))
 
