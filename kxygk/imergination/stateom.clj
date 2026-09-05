@@ -187,6 +187,38 @@
                       @*selections
                       [:region-key]))
 
+
+(defn regularize-region-bounds
+  [{:keys [start-lat
+           start-lon
+           ended-lat
+           ended-lon]}]
+  (if (and (not= start-lat
+                 ended-lat)
+           (not= start-lon
+                 ended-lon)
+           (< -90
+              start-lat
+              90)
+           (< -90
+              ended-lat
+              90)
+           (< -180
+              start-lon
+              180)
+           (< -180
+              ended-lon
+              180))
+    {:start-lat (max start-lat
+                     ended-lat)
+     :start-lon (min start-lon
+                     ended-lon)
+     :ended-lat (min start-lat
+                     ended-lat)
+     :ended-lon (max start-lon
+                     ended-lon)}))
+
+
 (def $region
   (pbir/single-attr-resolver :region-key
                              :region
@@ -197,7 +229,38 @@
 (-> @(p.a.eql/process env
                       @*selections
                       [:region]))
+;;{:region #geoprim.nwse-region{:norwes #geoprim.eassou-point{:eas 277.5, :sou 76.6}, :soueas #geoprim.eassou-point{:eas 281.0, :sou 84.6}}}
 
+
+
+(pco/defresolver $decompose-region
+  [{:keys [region]}]
+  {::pco/output [:start-lat
+                 :start-lon
+                 :ended-lat
+                 :ended-lon]}
+  (let [[top-left
+         _
+         bot-right
+         _] (geoprim/four-corners region)]
+    (let [[start-lat
+           start-lon] (geoprim/as-latlon top-left)
+          [ended-lat
+           ended-lon] (geoprim/as-latlon bot-right)]
+      {:start-lat start-lat
+       :start-lon start-lon
+       :ended-lat ended-lat
+       :ended-lon ended-lon})))
+#_
+(-> @(p.a.eql/process env
+                      @*selections
+                      [:start-lat
+                       :start-lon
+                       :ended-lat
+                       :ended-lon])
+    regularize-region-bounds)
+;;{:start-lat 12.400000000000006, :start-lon 97.5, :ended-lat 5.400000000000006, :ended-lon 101.0}
+;;{:start-lat 12.400000000000006, :start-lon 97.5, :ended-lat 5.400000000000006, :ended-lon 101.0}
 
 ;; DEBUG HELPERS *************************
 (defn
@@ -1874,6 +1937,7 @@
                      $dummy-sv-proj-svg
                      $shoreline
                      $region
+                     $decompose-region
                      $cycle-length-bins
                      $region-xy-ratio
                      $world-svg
