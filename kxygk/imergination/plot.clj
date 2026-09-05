@@ -550,16 +550,22 @@
    proj
    cycle-start-value
    cycle-length ;; Maybe make these optional?
-   cycle-phase]
+   cycle-phase
+   &{:keys [bar-width]
+     :or   {bar-width (* 0.5
+                         (/ width
+                            (count proj)))}}]
   (let [indexed (map-indexed vector
                              proj)]
     (let [axis (-> (quickthing/primary-axis indexed
-                                            {:width       width
-                                             :height      height
-                                             :x-ticks     [1.0]
-                                             :y-ticks     [1.0]
-                                             :margin-frac 0.07
-                                             :color       "#0008"})
+                                            {:width            width
+                                             :height           height
+                                             :x-ticks          [1.0]
+                                             :y-ticks          [1.0]
+                                             :scale            72
+                                             :margin-frac      0.01
+                                             :y-breathing-room 0.05
+                                             :color            "#0008"})
                    (assoc-in [:x-axis
                               :label]
                              (thi.ng.geom.viz.core/default-svg-label #(+ cycle-start-value
@@ -578,8 +584,7 @@
                  (into []
                        cat
                        [(quickthing/bars indexed
-                                         {:attribs {;;:opacity "0.5"
-                                                    :stroke-width 10 #_0.4
+                                         {:attribs {:stroke-width bar-width
                                                     :stroke       "gray"}})]))
           viz/svg-plot2d-cartesian
           (quickthing/svg-wrap [width
