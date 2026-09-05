@@ -1866,6 +1866,44 @@
 #_(check {:pattern-proj-svg [:hiccup]})
 
 
+(pco/defresolver $pattern-proj-with-errors-svg
+  [{:keys [pattern-proj-partitioned
+           barchart-width
+           barchart-height
+           cycle-length
+           cycle-phase]}]
+  {::pco/output [{:pattern-proj-with-errors-svg [:hiccup]}]}
+  {:pattern-proj-with-errors-svg {:hiccup (let [[proj-a
+                                                 proj-b
+                                                 errors] pattern-proj-partitioned]
+                                            (-> (plot/indeces barchart-width
+                                                              barchart-height
+                                                              proj-a
+                                                              proj-b
+                                                              errors
+                                                              2011
+                                                              cycle-length
+                                                              cycle-phase
+                                                              {:error-bars? true
+                                                               :bar-width (* 0.5
+                                                                             (/ barchart-width
+                                                                                (count proj-a)))})
+                                                (spitsvgstream "indeces-with-errors.svg")))}})
+#_(check {:pattern-proj-with-errors-svg [:hiccup]})
+
+(pco/defresolver $sv-proj-with-errors-svg
+  [{:keys [sv-bisection
+           barchart-width]}]
+  {::pco/output [{:sv-proj-with-errors-svg [:hiccup]}]}
+  {:sv-proj-with-errors-svg {:hiccup (-> (plot/sv-plot barchart-width
+                                                       (* barchart-width
+                                                          2.0)
+                                                       sv-bisection
+                                                       {:error-bars? true})
+                                         (spitsvgstream "sv-projs-with-errors.svg"))}})
+#_(check :sv-proj-with-errors-svg)
+
+
 (def $singular-values-stats
   (pbir/single-attr-resolver :singular-values
                              :singular-values-stats
@@ -2007,6 +2045,8 @@
                      $climate-noise-var-svg
                      $pattern-proj-partitioned
                      $pattern-proj-svg
+                     $pattern-proj-with-errors-svg
+                     $sv-proj-with-errors-svg
                      $singular-values-stats
                      $singular-values-svg
                      $$observation-svg])

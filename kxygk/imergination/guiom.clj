@@ -640,6 +640,26 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                   :pattern-proj-svg
                                                   :imagebuf)})}]})
 
+
+(defn
+  sv-projections-with-errors
+  ""
+  [{:keys [state]}]
+  {:fx/type    :v-box
+   :fill-width true
+   :children   [{:fx/type        pathprom/later
+                 :env            pathom-env
+                 :inputmap       state
+                 :tx             [{:sv-proj-with-errors-svg [:imagebuf]}]
+                 :loading-ui     {:fx/type sv-proj-loading-ui
+                                  :state   state}
+                 :realized-ui-fn (fn [pathom-map]
+                                   {:fx/type  imagepane/imagebuf
+                                    :imagebuf (-> pathom-map
+                                                  :sv-proj-with-errors-svg
+                                                  :imagebuf)})}]})
+
+
 (defn
   noise-index
   ""
@@ -656,6 +676,24 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                    {:fx/type  imagepane/imagebuf
                                     :imagebuf (-> pathom-map
                                                   :climate-noise-var-svg
+                                                  :imagebuf)})}]})
+
+(defn
+  climate-index-with-errors
+  ""
+  [{:keys [state]}]
+  {:fx/type    :v-box
+   :fill-width true
+   :children   [{:fx/type        pathprom/later
+                 :env            pathom-env
+                 :inputmap       state
+                 :tx             [{:pattern-proj-with-errors-svg [:imagebuf]}]
+                 :loading-ui     {:fx/type barchart-loading-ui
+                                  :state   state}
+                 :realized-ui-fn (fn [pathom-map]
+                                   {:fx/type  imagepane/imagebuf
+                                    :imagebuf (-> pathom-map
+                                                  :pattern-proj-with-errors-svg
                                                   :imagebuf)})}]})
 
 (defn
@@ -926,10 +964,22 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                     :state   state}
                                                    {:fx/type climatenoisepreview
                                                     :state   state}]
+                                                   [{:fx/type               section-title
+                                                    :text                  "SV1 [X] SV2 [Y] Observation Projections w/ Error Bounds"
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type               sv-projections-with-errors
+                                                    :state                 state
+                                                    :grid-pane/column-span 2}]
                                                   [{:fx/type               section-title
                                                     :text                  "Noise Index"
                                                     :grid-pane/column-span 2}]
                                                   [{:fx/type               noise-index
+                                                    :state                 state
+                                                    :grid-pane/column-span 2}]
+                                                   [{:fx/type               section-title
+                                                    :text                  "Climate Index with Error Bounds"
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type               climate-index-with-errors
                                                     :state                 state
                                                     :grid-pane/column-span 2}]])}]}})
 

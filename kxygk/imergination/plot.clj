@@ -188,7 +188,9 @@
    {:keys [angle-from-bottom
            points
            centroid-a
-           centroid-b]}]
+           centroid-b]}
+   &{:keys [error-bars?]
+     :or   {error-bars? false}}]
   (let  [data            (->> points
                               (mapv (fn [data-point]
                                       (update data-point
@@ -228,116 +230,124 @@
                        (- range-magnitude)]
                       [range-magnitude
                        range-magnitude]]]
-      (->> (-> (quickthing/zero-axis dummy-data
-                                     {:width       width
-                                      :height      height
-                                      :margin-frac 0.00})
-               #_#_
-               (update :data
-                       #(into %
-                              (quickthing/parallel-error-bars (-> centroid-a
-                                                                  bisect/to-polar
-                                                                  :angle-from-down
-                                                                  (+ (/ clojure.math/PI
-                                                                        2.0)))
-                                                              data-above
-                                                              {:attribs {:stroke "#0c0"}})))
-               (update :data
-                       #(into %
-                              (quickthing/parallel-error-bars (-> centroid-b
-                                                                  bisect/to-polar
-                                                                  :angle-from-down
-                                                                  (+ (/ clojure.math/PI
-                                                                        2.0)))
-                                                              data-below
-                                                              {:attribs {:stroke "#00c"}})))
-               #_
-               (update :data
-                       #(into %
-                              (quickthing/orthogonal-error-bars data
-                                                                {:attribs {:stroke "#c00"}})))
-               #_
-               (update :data
-                       #(into %
-                              (quickthing/error-bars data
-                                                     {:attribs {:stroke "#222"}})))
-               (update :data
-                       #(into %
-                              (-> (->> data
-                                       (map-indexed (fn [index
-                                                         [data-x
-                                                          data-y
-                                                          attribs]]
-                                                      [data-x
-                                                       data-y
-                                                       {:stroke       "black" #_ "transparent" #_ "#777"
-                                                        ;; TODO thread the whole thing
-                                                        :fill-opacity "0.8"
-                                                        :tooltip      (str "Index: "
-                                                                           (:index attribs)
-                                                                           "\n"
-                                                                           (-> attribs
-                                                                               (update :angle-from-down
-                                                                                       clojure.math/to-degrees)
-                                                                               (update :err-angle
-                                                                                       clojure.math/to-degrees)))
-                                                        :fill         (-> attribs
-                                                                          :cycle-frac
-                                                                          quickthing/color-cycle)}])))
-                                  (quickthing/circles {:scale 30}))))
-               #_
-               (update :data
-                       #(into %
-                              (quickthing/index-labels data
-                                                       {:scale 40})))
-               (update :data
-                       #(into %
-                              (quickthing/labels (->> data
-                                                      (map (fn [data-point]
-                                                             (update data-point
-                                                                     2
-                                                                     (fn [options]
-                                                                       (-> options
-                                                                           (clojure.set/rename-keys
-                                                                             {:err-angle :text})
-                                                                           (update :text
-                                                                                   (fn [rad]
-                                                                                     ;;"66" #_
-                                                                                     (format (str "%.3g")
-                                                                                             (clojure.math/to-degrees rad))))))))))
-                                                 {:scale 10})))
-               ;;#_#_#_
-               (update :data
-                       #(into %
-                              (quickthing/line-through-point dummy-data
-                                                             (->> angle-from-bottom
-                                                                  bisect/angle-from-bottom-to-unitvector)
-                                                             {:attribs {:stroke           "red"
-                                                                        :stroke-dasharray (str 50.0
-                                                                                               " "
-                                                                                               50.0)}})))
-               (update :data
-                       #(into %
-                              (quickthing/line-through-point dummy-data
-                                                             centroid-a
-                                                             {:attribs {:stroke           "black"
-                                                                        :stroke-dasharray (str 7.0
-                                                                                               " "
-                                                                                               7.0)}})))
-               (update :data
-                       #(into %
-                              (quickthing/line-through-point dummy-data
-                                                             centroid-b
-                                                             {:attribs {:stroke           "black"
-                                                                        :stroke-dasharray (str 7.0
-                                                                                               " "
-                                                                                               7.0)}})))
-               (assoc :grid ;; turn off grid
-                      nil)
-               (assoc-in [:x-axis
-                          :visible] false)
-               (assoc-in [:y-axis
-                          :visible] false))
+      (->> (cond-> (-> (quickthing/zero-axis dummy-data
+                                             {:width       width
+                                              :height      height
+                                              :margin-frac 0.00})
+                       #_#_
+                       (update :data
+                               #(into %
+                                      (quickthing/parallel-error-bars (-> centroid-a
+                                                                          bisect/to-polar
+                                                                          :angle-from-down
+                                                                          (+ (/ clojure.math/PI
+                                                                                2.0)))
+                                                                      data-above
+                                                                      {:attribs {:stroke "#0c0"}})))
+                       (update :data
+                               #(into %
+                                      (quickthing/parallel-error-bars (-> centroid-b
+                                                                          bisect/to-polar
+                                                                          :angle-from-down
+                                                                          (+ (/ clojure.math/PI
+                                                                                2.0)))
+                                                                      data-below
+                                                                      {:attribs {:stroke "#00c"}})))
+                       #_
+                       (update :data
+                               #(into %
+                                      (quickthing/orthogonal-error-bars data
+                                                                        {:attribs {:stroke "#c00"}})))
+                       #_
+                       (update :data
+                               #(into %
+                                      (quickthing/error-bars data
+                                                             {:attribs {:stroke "#222"}})))
+                       (update :data
+                               #(into %
+                                      (-> (->> data
+                                               (map-indexed (fn [index
+                                                                 [data-x
+                                                                  data-y
+                                                                  attribs]]
+                                                              [data-x
+                                                               data-y
+                                                               {:stroke       "black" #_ "transparent" #_ "#777"
+                                                                ;; TODO thread the whole thing
+                                                                :fill-opacity "0.8"
+                                                                :tooltip      (str "Index: "
+                                                                                   (:index attribs)
+                                                                                   "\n"
+                                                                                   (-> attribs
+                                                                                       (update :angle-from-down
+                                                                                               clojure.math/to-degrees)
+                                                                                       (update :err-angle
+                                                                                               clojure.math/to-degrees)))
+                                                                :fill         (-> attribs
+                                                                                  :cycle-frac
+                                                                                  quickthing/color-cycle)}])))
+                                          (quickthing/circles {:scale 30}))))
+                       #_
+                       (update :data
+                               #(into %
+                                      (quickthing/index-labels data
+                                                               {:scale 40})))
+                       (update :data
+                               #(into %
+                                      (quickthing/labels (->> data
+                                                              (map (fn [data-point]
+                                                                     (update data-point
+                                                                             2
+                                                                             (fn [options]
+                                                                               (-> options
+                                                                                   (clojure.set/rename-keys
+                                                                                     {:err-angle :text})
+                                                                                   (update :text
+                                                                                           (fn [rad]
+                                                                                             ;;"66" #_
+                                                                                             (format (str "%.3g")
+                                                                                                     (clojure.math/to-degrees rad))))))))))
+                                                         {:scale 10})))
+                       ;;#_#_#_
+                       (update :data
+                               #(into %
+                                      (quickthing/line-through-point dummy-data
+                                                                     (->> angle-from-bottom
+                                                                          bisect/angle-from-bottom-to-unitvector)
+                                                                     {:attribs {:stroke           "red"
+                                                                                :stroke-dasharray (str 50.0
+                                                                                                       " "
+                                                                                                       50.0)}})))
+                       (update :data
+                               #(into %
+                                      (quickthing/line-through-point dummy-data
+                                                                     centroid-a
+                                                                     {:attribs {:stroke           "black"
+                                                                                :stroke-dasharray (str 7.0
+                                                                                                       " "
+                                                                                                       7.0)}})))
+                       (update :data
+                               #(into %
+                                      (quickthing/line-through-point dummy-data
+                                                                     centroid-b
+                                                                     {:attribs {:stroke           "black"
+                                                                                :stroke-dasharray (str 7.0
+                                                                                                       " "
+                                                                                                       7.0)}})))
+                       (assoc :grid ;; turn off grid
+                              nil)
+                       (assoc-in [:x-axis
+                                  :visible] false)
+                       (assoc-in [:y-axis
+                                  :visible] false))
+             error-bars? (update :data
+                                 #(into %
+                                        (quickthing/orthogonal-error-bars data
+                                                                          {:attribs {:stroke "#c00"}})))
+             error-bars? (update :data
+                                 #(into %
+                                        (quickthing/error-bars data
+                                                               {:attribs {:stroke "#222"}}))))
            (viz/svg-plot2d-cartesian)
            (svg/group {}
                       (-> (quickthing/zero-axis dummy-data
@@ -586,8 +596,10 @@
    cycle-start-value
    cycle-length ;; Maybe make these optional?
    cycle-phase
-   &{:keys [bar-width]
-     :or   {bar-width (* 0.5
+   &{:keys [error-bars?
+            bar-width]
+     :or   {error-bars? false
+            bar-width (* 0.5
                          (/ width
                             (count proj-a)))}}]
   (let [index-a (mapv (fn [point
@@ -651,29 +663,35 @@
                    (assoc-in [:y-axis
                               :major]
                              []))]
-      (-> axis
-          #_#_
-          (update :data
-                  #(into %
-                         (quickthing/error-bars index-a)))
-          (update :data
-                  #(into %
-                         (quickthing/error-bars index-b)))
-          (update :data
-                  #(into %
-                         (quickthing/bars index-a
-                                          {:attribs {:stroke-width bar-width
-                                                     :stroke       "#00aa88"}})))
-          (update :data
-                  #(into %
-                         (quickthing/bars index-b
-                                          {:attribs {:stroke-width bar-width
-                                                     :stroke       "#aa8800"}})))
-          (update :data
-                  #(into %
-                         (quickthing/bars index-b
-                                          {:attribs {:stroke-width bar-width
-                                                     :stroke       "#aa8800"}})))
+      (-> (cond-> (-> axis
+                      #_#_
+                      (update :data
+                              #(into %
+                                     (quickthing/error-bars index-a)))
+                      (update :data
+                              #(into %
+                                     (quickthing/error-bars index-b)))
+                      (update :data
+                              #(into %
+                                     (quickthing/bars index-a
+                                                      {:attribs {:stroke-width bar-width
+                                                                 :stroke       "#00aa88"}})))
+                      (update :data
+                              #(into %
+                                     (quickthing/bars index-b
+                                                      {:attribs {:stroke-width bar-width
+                                                                 :stroke       "#aa8800"}})))
+                      (update :data
+                              #(into %
+                                     (quickthing/bars index-b
+                                                      {:attribs {:stroke-width bar-width
+                                                                 :stroke       "#aa8800"}}))))
+            error-bars? (update :data
+                                #(into %
+                                       (quickthing/error-bars index-a)))
+            error-bars? (update :data
+                                #(into %
+                                       (quickthing/error-bars index-b))))
           viz/svg-plot2d-cartesian
           (quickthing/svg-wrap [width
                                 height]
