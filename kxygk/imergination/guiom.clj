@@ -479,6 +479,25 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
 
 
 (defn
+  singular-values
+  ""
+  [{:keys [state]}]
+  {:fx/type    :v-box
+   :fill-width true
+   :children   [{:fx/type        pathprom/later
+                 :env            pathom-env
+                 :inputmap       state
+                 :tx             [{:singular-values-svg [:imagebuf]}]
+                 :loading-ui     {:fx/type barchart-loading-ui
+                                  :state   state}
+                 :realized-ui-fn (fn [pathom-map]
+                                   {:fx/type  imagepane/imagebuf
+                                    :imagebuf (-> pathom-map
+                                                  :singular-values-svg
+                                                  :imagebuf)})}]})
+
+
+(defn
   sv-projections
   ""
   [{:keys [state]}]
@@ -926,9 +945,9 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                    {:fx/type svpreview
                                                     :state   state}]
                                                   [{:fx/type               section-title
-                                                    :text                  "Singular Values"
+                                                    :text                  "Singular Values (first 20)"
                                                     :grid-pane/column-span 2}]
-                                                  [{:fx/type               climate-index
+                                                  [{:fx/type               singular-values
                                                     :state                 state
                                                     :grid-pane/column-span 2}]
                                                   [{:fx/type               section-title
