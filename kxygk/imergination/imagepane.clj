@@ -9,7 +9,8 @@
   - Cleans up all the machinery when the GUI node is removed"
   (:require [cljfx.api       :as fx]
             [cljfx.ext.list-view :as fx.ext.list-view]
-            [kxygk.imergination.svg2jfx :as svg2jfx]))
+            [kxygk.imergination.svg2jfx :as svg2jfx]
+            quickthing))
 
 ;; Debug flag
 (defonce debug-svg-aspect?
@@ -377,23 +378,11 @@
       (.setMaxHeight javafx.scene.layout.Region/USE_PREF_SIZE))))
 
 (defn svg [{:keys [svg]}]
-  (let [jfx-object (-> svg
-                       quickthing/svg2xml
-                       svg2jfx/jsvg-jxfimg)]
-    (cond
-      (instance? javafx.scene.image.Image jfx-object)
-      {:fx/type fx/ext-instance-factory
-       :create  (fn []
-                  (wrap-image-with-pane jfx-object))}
-
-      (instance? javafx.scene.Node jfx-object)
-      {:fx/type fx/ext-instance-factory
-       :create  (fn [] jfx-object)}
-
-      :else
-      {:fx/type   :label
-       :text      (str "Unknown SVG type: " (class jfx-object))
-       :text-fill :red})))
+  (let [fx-node (-> svg
+                    quickthing/svg2xml
+                    svg2jfx/jsvg-fxcanvas)]
+    {:fx/type fx/ext-instance-factory
+     :create  (fn [] fx-node)}))
 
 (defn imagebuf [{:keys [imagebuf]}]
   {:fx/type fx/ext-recreate-on-key-changed
