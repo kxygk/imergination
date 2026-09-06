@@ -497,7 +497,7 @@
    soures]
   (let [num-files (count file-locations)]
     #_(println "FILE-READ thread:" (.getName (Thread/currentThread)))
-    (vec (map-indexed (fn read-in-a-file
+    (map-indexed (fn read-in-a-file
                    [index
                     file-location]
                    (do (println (str "Reading "
@@ -507,7 +507,7 @@
                        (geogrid4image/read-location file-location
                                                     easres
                                                     soures)))
-                 file-locations))))
+                 file-locations)))
 ;; #_
 ;; (geogrid4image/read-location (clojure.java.io/file
 ;;                                  "/home/kxygk/Data/20CRv2c/SLP/pressure/geotiff-rot-subset/pres_only.nc-block0074-rot.tiff")
@@ -599,11 +599,14 @@
 
 (pco/defresolver $world-geogrid-vec
   [{:keys [data-locations
+           is-in-ram
            eas-res
            sou-res]}]
-  {:world-geogrid-vec (lazy-world-reader data-locations
-                                         eas-res
-                                         sou-res)})
+  {:world-geogrid-vec (if is-in-ram
+                        (vec (lazy-world-reader data-locations
+                                                eas-res
+                                                sou-res))
+                        nil)})
 #_
 (-> @(p.a.eql/process env
                       @*selections
@@ -612,16 +615,23 @@
 
 ;; TODO: The lazyness is probably broken right now
 (pco/defresolver $region-geogrid-vec
-  [{:keys [region
+  [{:keys [world-geogrid-vec ;; if `is-in-ram` then has files
+           ;; otherwise recalculate and cut out data in a streaming fashion
+           data-locations
            is-in-ram
-           world-geogrid-vec]}]
+           eas-res
+           sou-res
+           ;; the region to cut out
+           region]}]
   {:region-geogrid-vec (if is-in-ram
                          (->> world-geogrid-vec
                               (map #(do #_(println "\nCutting out region ..")
                                         (geogrid/subregion %
                                                            region))))
-                         (->> world-geogrid-vec
-                              (map #(do #_(println "\nCutting out region ..")
+                         (->> (lazy-world-reader data-locations
+                                         eas-res
+                                         sou-res)
+                              (mapv #(do #_(println "\nCutting out region ..")
                                         (geogrid/subregion %
                                                            region)))))})
 #_
