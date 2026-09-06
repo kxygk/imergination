@@ -19,6 +19,7 @@
             [kxygk.pathomfx.pathprom :as pathprom]
             [kxygk.imergination.stateom :as stateom]
             [kxygk.imergination.imagepane :as imagepane])
+  (:import [java.io InputStream File])
   (:gen-class :main true))`
 
 
@@ -345,33 +346,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                 :min-height  0
                                 :pref-height 0
                                 :items       (:datafile-strs-formatted pathom-map)}})})
-
-(defn
-  datadir
-  "Where we select the data to read in..
-  We can inspect how it looks in our region"
-  [{:keys [state]}]
-  {:fx/type    :v-box
-   :min-height 0
-   :children   [{:fx/type        pathprom/later
-                 :env            pathom-env
-                 :inputmap       state
-                 :tx             [:data-dirstr]
-                 :loading-ui     {:fx/type fx.ext.list-view/with-selection-props
-                                  :props   {:selection-mode :multiple}
-                                  :desc    {:fx/type     :list-view
-                                            :min-height  0
-                                            :pref-height 0
-                                            :items       ["Loading..."]}}
-                 :realized-ui-fn (fn [pathom-map]
-                                   {:fx/type :text-field
-                                    :disable true
-                                    :text    (:data-dirstr pathom-map)})}
-                {:fx/type     datadirlist
-                 :state       state
-                 :v-box/vgrow :always
-                 :min-height  0}
-                ]})
 
 (defn
   datapreview
@@ -803,86 +777,166 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                  ended-lat
                                                  ended-lon]} pathom-map]
                                      {:fx/type    :h-box
-                                      :alignment :center
+                                      :alignment  :center
                                       :min-height :use-pref-size   ;; <-- Never shrink below natural height
-                                      :children   [{:fx/type    :v-box
+                                      :children   [{:fx/type     :v-box
                                                     :h-box/hgrow :always
-                                                    :min-height 0
-                                                    :children   [{:fx/type :label
-                                                                  :text    "Top Left Corner "
-                                                                  :style   {:-fx-font-size   16
-                                                                            :-fx-font-weight "bold"}}
-                                                                 {:fx/type    :h-box
-                                                                  :min-height 0
-                                                                  :children   [{:fx/type :label
-                                                                                :text    "Lat: "
-                                                                                :style   {:-fx-font-size 16}}
-                                                                               {:fx/type        :text-field
-                                                                                :pref-column-count 4
-                                                                                :text-formatter {:fx/type          :text-formatter
-                                                                                                 :value-converter  :double ;; disallows letters n' stuff
-                                                                                                 :value            (round-to start-lat
-                                                                                                                             4)
-                                                                                                 :on-value-changed (fn [new-value]
-                                                                                                                     (let [new-bounds {:start-lat new-value ;;new
-                                                                                                                                       :start-lon start-lon
-                                                                                                                                       :ended-lat ended-lat
-                                                                                                                                       :ended-lon ended-lon}]
-                                                                                                                       (update-region! new-bounds)))}}
-                                                                               {:fx/type :label
-                                                                                :text    "Lon: "
-                                                                                :style   {:-fx-font-size 16}}
-                                                                               {:fx/type        :text-field
-                                                                                :pref-column-count 4
-                                                                                :text-formatter {:fx/type          :text-formatter
-                                                                                                 :value-converter  :double ;; disallows letters n stuff
-                                                                                                 :value            (round-to start-lon
-                                                                                                                             4)
-                                                                                                 :on-value-changed (fn [new-value]
-                                                                                                                     (let [new-bounds {:start-lat start-lat
-                                                                                                                                       :start-lon new-value ;;new
-                                                                                                                                       :ended-lat ended-lat
-                                                                                                                                       :ended-lon ended-lon}]
-                                                                                                                       (update-region! new-bounds)))}}]}]}
-                                                   {:fx/type    :v-box
+                                                    :min-height  0
+                                                    :children    [{:fx/type :label
+                                                                   :text    "Top Left Corner "
+                                                                   :style   {:-fx-font-size   16
+                                                                             :-fx-font-weight "bold"}}
+                                                                  {:fx/type    :h-box
+                                                                   :min-height 0
+                                                                   :children   [{:fx/type :label
+                                                                                 :text    "Lat: "
+                                                                                 :style   {:-fx-font-size 16}}
+                                                                                {:fx/type           :text-field
+                                                                                 :pref-column-count 4
+                                                                                 :text-formatter    {:fx/type          :text-formatter
+                                                                                                     :value-converter  :double ;; disallows letters n' stuff
+                                                                                                     :value            (round-to start-lat
+                                                                                                                                 4)
+                                                                                                     :on-value-changed (fn [new-value]
+                                                                                                                         (let [new-bounds {:start-lat new-value ;;new
+                                                                                                                                           :start-lon start-lon
+                                                                                                                                           :ended-lat ended-lat
+                                                                                                                                           :ended-lon ended-lon}]
+                                                                                                                           (update-region! new-bounds)))}}
+                                                                                {:fx/type :label
+                                                                                 :text    "Lon: "
+                                                                                 :style   {:-fx-font-size 16}}
+                                                                                {:fx/type           :text-field
+                                                                                 :pref-column-count 4
+                                                                                 :text-formatter    {:fx/type          :text-formatter
+                                                                                                     :value-converter  :double ;; disallows letters n stuff
+                                                                                                     :value            (round-to start-lon
+                                                                                                                                 4)
+                                                                                                     :on-value-changed (fn [new-value]
+                                                                                                                         (let [new-bounds {:start-lat start-lat
+                                                                                                                                           :start-lon new-value ;;new
+                                                                                                                                           :ended-lat ended-lat
+                                                                                                                                           :ended-lon ended-lon}]
+                                                                                                                           (update-region! new-bounds)))}}]}]}
+                                                   {:fx/type     :v-box
                                                     :h-box/hgrow :always
-                                                    :min-height 0
-                                                    :children   [{:fx/type :label
-                                                                  :text    "Bottom Right Corner "
-                                                                  :style   {:-fx-font-size   16
-                                                                            :-fx-font-weight "bold"}}
-                                                                 {:fx/type    :h-box
-                                                                  :min-height 0
-                                                                  :children   [{:fx/type :label
-                                                                                :text    "Lat: "
-                                                                                :style   {:-fx-font-size 16}}
-                                                                               {:fx/type        :text-field
-                                                                                :pref-column-count 4
-                                                                                :text-formatter {:fx/type          :text-formatter
-                                                                                                 :value-converter  :double ;; disallows letters n stuff
-                                                                                                 :value            (round-to ended-lat
-                                                                                                                             4)
-                                                                                                 :on-value-changed (fn [new-value]
-                                                                                                                     (let [new-bounds {:start-lat start-lat
-                                                                                                                                       :start-lon start-lon
-                                                                                                                                       :ended-lat new-value ;;new
-                                                                                                                                       :ended-lon ended-lon}]
-                                                                                                                       (update-region! new-bounds)))}}
-                                                                               {:fx/type :label
-                                                                                :text    "Lon: "
-                                                                                :style   {:-fx-font-size 16}}
-                                                                               {:fx/type        :text-field
-                                                                                :pref-column-count 4
-                                                                                :text-formatter {:fx/type          :text-formatter
-                                                                                                 :value-converter  :double ;; disallows letters n stuff
-                                                                                                 :value            (round-to ended-lon
-                                                                                                                             4)
-                                                                                                 :on-value-changed (fn [new-value]
-                                                                                                                     (let [new-bounds {:start-lat start-lat
-                                                                                                                                       :start-lon start-lon
-                                                                                                                                       :ended-lat ended-lat
-                                                                                                                                       :ended-lon new-value }] ;;new
-                                                                                                                       (update-region! new-bounds)))}}]}]}]}))}]})
+                                                    :min-height  0
+                                                    :children    [{:fx/type :label
+                                                                   :text    "Bottom Right Corner "
+                                                                   :style   {:-fx-font-size   16
+                                                                             :-fx-font-weight "bold"}}
+                                                                  {:fx/type    :h-box
+                                                                   :min-height 0
+                                                                   :children   [{:fx/type :label
+                                                                                 :text    "Lat: "
+                                                                                 :style   {:-fx-font-size 16}}
+                                                                                {:fx/type           :text-field
+                                                                                 :pref-column-count 4
+                                                                                 :text-formatter    {:fx/type          :text-formatter
+                                                                                                     :value-converter  :double ;; disallows letters n stuff
+                                                                                                     :value            (round-to ended-lat
+                                                                                                                                 4)
+                                                                                                     :on-value-changed (fn [new-value]
+                                                                                                                         (let [new-bounds {:start-lat start-lat
+                                                                                                                                           :start-lon start-lon
+                                                                                                                                           :ended-lat new-value ;;new
+                                                                                                                                           :ended-lon ended-lon}]
+                                                                                                                           (update-region! new-bounds)))}}
+                                                                                {:fx/type :label
+                                                                                 :text    "Lon: "
+                                                                                 :style   {:-fx-font-size 16}}
+                                                                                {:fx/type           :text-field
+                                                                                 :pref-column-count 4
+                                                                                 :text-formatter    {:fx/type          :text-formatter
+                                                                                                     :value-converter  :double ;; disallows letters n stuff
+                                                                                                     :value            (round-to ended-lon
+                                                                                                                                 4)
+                                                                                                     :on-value-changed (fn [new-value]
+                                                                                                                         (let [new-bounds {:start-lat start-lat
+                                                                                                                                           :start-lon start-lon
+                                                                                                                                           :ended-lat ended-lat
+                                                                                                                                           :ended-lon new-value }] ;;new
+                                                                                                                           (update-region! new-bounds)))}}]}]}]}))}]})
+
+
+(defn
+  inputdir
+  "Where we select the data to read in..
+  We can inspect how it looks in our region"
+  [{:keys [state]}]
+  {:fx/type    :h-box
+   :min-height :use-pref-size
+   :children   [{:fx/type :label
+                 :text    (str "Input:")
+                 :style   {:-fx-font-size   16
+                           :-fx-font-weight "bold"}}
+                {:fx/type        pathprom/later
+                 :h-box/hgrow    :always
+                 :env            pathom-env
+                 :inputmap       state
+                 :tx             [:data-dirstr]
+                 :loading-ui     {:fx/type fx.ext.list-view/with-selection-props
+                                  :props   {:selection-mode :multiple}
+                                  :desc    {:fx/type     :list-view
+                                            :min-height  0
+                                            :pref-height 0
+                                            :items       ["Loading..."]}}
+                 :realized-ui-fn (fn [pathom-map]
+                                   {:fx/type          :text-field
+                                    :editable         false
+                                    :text             (:data-dirstr pathom-map)
+                                    :on-mouse-clicked (fn [^javafx.scene.input.MouseEvent event]
+                                                        (let [node    (.getSource event)
+                                                              window  (-> node .getScene .getWindow)
+                                                              chooser (doto (javafx.stage.DirectoryChooser.)
+                                                                        (.setInitialDirectory (File.  (:data-dirstr pathom-map)))
+                                                                        (.setTitle "Select Input Directory"))
+                                                              dir     (.showDialog chooser window)]
+                                                          (when dir
+                                                            (swap! stateom/*selections
+                                                                   assoc
+                                                                   :rain-dirstr
+                                                                   (.getPath dir)))))})}]})
+
+(defn
+  outputdir
+  "Where we select the data to read in..
+  We can inspect how it looks in our region"
+  [{:keys [state]}]
+  {:fx/type    :h-box
+   :min-height :use-pref-size
+   :children   [{:fx/type :label
+                 :text    (str "Output:")
+                 :style   {:-fx-font-size   16
+                           :-fx-font-weight "bold"}}
+                {:fx/type        pathprom/later
+                 :h-box/hgrow    :always
+                 :env            pathom-env
+                 :inputmap       state
+                 :tx             [:data-dirstr]
+                 :loading-ui     {:fx/type fx.ext.list-view/with-selection-props
+                                  :props   {:selection-mode :multiple}
+                                  :desc    {:fx/type     :list-view
+                                            :min-height  0
+                                            :pref-height 0
+                                            :items       ["Loading..."]}}
+                 :realized-ui-fn (fn [pathom-map]
+                                   {:fx/type          :text-field
+                                    :editable         false
+                                    :text             (:data-dirstr pathom-map)
+                                    :on-mouse-clicked (fn [^javafx.scene.input.MouseEvent event]
+                                                        (let [node    (.getSource event)
+                                                              window  (-> node .getScene .getWindow)
+                                                              chooser (doto (javafx.stage.DirectoryChooser.)
+                                                                        (.setInitialDirectory (File.  (:data-dirstr pathom-map)))
+                                                                        (.setTitle "Select Input Directory"))
+                                                              dir     (.showDialog chooser window)]
+                                                          (when dir
+                                                            (swap! stateom/*selections
+                                                                   assoc
+                                                                   :rain-dirstr
+                                                                   (.getPath dir)))))})}]})
+
 
 (defn
   main-vertical-display
@@ -908,7 +962,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                     :alignment             :center-left
                                                     :padding               {:top 8 :bottom 8}
                                                     :style                 {:-fx-background-color "#b0b0b0"}
-                                                    :min-height :use-pref-size
+                                                    :min-height            :use-pref-size
                                                     :children              [{:fx/type :label ;; Kinda ugly.. but not intuitive enough otherwise
                                                                              :text    (str "[Click + Drag] to select a small region"
                                                                                            \newline
@@ -926,9 +980,16 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                     :state                 state
                                                     :grid-pane/column-span 2}]
                                                   [{:fx/type               section-title
+                                                    :text                  "Working Directories"
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type inputdir
+                                                    :state   state}
+                                                   {:fx/type outputdir
+                                                    :state   state}]
+                                                  [{:fx/type               section-title
                                                     :text                  "Observations"
                                                     :grid-pane/column-span 2}]
-                                                  [{:fx/type   datadir
+                                                  [{:fx/type   datadirlist
                                                     :alignment :top-center
                                                     :state     state}
                                                    {:fx/type datapreview
@@ -986,7 +1047,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                     :state   state}
                                                    {:fx/type climatenoisepreview
                                                     :state   state}]
-                                                   [{:fx/type               section-title
+                                                  [{:fx/type               section-title
                                                     :text                  "SV1 [X] SV2 [Y] Observation Projections w/ Error Bounds"
                                                     :grid-pane/column-span 2}]
                                                   [{:fx/type               sv-projections-with-errors
@@ -998,7 +1059,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                   [{:fx/type               noise-index
                                                     :state                 state
                                                     :grid-pane/column-span 2}]
-                                                   [{:fx/type               section-title
+                                                  [{:fx/type               section-title
                                                     :text                  "Climate Index with Error Bounds"
                                                     :grid-pane/column-span 2}]
                                                   [{:fx/type               climate-index-with-errors
