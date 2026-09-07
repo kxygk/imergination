@@ -148,6 +148,10 @@
                        :shoreline-filestr
                        :region-key]))
 
+(def *file-loading
+  (atom {:total-num-files nil
+         :file-number     nil}))
+
 (pco/defresolver $barchart-height
   [{:keys [plot-zoom-factor]}]
   {:barchart-height plot-zoom-factor})
@@ -516,14 +520,21 @@
    easres
    soures]
   (let [num-files (count file-locations)]
-    #_(println "FILE-READ thread:" (.getName (Thread/currentThread)))
+    (swap! *file-loading
+           assoc
+           :total-num-files num-files
+           :file-number 0)
     (map-indexed (fn read-in-a-file
                    [index
                     file-location]
-                   (do (println (str "Reading "
+                   (do #_(println (str "Reading "
                                      (inc index)
                                      " of "
                                      num-files))
+                       (swap! *file-loading
+                              update
+                              :file-number
+                              inc)
                        (geogrid4image/read-location file-location
                                                     easres
                                                     soures)))
@@ -643,21 +654,26 @@
            sou-res
            ;; the region to cut out
            region]}]
-  {:region-geogrid-vec (if is-in-ram
-                         (->> world-geogrid-vec
-                              (mapv #(do #_(println "\nCutting out region ..")
-                                         (geogrid/subregion %
-                                                            region))))
-                         (->> (lazy-world-reader data-locations
-                                                 eas-res
-                                                 sou-res)
-                              (mapv #(do #_(println "\nCutting out region ..")
-                                         (geogrid/subregion %
-                                                            region)))))})
-#_
-(-> @(p.a.eql/process env
-                      @*selections
-                      [:region-geogrid-vec]))
+  {:region-geogrid-vec (let [region-geogrid-vec (if is-in-ram
+                                                  (->> world-geogrid-vec
+                                                       (mapv #(do #_(println "\nCutting out region ..")
+                                                                  (geogrid/subregion %
+                                                                                     region))))
+                                                  (->> (lazy-world-reader data-locations
+                                                                          eas-res
+                                                                          sou-res)
+                                                       (mapv #(do #_(println "\nCutting out region ..")
+                                                                  (geogrid/subregion %
+                                                                                     region)))))]
+                         (swap! *file-loading
+                                assoc
+                                :total-num-files
+                                nil)
+                         region-geogrid-vec)})
+  #_
+  (-> @(p.a.eql/process env
+                        @*selections
+                        [:region-geogrid-vec]))
 
 (defn-
   bin-sum

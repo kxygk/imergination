@@ -858,7 +858,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                                                                                                            :ended-lon new-value }] ;;new
                                                                                                                            (update-region! new-bounds)))}}]}]}]}))}]})
 
-
 (defn
   inputdir
   "Where we select the data to read in..
@@ -875,9 +874,9 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                  :inputmap       state
                  :tx             [:is-in-ram]
                  :realized-ui-fn (fn [pathom-map]
-                                   {:fx/type  :check-box
-                                    :selected (-> pathom-map
-                                                  :is-in-ram)
+                                   {:fx/type             :check-box
+                                    :selected            (-> pathom-map
+                                                             :is-in-ram)
                                     :on-selected-changed (fn flip-is-in-ram-bit
                                                            [_]
                                                            (swap! stateom/*selections
@@ -911,8 +910,8 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                                 window  (-> node .getScene .getWindow)
                                                                 chooser (doto (javafx.stage.DirectoryChooser.)
                                                                           (.setInitialDirectory (File. (if (some? dirstr)
-                                                                                                        dirstr
-                                                                                                        "")))
+                                                                                                         dirstr
+                                                                                                         "")))
                                                                           (.setTitle "Select Input Directory"))
                                                                 dir     (.showDialog chooser window)]
                                                             (when dir
@@ -964,7 +963,19 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                                      assoc
                                                                      :output-dirstr
                                                                      (.getPath dir)))))}))}]})
-
+(defn file-loading-progress-bar
+  [{:keys [value]}]
+  (let [{:keys [total-num-files
+                file-number]} value]
+    {:fx/type    :h-box
+     :min-height :use-pref-size
+     :children   [{:fx/type     :progress-bar
+                   :h-box/hgrow :always
+                   :max-width   Double/MAX_VALUE
+                   :progress    (if (nil? total-num-files)
+                                  0.0
+                                  (/ file-number
+                                     total-num-files))}]}))
 
 (defn
   main-vertical-display
@@ -1014,6 +1025,10 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                     :state   state}
                                                    {:fx/type outputdir
                                                     :state   state}]
+                                                  [{:fx/type               fx/ext-watcher
+                                                    :ref                   stateom/*file-loading
+                                                    :desc                  {:fx/type file-loading-progress-bar}
+                                                    :grid-pane/column-span 2}]
                                                   [{:fx/type               section-title
                                                     :text                  "Observations"
                                                     :grid-pane/column-span 2}]
