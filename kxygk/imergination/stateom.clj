@@ -625,7 +625,7 @@
            region]}]
   {:region-geogrid-vec (if is-in-ram
                          (->> world-geogrid-vec
-                              (map #(do #_(println "\nCutting out region ..")
+                              (mapv #(do #_(println "\nCutting out region ..")
                                         (geogrid/subregion %
                                                            region))))
                          (->> (lazy-world-reader data-locations
