@@ -867,7 +867,25 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   {:fx/type    :h-box
    :min-height :use-pref-size
    :children   [{:fx/type :label
-                 :text    (str "Input:")
+                 :text    (str "In RAM: ")
+                 :style   {:-fx-font-size   16
+                           :-fx-font-weight "bold"}}
+                {:fx/type        pathprom/now
+                 :env            pathom-env
+                 :inputmap       state
+                 :tx             [:is-in-ram]
+                 :realized-ui-fn (fn [pathom-map]
+                                   {:fx/type  :check-box
+                                    :selected (-> pathom-map
+                                                  :is-in-ram)
+                                    :on-selected-changed (fn flip-is-in-ram-bit
+                                                           [_]
+                                                           (swap! stateom/*selections
+                                                                  update
+                                                                  :is-in-ram
+                                                                  not))})}
+                {:fx/type :label
+                 :text    (str " Input: ")
                  :style   {:-fx-font-size   16
                            :-fx-font-weight "bold"}}
                 {:fx/type        pathprom/later
@@ -882,21 +900,26 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                             :pref-height 0
                                             :items       ["Loading..."]}}
                  :realized-ui-fn (fn [pathom-map]
-                                   {:fx/type          :text-field
-                                    :editable         false
-                                    :text             (:data-dirstr pathom-map)
-                                    :on-mouse-clicked (fn [^javafx.scene.input.MouseEvent event]
-                                                        (let [node    (.getSource event)
-                                                              window  (-> node .getScene .getWindow)
-                                                              chooser (doto (javafx.stage.DirectoryChooser.)
-                                                                        (.setInitialDirectory (File.  (:data-dirstr pathom-map)))
-                                                                        (.setTitle "Select Input Directory"))
-                                                              dir     (.showDialog chooser window)]
-                                                          (when dir
-                                                            (swap! stateom/*selections
-                                                                   assoc
-                                                                   :rain-dirstr
-                                                                   (.getPath dir)))))})}]})
+                                   (let [dirstr (:data-dirstr pathom-map)]
+                                     {:fx/type          :text-field
+                                      :editable         false
+                                      :text             (if (some? dirstr)
+                                                          dirstr
+                                                          "NONE")
+                                      :on-mouse-clicked (fn [^javafx.scene.input.MouseEvent event]
+                                                          (let [node    (.getSource event)
+                                                                window  (-> node .getScene .getWindow)
+                                                                chooser (doto (javafx.stage.DirectoryChooser.)
+                                                                          (.setInitialDirectory (File. (if (some? dirstr)
+                                                                                                        dirstr
+                                                                                                        "")))
+                                                                          (.setTitle "Select Input Directory"))
+                                                                dir     (.showDialog chooser window)]
+                                                            (when dir
+                                                              (swap! stateom/*selections
+                                                                     assoc
+                                                                     :rain-dirstr
+                                                                     (.getPath dir)))))}))}]})
 
 (defn
   outputdir
@@ -906,14 +929,14 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   {:fx/type    :h-box
    :min-height :use-pref-size
    :children   [{:fx/type :label
-                 :text    (str "Output:")
+                 :text    (str " Output: ")
                  :style   {:-fx-font-size   16
                            :-fx-font-weight "bold"}}
                 {:fx/type        pathprom/later
                  :h-box/hgrow    :always
                  :env            pathom-env
                  :inputmap       state
-                 :tx             [:data-dirstr]
+                 :tx             [:output-dirstr]
                  :loading-ui     {:fx/type fx.ext.list-view/with-selection-props
                                   :props   {:selection-mode :multiple}
                                   :desc    {:fx/type     :list-view
@@ -921,21 +944,26 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                             :pref-height 0
                                             :items       ["Loading..."]}}
                  :realized-ui-fn (fn [pathom-map]
-                                   {:fx/type          :text-field
-                                    :editable         false
-                                    :text             (:data-dirstr pathom-map)
-                                    :on-mouse-clicked (fn [^javafx.scene.input.MouseEvent event]
-                                                        (let [node    (.getSource event)
-                                                              window  (-> node .getScene .getWindow)
-                                                              chooser (doto (javafx.stage.DirectoryChooser.)
-                                                                        (.setInitialDirectory (File.  (:data-dirstr pathom-map)))
-                                                                        (.setTitle "Select Input Directory"))
-                                                              dir     (.showDialog chooser window)]
-                                                          (when dir
-                                                            (swap! stateom/*selections
-                                                                   assoc
-                                                                   :rain-dirstr
-                                                                   (.getPath dir)))))})}]})
+                                   (let [dirstr (:output-dirstr pathom-map)]
+                                     {:fx/type          :text-field
+                                      :editable         false
+                                      :text             (if (some? dirstr)
+                                                          dirstr
+                                                          "NONE")
+                                      :on-mouse-clicked (fn [^javafx.scene.input.MouseEvent event]
+                                                          (let [node    (.getSource event)
+                                                                window  (-> node .getScene .getWindow)
+                                                                chooser (doto (javafx.stage.DirectoryChooser.)
+                                                                          (.setInitialDirectory (File.  (if (some? dirstr)
+                                                                                                          dirstr
+                                                                                                          "")))
+                                                                          (.setTitle "Select Input Directory"))
+                                                                dir     (.showDialog chooser window)]
+                                                            (when dir
+                                                              (swap! stateom/*selections
+                                                                     assoc
+                                                                     :output-dirstr
+                                                                     (.getPath dir)))))}))}]})
 
 
 (defn
