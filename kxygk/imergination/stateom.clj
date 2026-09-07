@@ -172,7 +172,7 @@
            barchart-height]}]
   {::pco/output [{:dummy-barchart-svg [:hiccup]}]}
   {:dummy-barchart-svg {:hiccup (plot/empty-svg barchart-width
-                                               barchart-height)}})
+                                                barchart-height)}})
 
 (pco/defresolver $dummy-sv-proj-svg
   [{:keys [barchart-width
@@ -646,14 +646,14 @@
   {:region-geogrid-vec (if is-in-ram
                          (->> world-geogrid-vec
                               (mapv #(do #_(println "\nCutting out region ..")
-                                        (geogrid/subregion %
-                                                           region))))
+                                         (geogrid/subregion %
+                                                            region))))
                          (->> (lazy-world-reader data-locations
-                                         eas-res
-                                         sou-res)
+                                                 eas-res
+                                                 sou-res)
                               (mapv #(do #_(println "\nCutting out region ..")
-                                        (geogrid/subregion %
-                                                           region)))))})
+                                         (geogrid/subregion %
+                                                            region)))))})
 #_
 (-> @(p.a.eql/process env
                       @*selections
@@ -966,8 +966,8 @@
                                       {:select-datafile-svg true
                                        :datafile-id         (:first-datafile-idx inputs)})
                                :select-first-datafile)})
-  #_
-  @(p.a.eql/process env
+#_
+@(p.a.eql/process env
                   (merge @*selections
                          {::select-first-datafile true})
                   [:hiccup])
