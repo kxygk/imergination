@@ -133,7 +133,7 @@
                 :noise-selected-idxs         [0]
                 :climate-noise-selected-idxs [0]
                 ;; Default Dataset presets
-                :rain-dirstr                 "/home/kxygk/Data/imerg/monthly/late/"
+                :rain-dirstr                 nil
                 :region-key                  :krabi-root-2
                 :bin-size                    1
                 :cycle-length                12
@@ -171,9 +171,16 @@
   (pbir/single-attr-resolver :shoreline-filestr
                              :shoreline
                              (fn [shoreline-filestr]
-                               (if (nil? shoreline-filestr)
-                                 (slurp (io/resource "data/shoreline-coarse.json"))
-                                 (slurp (io/file shoreline-filestr))))))
+                               (if (some? shoreline-filestr)
+                                 (-> shoreline-filestr
+                                     io/file
+                                     slurp )
+                                 (-> (str (or (System/getProperty "app.dir")
+                                              ".")
+                                          "/data"
+                                          "/shoreline-coarse.json")
+                                     io/file
+                                     slurp)))))
 ;; (check :shoreline)
 
 (pco/defresolver $dummy-barchart-svg
@@ -474,22 +481,18 @@
                       (:region (:java locations/regions))))))
 
 
-
 (def $data-dirstr
   (pbir/single-attr-resolver :rain-dirstr
                              :data-dirstr
                              (fn [specified-dir]
                                (if (some? specified-dir) ;; is directory specified?
                                  specified-dir
-                                 ;; if not, unzip our backup data
-                                 (-> "data/imerg-late-v06b-10yrs-2011-through-2021.zip"
-                                     io/resource
-                                     zip/unzip
-                                     .getPath)))))
+                                 (str (or (System/getProperty "app.dir")
+                                          ".")
+                                      "/data"
+                                      "/imerg-late-v06b-10yrs-2011-through-2021")))))
 #_
-@(p.a.eql/process env
-                  @*selections
-                  [:data-dirstr])
+(check :data-dirstr)
 
 (def $datafile-strs
   (pbir/single-attr-resolver :data-dirstr
