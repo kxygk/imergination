@@ -315,6 +315,21 @@
        (.mkdir)))
 
 (defn
+  spitcsvstream
+  [vec-of-vecs
+   output-dirstr
+   filename]
+  (if (and debug?
+           output-dirstr)
+    (with-open [writer (io/writer (str output-dirstr
+                                       "/"
+                                       filename))]
+      (println (str "Writing out climate index to CSV file .. "))
+      (csv/write-csv writer
+                     vec-of-vecs)))
+  vec-of-vecs)
+
+(defn
   spitsvgstream
   "Take an SVG hiccup
   Render it to XML and same to the `filename`
@@ -1918,57 +1933,53 @@
 #_(:climate-noise-var-svg (check :climate-noise-var-svg
                                  {:index 6}))
 
-(def $pattern-proj-partitioned
-  (pbir/single-attr-resolver :pattern-proj
-                             :pattern-proj-partitioned
-                             (fn [projections]
-                               (let [proj-a (->> projections
-                                                 (mapv (fn [proj]
-                                                         (if (-> proj
-                                                                 (get 2)
-                                                                 :above?
-                                                                 #_not)
-                                                           (first proj)
-                                                           0)))
-                                                 (mapv (fn [proj]
-                                                         (if (pos? proj)
-                                                           proj
-                                                           0.0))))
-                                     proj-b (->> projections
-                                                 (mapv (fn [proj]
-                                                         (if (-> proj
-                                                                 (get 2)
-                                                                 :above?
-                                                                 not)
-                                                           (second proj)
-                                                           0)))
-                                                 (mapv (fn [proj]
-                                                         (if (pos? proj)
-                                                           proj
-                                                           0.0))))
-                                     errors (->> projections
-                                                 (mapv (fn [proj]
-                                                         (if (-> proj
-                                                                 (get 2)
-                                                                 :above?)
-                                                           (-> proj
+(pco/defresolver $pattern-proj-partitioned
+  [{:keys [pattern-proj
+           output-dirstr]}]
+  {:pattern-proj-partitioned (let [proj-a (->> pattern-proj
+                                               (mapv (fn [proj]
+                                                       (if (-> proj
                                                                (get 2)
-                                                               :err-centroid-a)
-                                                           (-> proj
+                                                               :above?
+                                                               #_not)
+                                                         (first proj)
+                                                         0)))
+                                               (mapv (fn [proj]
+                                                       (if (pos? proj)
+                                                         proj
+                                                         0.0))))
+                                   proj-b (->> pattern-proj
+                                               (mapv (fn [proj]
+                                                       (if (-> proj
                                                                (get 2)
-                                                               :err-centroid-b)))))]
-                                 (if debug?
-                                   (with-open [writer (io/writer (str config-dir
-                                                                      "/climate-index.csv"))]
-                                     (println (str "Writing out climate index to CSV file .. "))
-                                     (csv/write-csv writer
-                                                    (mapv vector
-                                                          proj-a
-                                                          proj-b
-                                                          errors))))
-                                 [proj-a
-                                  proj-b
-                                  errors]))))
+                                                               :above?
+                                                               not)
+                                                         (second proj)
+                                                         0)))
+                                               (mapv (fn [proj]
+                                                       (if (pos? proj)
+                                                         proj
+                                                         0.0))))
+                                   errors (->> pattern-proj
+                                               (mapv (fn [proj]
+                                                       (if (-> proj
+                                                               (get 2)
+                                                               :above?)
+                                                         (-> proj
+                                                             (get 2)
+                                                             :err-centroid-a)
+                                                         (-> proj
+                                                             (get 2)
+                                                             :err-centroid-b)))))]
+                               (spitcsvstream (mapv vector
+                                                    proj-a
+                                                    proj-b
+                                                    errors)
+                                              output-dirstr
+                                              "climate-index.csv")
+                               [proj-a
+                                proj-b
+                                errors])})
 #_(check :pattern-proj-partitioned)
 
 (pco/defresolver $pattern-proj-svg
