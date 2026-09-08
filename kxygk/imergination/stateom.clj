@@ -42,73 +42,78 @@
   true)
 
 (def
-  config-dir
-  (str "/home/kxygk/Projects/imergination.wiki/"
-       #_
-       "nao-anomaly-monthly"
-       #_
-       "krabi-monthly-2year"
-       #_
-       "tianshan-monthly"
-       #_
-       "tianshan-pentads-10year"
-       #_
-       "tianshan-pentads-2year"
-       #_
-       "krabi-daily-2year"
-       #_
-       "krabi-pentad-10year"
-       #_
-       "krabi-pentads-2year"
-       #_
-       "krabins-short-pentad"
-       #_
-       "krabi-short-daily"
-       #_
-       "krabi-gpcp"
-       #_
-       "fakerain"
-       #_
-       "rift-valley"
-       #_
-       "imerg-blip"
-       #_
-       "krabi-gpcc"
-       #_
-       "marrah"
-       #_
-       "krabdaily"
-       #_
-       "haihai-norm"
-       #_
-       "krabins-norm"
-       #_
-       "krab-mon-norm"
-       #_
-       "krabi-monthly"
-       #_
-       "krabi-monthly-final-v7"
-       ;;#_
-       "krabi-monthly"
-       #_
-       "scs-rainbow"
-       #_
-       "krabins-v7"
-       #_
-       "krabins"
-       #_
-       "sichuan"
-       #_
-       "taipei"
-       #_
-       "taiwan"
-       #_
-       "scs-skinny"
-       #_
-       "hainan-skinny-nonorm"
-       #_
-       "hainan-skinny"))
-
+  user-config
+  nil
+  #_
+  (-> (str "/home/kxygk/Projects/imergination.wiki/"
+           #_
+           "nao-anomaly-monthly"
+           #_
+           "krabi-monthly-2year"
+           #_
+           "tianshan-monthly"
+           #_
+           "tianshan-pentads-10year"
+           #_
+           "tianshan-pentads-2year"
+           #_
+           "krabi-daily-2year"
+           #_
+           "krabi-pentad-10year"
+           #_
+           "krabi-pentads-2year"
+           #_
+           "krabins-short-pentad"
+           #_
+           "krabi-short-daily"
+           #_
+           "krabi-gpcp"
+           #_
+           "fakerain"
+           #_
+           "rift-valley"
+           #_
+           "imerg-blip"
+           #_
+           "krabi-gpcc"
+           #_
+           "marrah"
+           #_
+           "krabdaily"
+           #_
+           "haihai-norm"
+           #_
+           "krabins-norm"
+           #_
+           "krab-mon-norm"
+           #_
+           "krabi-monthly"
+           #_
+           "krabi-monthly-final-v7"
+           ;;#_
+           "krabi-monthly"
+           #_
+           "scs-rainbow"
+           #_
+           "krabins-v7"
+           #_
+           "krabins"
+           #_
+           "sichuan"
+           #_
+           "taipei"
+           #_
+           "taiwan"
+           #_
+           "scs-skinny"
+           #_
+           "hainan-skinny-nonorm"
+           #_
+           "hainan-skinny")
+      (str "/config.edn")
+      slurp
+      clojure.edn/read-string))
+;;(io/resource "data/fallback-dataset.csv")
 (def
   *selections
   (atom (merge {;; Defaults
@@ -121,24 +126,24 @@
                 :normalize-data?             true
                 #_#_#_#_:rain-dirstr         "/home/kxygk/Data/sst/monthly/geotiff-rot/"
                 :elevation-filestr           "./data/World_e-Atlas-UCSD_SRTM30-plus_v8.tif"
-                :bin-size                    1
-                :cycle-length                12
-                :cycle-phase                 0
-                :eas-res                     0.1
-                :sou-res                     0.1
-                :region-key                  :krabi-root-2
                 :is-in-ram                   true
                 :mouse-click                 nil
                 :datafile-idxs               [0]
                 :sv-selected-idxs            [0]
                 :noise-selected-idxs         [0]
-                :climate-noise-selected-idxs [0]}
-               (if (nil? config-dir)
+                :climate-noise-selected-idxs [0]
+                ;; Default Dataset presets
+                :rain-dirstr                 "/home/kxygk/Data/imerg/monthly/late/"
+                :region-key                  :krabi-root-2
+                :bin-size                    1
+                :cycle-length                12
+                :cycle-phase                 0
+                :eas-res                     0.1
+                :sou-res                     0.1}
+               (if (nil? user-config)
                  {}
-                 (-> config-dir
-                     (str "/config.edn")
-                     slurp
-                     clojure.edn/read-string)))))
+                 user-config
+                 ))))
 #_
 (-> @(p.a.eql/process env
                       @*selections
