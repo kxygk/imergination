@@ -973,7 +973,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                    :h-box/hgrow :always
                    :max-width   Double/MAX_VALUE
                    :progress    (if (nil? total-num-files)
-                                  0.0
+                                  1.0
                                   (/ file-number
                                      total-num-files))}]}))
 
