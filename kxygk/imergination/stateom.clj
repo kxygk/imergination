@@ -127,7 +127,7 @@
                 :eas-res                     0.1
                 :sou-res                     0.1
                 :region-key                  :krabi-root-2
-                :is-in-ram                   false
+                :is-in-ram                   true
                 :mouse-click                 nil
                 :datafile-idxs               [0]
                 :sv-selected-idxs            [0]
