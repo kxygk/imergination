@@ -331,7 +331,6 @@
   "Take a vector of vector of values and turn it into a matrix"
   [data-matrix-for-meta-data
    vecofvecs]
-  (println "Careful.. `from-vecofvecs` flattens data")
   (-> data-matrix-for-meta-data
       (assoc :matrix
              (matrix/build (-> vecofvecs
