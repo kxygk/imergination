@@ -100,16 +100,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
       kxygk.pathmore.cache/inject-for-all-resolvers
       kxygk.pathmore.async/wrap-all-resolvers-async))
 
-;;#_
-@(p.a.eql/process pathom-env
-                  @stateom/*selections
-                  [:world-imagebuf])
-
-;;#_
-@(p.a.eql/process pathom-env
-                  @stateom/*selections
-                  [:contour-imagebuf])
-
 #_
 (time (p.a.eql/process pathom-env @stateom/*selections [:first-datafile-svg]))
 
@@ -1143,6 +1133,14 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
 ;; The `main` for when this is packaged I guess
 (defn -main [& args]
   (println "Launching!")
+  ;; Pre-Generate world/contour loading images.
+  ;; Cache is warmed before the GUI is launched
+  @(p.a.eql/process pathom-env
+                    @stateom/*selections
+                    [:world-imagebuf])
+  @(p.a.eql/process pathom-env
+                    @stateom/*selections
+                    [:contour-imagebuf])
   (javafx.application.Platform/setImplicitExit false)
   (-> {:fx/type root-state-watcher
        :state   stateom/*selections}
