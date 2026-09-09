@@ -8,7 +8,6 @@
             [clojure.core.cache :as cache]
             ;;            [injest.path :refer [+> +>> x>> =>>]]
             [kxygk.imergination.bisect :as bisect]
-            [kxygk.imergination.zip :as zip]
             [geogrid4image]
             [geogrid4seq]
             [kxygk.imergination.datamats :as datamats]
