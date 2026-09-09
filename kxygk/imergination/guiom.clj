@@ -55,7 +55,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   [{:keys [contour-svg]}]
   {::pco/input  [{:contour-svg [:hiccup]}]
    ::pco/output [:contour-imagebuf]}
-  (println "CONTOUR-IMAGEBUF resolver running")
   {:contour-imagebuf (-> contour-svg
                          :hiccup
                          quickthing/svg2xml
@@ -69,7 +68,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   [{:keys [dummy-barchart-svg]}]
   {::pco/input  [{:dummy-barchart-svg [:hiccup]}]
    ::pco/output [:dummy-barchart-imagebuf]}
-  (println "BARCHART-IMAGEBUF resolver running")
   {:dummy-barchart-imagebuf (-> dummy-barchart-svg
                                 :hiccup
                                 quickthing/svg2xml
@@ -82,7 +80,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   [{:keys [dummy-sv-proj-svg]}]
   {::pco/input  [{:dummy-sv-proj-svg [:hiccup]}]
    ::pco/output [:dummy-sv-proj-imagebuf]}
-  (println "BARCHART-IMAGEBUF resolver running")
   {:dummy-sv-proj-imagebuf (-> dummy-sv-proj-svg
                                :hiccup
                                quickthing/svg2xml

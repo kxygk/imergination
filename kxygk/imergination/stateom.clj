@@ -464,7 +464,6 @@
            region
            output-dirstr]}]
   {::pco/output [{:contour-svg [:hiccup]}]}
-  (println "CONTOUR-SVG resolver running, region:" (some-> region .hashCode))
   {:contour-svg {:hiccup (-> region
                              (plot/shoreline-map shoreline
                                                  {:axis-visible? true})
@@ -552,7 +551,7 @@
     (map-indexed (fn read-in-a-file
                    [index
                     file-location]
-                   (do #_(println (str "Reading "
+                   (do (println (str "Reading "
                                      (inc index)
                                      " of "
                                      num-files))
