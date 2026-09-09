@@ -60,7 +60,8 @@
  ;; Note this generates a SLF4J Warning
  ;; https://github.com/uncomplicate/neanderthal/issues/54
  ;;
- :paths     ["."]}
+ :paths     ["."
+             "data"]}
 
 
 ;; (comment

@@ -175,11 +175,8 @@
                                  (-> shoreline-filestr
                                      io/file
                                      slurp )
-                                 (-> (str (or (System/getProperty "app.dir")
-                                              ".")
-                                          "/data"
-                                          "/shoreline-coarse.json")
-                                     io/file
+                                 (-> "/data/shoreline-coarse.json"
+                                     io/resource
                                      slurp)))))
 ;; (check :shoreline)
 
@@ -487,10 +484,7 @@
                              (fn [specified-dir]
                                (if (some? specified-dir) ;; is directory specified?
                                  specified-dir
-                                 (str (or (System/getProperty "app.dir")
-                                          ".")
-                                      "/data"
-                                      "/imerg-late-v06b-10yrs-2011-through-2021")))))
+                                 nil))))
 #_
 (check :data-dirstr)
 
@@ -499,16 +493,16 @@
                              :datafile-strs
                              (fn [maybe-dirstr]
                                (if (nil? maybe-dirstr)
-                                 ;; should fall back on to the baked in dataset
-                                 (println "The Default dataset was missing!")
+                                 (-> (io/resource "data/datalist.edn")
+                                     io/reader
+                                     java.io.PushbackReader.
+                                     clojure.edn/read)
                                  (->> maybe-dirstr
                                       java.io.File.
                                       .list
                                       sort)))))
 #_
-@(p.a.eql/process env
-                  @*selections
-                  [:datafile-strs])
+(check :datafile-strs)
 
 (def $datafile-strs-formatted
   (pbir/single-attr-resolver :datafile-strs
@@ -522,19 +516,26 @@
                                                        "]"
                                                        file-str)))
                                    vec)))
+#_
+(check :datafile-strs-formatted)
 
 (pco/defresolver $data-locations
   [{:keys [data-dirstr
+           default-data-dirstr
            datafile-strs]}]
-  {:data-locations (let [directory data-dirstr]
-                     (mapv #(clojure.java.io/file (str directory
+  {:data-locations (if data-dirstr
+                     ;; Specified Data On Disk\
+                     (mapv #(clojure.java.io/file (str data-dirstr
                                                        "/"
                                                        %))
-                           datafile-strs))});; no POI
-#_
-(-> @(p.a.eql/process env
-                      @*selections
-                      [:data-locations]))
+                           datafile-strs)
+                     ;; Default Internal Data (a `resource`)
+                     (mapv #(->> %
+                                 (str default-data-dirstr
+                                      "/")
+                                 io/resource)
+                           datafile-strs))})
+#_(check :data-locations)
 
 (defn-
   lazy-world-reader
@@ -562,94 +563,6 @@
                                                     easres
                                                     soures)))
                  file-locations)))
-;; #_
-;; (geogrid4image/read-location (clojure.java.io/file
-;;                                  "/home/kxygk/Data/20CRv2c/SLP/pressure/geotiff-rot-subset/pres_only.nc-block0074-rot.tiff")
-;;                              2.0
-;;                              2.0)
-;; #_
-;; #geogrid4image.imagegrid{:norwes-point #geoprim.eassou-point{:eas 0.0,
-;;                                                              :sou 0.0},
-;;                          :image #object[java.awt.image.BufferedImage
-;;                                         0x3b76a9e5
-;;                                         "BufferedImage@3b76a9e5: type = 11 ColorModel: #pixelBits = 16 numComponents = 1 color space = java.awt.color.ICC_ColorSpace@ef7b344 transparency = 1 has alpha = false isAlphaPre = false ShortInterleavedRaster: width = 180 height = 91 #numDataElements 1"],
-;;                          :eas-res 0.2,
-;;                          :sou-res 0.2}
-;; #_
-;; (geogrid4image/read-location (clojure.java.io/file
-;;                                 "/home/kxygk/Data/imerg/monthly/late-02years/3B-MO-L.GIS.IMERG.20110401.V06B.tif")
-;;                              0.1
-;;                              0.1)
-;; #_
-;; #geogrid4image.imagegrid{:norwes-point #geoprim.eassou-point{:eas 0.0,
-;;                                                              :sou 0.0},
-;;                          :image #object[java.awt.image.BufferedImage
-;;                                         0x4d488d61
-;;                                         "BufferedImage@4d488d61: type = 11 ColorModel: #pixelBits = 16 numComponents = 1 color space = java.awt.color.ICC_ColorSpace@ef7b344 transparency = 1 has alpha = false isAlphaPre = false ShortInterleavedRaster: width = 3600 height = 1800 #numDataElements 1"],
-;;                          :eas-res 0.1,
-;;                          :sou-res 0.1}
-
-#_
-(->> (-> "/home/kxygk/Data/20CRv2c/SLP/pressure/geotiff-rot-subset/pres_only.nc-block0074-rot.tiff"
-         clojure.java.io/file
-         (geogrid4image/read-location 2.0
-                                      2.0)
-         :image
-         .getData
-         .getDataBuffer
-         .getData)
-     (into-array
-       Double/TYPE)
-     seq
-     first)
-
-#_
-(defn-
-  region-geogrid-vec
-  "TODO: I think this can be folded into `region-matrix` now?
-  TODO: Ideally this could be removed entirely..
-  All this data is in the `region-matrix`
-  The problem is I used it in two places
-  `region-geogrid-params`
-  and
-  `region-matrix`
-  ..
-  It's be best if it was only a transient data structure in `region-matrix`
-  and params were deduces otherwise"
-  [context]
-  #_ ;; TODO. This probably does the same thing...
-  (-> context
-      (fx/sub-ctx region-matrix)
-      datamats/to-geogrid-vec)
-  (let [myregion (fx/sub-ctx context
-                             region)]
-    (if (fx/sub-ctx context
-                    is-in-ram)
-      (->> (fx/sub-ctx context
-                       world-geogrid-vec)
-           (map #(do #_(println "\nCutting out region ..")
-                     (geogrid/subregion %
-                                        myregion))))
-      (->> (world-geogrid-vec context)
-           (map #(do #_(println "\nCutting out region ..")
-                     (geogrid/subregion %
-                                        myregion)))))))
-#_
-(-> @*selections
-    (fx/sub-ctx region-geogrid-vec)
-    first
-    keys)
-#_
-(-> @*selections
-    (fx/sub-ctx region-geogrid-vec)
-    first)
-;; #_
-;; #geogrid4image.imagegrid{:norwes-point #geoprim.eassou-point{:eas 80.0,
-;;                                                              :sou 10.0},
-;;                          :image #object[java.awt.image.BufferedImage 0x714b2122
-;;                                         "BufferedImage@714b2122: type = 11 ColorModel: #pixelBits = 16 numComponents = 1 color space = java.awt.color.ICC_ColorSpace@ef7b344 transparency = 1 has alpha = false isAlphaPre = false ShortInterleavedRaster: width = 70 height = 35 #numDataElements 1"],
-;;                          :eas-res 2.0,
-;;                          :sou-res 2.0}
 
 (pco/defresolver $world-geogrid-vec
   [{:keys [data-locations
