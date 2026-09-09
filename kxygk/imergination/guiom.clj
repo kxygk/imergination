@@ -1133,18 +1133,25 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
    :ref     state
    :desc    {:fx/type app-root}})
 
+#_
 (def app
   (-> {:fx/type root-state-watcher
        :state   stateom/*selections}
       fx/create-component
       fx/on-fx-thread))
-(println "Launching!")
 
 ;; The `main` for when this is packaged I guess
 (defn -main [& args]
+  (println "Launching!")
   (javafx.application.Platform/setImplicitExit false)
-  @app)
+  (-> {:fx/type root-state-watcher
+       :state   stateom/*selections}
+      fx/create-component
+      fx/on-fx-thread
+      deref))
 
+#_
+(-main)
 
 
 ;; Useful debug tool:
@@ -1155,3 +1162,4 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
     (println "=== " (.getName thread) " === " (.getState thread))
     (run! println trace)
     (println)))
+
