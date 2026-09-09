@@ -1892,10 +1892,13 @@
                                                          (-> proj
                                                              (get 2)
                                                              :err-centroid-b)))))]
-                               (spitcsvstream (mapv vector
-                                                    proj-a
-                                                    proj-b
-                                                    errors)
+                               (spitcsvstream (into [["Top-Index"
+                                                      "Bottom-Index"
+                                                      "ErrorBound"]]
+                                                    (mapv vector
+                                                          proj-a
+                                                          proj-b
+                                                          errors))
                                               output-dirstr
                                               "climate-index.csv")
                                [proj-a
