@@ -22,6 +22,10 @@
 (defn uber [_]
   (println "Cleaning directories ... ")
   (clean nil)
+  (println "Copying data resources...")
+  (b/copy-dir {:src-dirs   ["."]
+               :target-dir class-dir
+               :include    "data/**"})
   (println "Compiling ...")
   (b/compile-clj {:basis      basis
                   :src-dirs   ["."]

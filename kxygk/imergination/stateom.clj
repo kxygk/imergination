@@ -117,6 +117,7 @@
 (def
   *selections
   (atom (merge {;; Defaults
+                :default-data-dirstr "data/imerg-late-v06b-10yrs-2011-through-2021"
                 :output-dirstr               nil
                 :barchart-height-width-ratio 3.0
                 :plot-zoom-factor            360
@@ -175,7 +176,7 @@
                                  (-> shoreline-filestr
                                      io/file
                                      slurp )
-                                 (-> "/data/shoreline-coarse.json"
+                                 (-> "data/shoreline-coarse.json"
                                      io/resource
                                      slurp)))))
 ;; (check :shoreline)
