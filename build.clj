@@ -39,7 +39,16 @@
                   :src-dirs   ["."]
                   :class-dir  class-dir
                   :ns-compile '[kxygk.imergination.guiom]
-                  :jvm-opts   ["--enable-native-access=ALL-UNNAMED"]})
+                  :jvm-opts   ["--enable-native-access=ALL-UNNAMED"
+                               #_ ;; this is a way to compile `cjfx` on a headless system,
+                               ;; (ex: Github Actions)
+                               ;; Details:
+                               ;; See: https://github.com/cljfx/cljfx/#aot-compilation-is-complicated
+                               ;; However,
+                               ;; with Github we just make a virtual display using `xvfb`
+                               ;; so I ended up not needing this
+                               ;; (for now)
+                               "-Dcljfx.skip-javafx-initialization=true"]})
   #_#_
   (println "Printing Dependency Tree..")
   (let [result (clojure.java.shell/sh "clojure" "-Stree")]
