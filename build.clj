@@ -199,6 +199,12 @@
             icon-file
             "--main-class"
             "kxygk.imergination.guiom"
+            "--copyright"
+            "Copyright 2026 George Kontsevich"
+            "--vendor"
+            "George Kontsevich"
+            "--description"
+            "Pattern extraction and index generation for IMERG data"
             "--java-options"
             "--enable-native-access=ALL-UNNAMED")]
     (if (zero? exit)
