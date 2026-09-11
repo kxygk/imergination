@@ -84,7 +84,7 @@
   "LLM/Qwen generated function for making icons"
   [_]
   (let [os  (clojure.string/lower-case (System/getProperty "os.name"))
-        src "icon.png"
+        src "data/icon.png"
         ;; ImageMagick 6 on Linux uses 'convert'; IM7 on Win/Mac uses 'magick'
         im  (if (clojure.string/includes? os
                                           "linux")

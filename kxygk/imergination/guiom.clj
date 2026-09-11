@@ -1106,6 +1106,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
    :showing true        ;; <--- THIS IS WHAT MAKES THE WINDOW APPEAR
    :width   800
    :height  600
+   :icons   ["data/icon.png"]
    :scene   {:fx/type :scene
              :root    {:fx/type main-vertical-display
                        :state   value}}})
