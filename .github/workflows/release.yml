@@ -1,0 +1,128 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ master, main ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Set up Clojure
+        uses: DeLaGuardo/setup-clojure@13.7.0
+        with:
+          cli: latest
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fakeroot dpkg-dev imagemagick xvfb
+
+      - name: Install ImageMagick (macOS)
+        if: runner.os == 'macOS'
+        run: brew install imagemagick
+
+      - name: Install WiX Toolset (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          dotnet tool install --global wix --version 6.0.0
+          wix extension add --global WixToolset.UI.wixext/6.0.0 WixToolset.Util.wixext/6.0.0
+
+      - name: Determine Version
+        id: version
+        shell: bash
+        run: |
+          if [[ $GITHUB_REF == refs/tags/v* ]]; then
+            # Tag push: strip 'v' prefix (e.g., v1.2.3 -> 1.2.3)
+            VER=${GITHUB_REF#refs/tags/v}
+            echo "version=$VER" >> $GITHUB_OUTPUT
+            echo "is_release=true" >> $GITHUB_OUTPUT
+          else
+            # Branch push: use 1.0.<run_number> for cross-platform safety
+            VER="1.0.${{ github.run_number }}"
+            echo "version=$VER" >> $GITHUB_OUTPUT
+            echo "is_release=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build uberjar (Linux)
+        if: runner.os == 'Linux'
+        timeout-minutes: 15
+        env:
+          APP_VERSION: ${{ steps.version.outputs.version }}
+        run: xvfb-run --auto-servernum clojure -T:build uber
+
+      - name: Build uberjar (non-Linux)
+        if: runner.os != 'Linux'
+        timeout-minutes: 15
+        env:
+          APP_VERSION: ${{ steps.version.outputs.version }}
+        run: clojure -T:build uber
+
+      - name: Bundle installer
+        env:
+          APP_VERSION: ${{ steps.version.outputs.version }}
+        run: clojure -T:build bundle
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: imergination-${{ runner.os }}-${{ steps.version.outputs.version }}
+          path: bundle/
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v7
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Determine Release Type
+        id: rel
+        shell: bash
+        run: |
+          if [[ $GITHUB_REF == refs/tags/v* ]]; then
+            echo "is_release=true" >> $GITHUB_OUTPUT
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            echo "is_release=false" >> $GITHUB_OUTPUT
+            echo "tag=continuous" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publish Continuous Release
+        if: steps.rel.outputs.is_release == 'false'
+        uses: softprops/action-gh-release@v3
+        with:
+          name: "Latest (i.e. work in progress..)"
+          tag_name: "continuous"
+          prerelease: true
+          files: artifacts/**/*
+          body: "Latest automatic build from the master branch."
+
+      - name: Publish Tag Release
+        if: steps.rel.outputs.is_release == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.rel.outputs.tag }}
+          generate_release_notes: true
+          files: artifacts/**/*
