@@ -18,6 +18,10 @@
   (SVGLoader.))
 
 
+(defonce max-render-size
+  (atom {:width 1920 :height 1080}))
+
+
 
 (defn target-render-width []
   (long (max 1 (:width @max-render-size))))
