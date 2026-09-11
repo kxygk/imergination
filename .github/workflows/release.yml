@@ -110,22 +110,19 @@ jobs:
             echo "tag=continuous" >> $GITHUB_OUTPUT
           fi
 
-      # Clean old assets from continuous release before uploading new ones
       - name: Clean Continuous Release Assets
         if: steps.rel.outputs.is_release == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release view continuous --json assets --jq '.assets[].name' 2>/dev/null | while read asset; do
-            echo "Deleting old asset: $asset"
-            gh release delete-asset continuous "$asset" --yes 2>/dev/null || true
-          done
+          # Delete and recreate to guarantee clean state
+          gh release delete continuous --yes 2>/dev/null || true
 
       - name: Publish Continuous Release
         if: steps.rel.outputs.is_release == 'false'
         uses: softprops/action-gh-release@v3
         with:
-          name: "Continuous Build"
+          name: "Latest (i.e. work in progress..)"
           tag_name: "continuous"
           prerelease: true
           files: artifacts/**/*
