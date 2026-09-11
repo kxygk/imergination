@@ -1,61 +1,77 @@
 {:mvn/repos {"central" {:url "https://repo1.maven.org/maven2/"}
              "clojars" {:url "https://clojars.org/repo"}
              "jitpack" {:url "https://jitpack.io"}}
- :deps      {org.clojure/clojure                  {:mvn/version "1.12.0"}
-             org.clojure/core.async {:mvn/version "1.9.865"} ;; force new
+ :deps      {org.clojure/clojure            {:mvn/version "1.12.0"}
+             org.clojure/core.async         {:mvn/version "1.9.865"} ;; force new
              org.clojure/math.numeric-tower {:mvn/version "0.1.1"} ;; force new
              ;; mine
-             kxygk/geoprim                        {:local/root "../geoprim"}
-             kxygk/geogrid                        {:local/root "../geogrid"}
-             kxygk/geogrid2svg                    {:local/root "../geogrid2svg"}
-             kxygk/geogrid4image                  {:local/root "../geogrid4image"}
-             kxygk/geogrid4seq                    {:local/root "../geogrid4seq"}
-             kxygk/quickthing                     {:local/root "../quickthing"}
-             kxygk/geojson2svg                    {:local/root "../geojson2svg"}
-             kxygk/svgmaps                        {:local/root "../svgmaps"}
+             io.github.kxygk/geoprim        {:git/sha "a2eb857872803a1572be9391c9c73dd844247130"}
+             io.github.kxygk/geogrid        {:git/sha "09a36a5234dfc4240297d7a23e7e21aad175e6e5"}
+             io.github.kxygk/geogrid2svg    {:git/sha "b025e0b8fb4af3d079788b4ee00627301c84dc3b"}
+             io.github.kxygk/geogrid4image  {:git/sha "b203df8cf15a0aa89ad1a23b2fda31390fe8870b"}
+             io.github.kxygk/geogrid4seq    {:git/sha "c7031033faf6ca1cfef208da8a1bcd5a593366c0"}
+             io.github.kxygk/quickthing     {:git/sha "ad1c0c616d9b7f21bdcf2abac609ca5fe189b2f8"}
+             io.github.kxygk/geojson2svg    {:git/sha "0619d394a5ae7d45c8c4b8bb6d78c0c29c30d5d7"}
+             io.github.kxygk/svgmaps        {:git/sha "10eb1bf3f805729a6f49541b1af03f0fabaeb11f"}
+             io.github.kxygk/pathmore       {:git/sha "6e681941888dc166e1f69c4aac49d5e420954b9d"}
+             io.github.kxygk/pathomfx       {:git/sha "34d843821e4a82034c4f93a48cf95fbc73609250"}
+             #_#_#_#_#_#_#_#_#_#_#_#_#_#_#_#_#_#_
+             kxygk/geogrid                  {:local/root "../geogrid"}
+             kxygk/geogrid2svg              {:local/root "../geogrid2svg"}
+             kxygk/geogrid4image            {:local/root "../geogrid4image"}
+             kxygk/geogrid4seq              {:local/root "../geogrid4seq"}
+             kxygk/quickthing               {:local/root "../quickthing"}
+             kxygk/geojson2svg              {:local/root "../geojson2svg"}
+             kxygk/svgmaps                  {:local/root "../svgmaps"}
+             kxygk/pathmore                 {:local/root "../pathmore"}
+             kxygk/pathomfx                 {:local/root "../pathomfx"}
              ;;extern
-             cljfx/cljfx                          {:mvn/version "1.10.6"
-                                                   :exclusions  [org.openjfx/javafx-web
-                                                                 org.openjfx/javafx-media]}
+             cljfx/cljfx                    {:mvn/version "1.10.6"
+                                             :exclusions  [org.openjfx/javafx-web
+                                                           org.openjfx/javafx-media]}
              ;; PATHOM
-             com.wsscode/pathom3                  {:mvn/version "2025.01.16-alpha"}
-             funcool/promesa                      {:mvn/version "12.0.0-RC2"}
-             kxygk/pathmore                       {:local/root "../pathmore"}
-             kxygk/pathomfx                       {:local/root "../pathomfx"}
+             com.wsscode/pathom3            {:mvn/version "2025.01.16-alpha"}
+             funcool/promesa                {:mvn/version "12.0.0-RC2"}
              ;;
              ;; this lib pulls in `javafx-graphics`
              ;; but so will `cljfx`..
              ;; So check the `cljfx`'s `javafx-graphics` version and match it here
              ;; The library is necessary to display the SVG render,
              ;; b/c it's an older Swing element/Node
-             org.openjfx/javafx-swing             {:mvn/version "22-ea+16"}
-             ;; Alternate SVG rendering "backends"
+             org.openjfx/javafx-swing       {:mvn/version "22-ea+16"}
+             com.github.weisj/jsvg          {:mvn/version "2.1.0"}
+             com.github.weisj/jsvg-javafx   {:mvn/version "2.1.0"}
              #_#_
-             com.github.hervegirod/fxsvgimage     {:mvn/version "1.1"}
-             #_#_
-             guru.nidi.com.kitfox/svgSalamander   {:mvn/version "1.1.3"}
-             #_#_
-             com.github.afester.javafx/FranzXaver {:mvn/version "0.1"}
-             com.github.weisj/jsvg                {:mvn/version "2.1.0"}
-             com.github.weisj/jsvg-javafx         {:mvn/version "2.1.0"}
-             #_#_
-             thi.ng/color                         {:mvn/version "1.4.0"}
-             thi.ng/geom                          {:mvn/version "1.0.1"
-                                                   :exclusions  [org.clojure/clojurescript
-                                                                 cljs-log/cljs-log
-                                                                 org.jogamp.jogl/jogl-all
-                                                                 org.jogamp.gluegen/gluegen-rt]}
-             org.ojalgo/ojalgo                    {:mvn/version "53.0.0"}
-             ;; Alternate `matrix` native backend. Was weirdly slower
-             #_#_#_#_
-             org.bytedeco/mkl$linux-x86_64-redist {:mvn/version "2024.0-1.5.10"}
-             uncomplicate/neanderthal             {:mvn/version "0.49.1"}}
+             thi.ng/color                   {:mvn/version "1.4.0"}
+             thi.ng/geom                    {:mvn/version "1.0.1"
+                                             :exclusions  [org.clojure/clojurescript
+                                                           cljs-log/cljs-log
+                                                           org.jogamp.jogl/jogl-all
+                                                           org.jogamp.gluegen/gluegen-rt]}
+             org.ojalgo/ojalgo              {:mvn/version "53.0.0"}}
  :aliases   {:build {:deps       {io.github.clojure/tools.build {:mvn/version "0.9.6"}}
                      :ns-default build}}
  ;; Note this generates a SLF4J Warning
  ;; https://github.com/uncomplicate/neanderthal/issues/54
  ;;
  :paths     ["."]}
+
+
+;; Alternate SVG rendering "backends"
+#_#_
+com.github.hervegirod/fxsvgimage     {:mvn/version "1.1"}
+#_#_
+guru.nidi.com.kitfox/svgSalamander   {:mvn/version "1.1.3"}
+#_#_
+com.github.afester.javafx/FranzXaver {:mvn/version "0.1"}
+
+
+
+;; Alternate `matrix` native backend. Was weirdly slower
+#_#_#_#_
+org.bytedeco/mkl$linux-x86_64-redist {:mvn/version "2024.0-1.5.10"}
+uncomplicate/neanderthal             {:mvn/version "0.49.1"}
+
 
 
 ;; (comment
