@@ -2,6 +2,8 @@
              "clojars" {:url "https://clojars.org/repo"}
              "jitpack" {:url "https://jitpack.io"}}
  :deps      {org.clojure/clojure                  {:mvn/version "1.12.0"}
+             org.clojure/core.async {:mvn/version "1.9.865"} ;; force new
+             org.clojure/math.numeric-tower {:mvn/version "0.1.1"} ;; force new
              ;; mine
              kxygk/geoprim                        {:local/root "../geoprim"}
              kxygk/geogrid                        {:local/root "../geogrid"}
@@ -11,14 +13,7 @@
              kxygk/quickthing                     {:local/root "../quickthing"}
              kxygk/geojson2svg                    {:local/root "../geojson2svg"}
              kxygk/svgmaps                        {:local/root "../svgmaps"}
-             ;; extern
-             babashka/fs                          {:mvn/version "0.5.30"}
-             ;;#_#_
-             net.clojars.john/injest              {:mvn/version "0.1.0-beta.9"
-                                                   :exclusions  [org.clojure/clojurescript]}
-             ;; normally brought in with `injest`
-             #_#_
-             org.clojure/core.cache               {:mvn/version "1.0.207"}
+             ;;extern
              cljfx/cljfx                          {:mvn/version "1.10.6"
                                                    :exclusions  [org.openjfx/javafx-web
                                                                  org.openjfx/javafx-media]}
