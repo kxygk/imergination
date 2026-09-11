@@ -19,7 +19,15 @@
 (defn clean [_]
   (b/delete {:path "jars"}))
 
-(defn uber [_]
+(defn uber
+  [opts] ;; can pass in the a git SHA to use in the app
+  (let [sha (or (:sha opts)
+                (System/getenv "APP_SHA")
+                "TEST")]
+    ;; Write a version file before compiling
+    (spit "./kxygk/imergination/version.clj"
+          (str "(ns kxygk.imergination.version)\n\n"
+               "(def sha \"" sha "\")\n")))
   (println "Cleaning directories ... ")
   (clean nil)
   (println "Copying data resources...")
@@ -32,6 +40,7 @@
                   :class-dir  class-dir
                   :ns-compile '[kxygk.imergination.guiom]
                   :jvm-opts   ["--enable-native-access=ALL-UNNAMED"]})
+  #_#_
   (println "Printing Dependency Tree..")
   (let [result (clojure.java.shell/sh "clojure" "-Stree")]
     (if (zero? (:exit result))

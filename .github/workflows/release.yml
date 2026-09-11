@@ -48,15 +48,14 @@ jobs:
         id: version
         shell: bash
         run: |
+          SHORT_SHA=$(git rev-parse --short=7 HEAD)
+          echo "sha=$SHORT_SHA" >> $GITHUB_OUTPUT
           if [[ $GITHUB_REF == refs/tags/v* ]]; then
-            # Tag push: strip 'v' prefix (e.g., v1.2.3 -> 1.2.3)
             VER=${GITHUB_REF#refs/tags/v}
             echo "version=$VER" >> $GITHUB_OUTPUT
             echo "is_release=true" >> $GITHUB_OUTPUT
           else
-            # Branch push: use 1.0.<run_number> for cross-platform safety
-            VER="1.0.${{ github.run_number }}"
-            echo "version=$VER" >> $GITHUB_OUTPUT
+            echo "version=88.88.88" >> $GITHUB_OUTPUT
             echo "is_release=false" >> $GITHUB_OUTPUT
           fi
 
@@ -65,6 +64,7 @@ jobs:
         timeout-minutes: 15
         env:
           APP_VERSION: ${{ steps.version.outputs.version }}
+          APP_SHA: ${{ steps.version.outputs.sha }}
         run: xvfb-run --auto-servernum clojure -T:build uber
 
       - name: Build uberjar (non-Linux)
@@ -72,6 +72,7 @@ jobs:
         timeout-minutes: 15
         env:
           APP_VERSION: ${{ steps.version.outputs.version }}
+          APP_SHA: ${{ steps.version.outputs.sha }}
         run: clojure -T:build uber
 
       - name: Bundle installer
@@ -109,19 +110,30 @@ jobs:
             echo "tag=continuous" >> $GITHUB_OUTPUT
           fi
 
+      # Clean old assets from continuous release before uploading new ones
+      - name: Clean Continuous Release Assets
+        if: steps.rel.outputs.is_release == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view continuous --json assets --jq '.assets[].name' 2>/dev/null | while read asset; do
+            echo "Deleting old asset: $asset"
+            gh release delete-asset continuous "$asset" --yes 2>/dev/null || true
+          done
+
       - name: Publish Continuous Release
         if: steps.rel.outputs.is_release == 'false'
         uses: softprops/action-gh-release@v3
         with:
-          name: "Latest (i.e. work in progress..)"
+          name: "Continuous Build"
           tag_name: "continuous"
           prerelease: true
           files: artifacts/**/*
-          body: "Latest automatic build from the master branch."
+          body: "Commit: `${{ github.sha }}`"
 
       - name: Publish Tag Release
         if: steps.rel.outputs.is_release == 'true'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.rel.outputs.tag }}
           generate_release_notes: true

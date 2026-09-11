@@ -15,6 +15,7 @@
             [quickthing]
             [geoprim]
             kxygk.pathmore.async
+            [kxygk.imergination.version :as version]
             [kxygk.imergination.svg2jfx :as svg2jfx]
             [kxygk.pathomfx.pathprom :as pathprom]
             [kxygk.imergination.stateom :as stateom]
@@ -1102,7 +1103,8 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   I also calculate some for the reusable static images here"
   [{:keys [value]}]
   {:fx/type :stage
-   :title   "Imergination"
+   :title   (str "Imergination - "
+                 version/sha)
    :showing true        ;; <--- THIS IS WHAT MAKES THE WINDOW APPEAR
    :width   800
    :height  600
