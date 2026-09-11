@@ -42,81 +42,12 @@
 
 (def
   user-config
-  nil
-  #_
-  (-> (str "/home/kxygk/Projects/imergination.wiki/"
-           #_
-           "nao-anomaly-monthly"
-           #_
-           "krabi-monthly-2year"
-           #_
-           "tianshan-monthly"
-           #_
-           "tianshan-pentads-10year"
-           #_
-           "tianshan-pentads-2year"
-           #_
-           "krabi-daily-2year"
-           #_
-           "krabi-pentad-10year"
-           #_
-           "krabi-pentads-2year"
-           #_
-           "krabins-short-pentad"
-           #_
-           "krabi-short-daily"
-           #_
-           "krabi-gpcp"
-           #_
-           "fakerain"
-           #_
-           "rift-valley"
-           #_
-           "imerg-blip"
-           #_
-           "krabi-gpcc"
-           #_
-           "marrah"
-           #_
-           "krabdaily"
-           #_
-           "haihai-norm"
-           #_
-           "krabins-norm"
-           #_
-           "krab-mon-norm"
-           #_
-           "krabi-monthly"
-           #_
-           "krabi-monthly-final-v7"
-           ;;#_
-           "krabi-monthly"
-           #_
-           "scs-rainbow"
-           #_
-           "krabins-v7"
-           #_
-           "krabins"
-           #_
-           "sichuan"
-           #_
-           "taipei"
-           #_
-           "taiwan"
-           #_
-           "scs-skinny"
-           #_
-           "hainan-skinny-nonorm"
-           #_
-           "hainan-skinny")
-      (str "/config.edn")
-      slurp
-      clojure.edn/read-string))
-;;(io/resource "data/fallback-dataset.csv")
+  nil)
+
 (def
   *selections
   (atom (merge {;; Defaults
-                :default-data-dirstr "data/imerg-late-v06b-10yrs-2011-through-2021"
+                :default-data-dirstr         "data/imerg-late-v06b-10yrs-2011-through-2021"
                 :output-dirstr               nil
                 :barchart-height-width-ratio 3.0
                 :plot-zoom-factor            360
@@ -134,7 +65,7 @@
                 :climate-noise-selected-idxs [0]
                 ;; Default Dataset presets
                 :rain-dirstr                 nil
-                :region-key                  :krabi-root-2
+                :region-key                  :krabi-root-2 ;; default region
                 :bin-size                    1
                 :cycle-length                12
                 :cycle-phase                 0
@@ -574,9 +505,7 @@
                                                 sou-res))
                         nil)})
 #_
-(-> @(p.a.eql/process env
-                      @*selections
-                      [:world-geogrid-vec]))
+(check :world-geogrid-vec)
 
 
 ;; TODO: The lazyness is probably broken right now
@@ -605,10 +534,8 @@
                                 :total-num-files
                                 nil)
                          region-geogrid-vec)})
-  #_
-  (-> @(p.a.eql/process env
-                        @*selections
-                        [:region-geogrid-vec]))
+#_
+(check :region-geogrid-vec)
 
 (defn-
   bin-sum
