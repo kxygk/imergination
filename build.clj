@@ -199,32 +199,42 @@
   (println "Generating Icons...")
   (generate-icons nil)
   (println "Bundling with jpackage...")
-  (let [{:keys [exit
-                #_outc
-                err]}
-        (sh "jpackage"
-            "--input"
-            "jars/uber"
-            "--dest"
-            "bundle"
-            "--name"
-            "Imergination"
-            "--main-jar"
-            "imergination-uber.jar"
-            "--app-version"
-            (get-version opts)
-            "--icon"
-            icon-file
-            "--main-class"
-            "kxygk.imergination.guiom"
-            "--copyright"
-            "Copyright 2026 George Kontsevich"
-            "--vendor"
-            "George Kontsevich"
-            "--description"
-            "Pattern extraction and index generation for IMERG data"
-            "--java-options"
-            "--enable-native-access=ALL-UNNAMED")]
-    (if (zero? exit)
-      (println "Success! Check the /bundle folder.")
-      (println "Error:" err))))
+  (let [os      (clojure.string/lower-case (System/getProperty "os.name"))
+        standard-flags ["--input"
+                        "jars/uber"
+                        "--dest"
+                        "bundle"
+                        "--name"
+                        "Imergination"
+                        "--main-jar"
+                        "imergination-uber.jar"
+                        "--app-version"
+                        (get-version opts)
+                        "--icon"
+                        icon-file
+                        "--main-class"
+                        "kxygk.imergination.guiom"
+                        "--copyright"
+                        "Copyright 2026 George Kontsevich"
+                        "--vendor"
+                        "George Kontsevich"
+                        "--description"
+                        "Pattern extraction and index generation for IMERG data"
+                        "--java-options"
+                        "--enable-native-access=ALL-UNNAMED"]
+        windows-flags (if (clojure.string/includes? os "win")
+                        ["--win-menu"
+                         "--win-menu-group"
+                         "Imergination"
+                         "--win-shortcut"]
+                        [])]
+    (let [{:keys [exit
+                  #_outc
+                  err]}
+          (apply sh
+                 (concat ["jpackage"]
+                         standard-flags
+                         windows-flags))]
+          (if (zero? exit)
+            (println "Success! Check the /bundle folder.")
+            (println "Error:" err)))))
