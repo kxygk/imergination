@@ -110,13 +110,16 @@ jobs:
             echo "tag=continuous" >> $GITHUB_OUTPUT
           fi
 
-      - name: Clean Continuous Release Assets
+      - name: Delete Previous Continuous Release
         if: steps.rel.outputs.is_release == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Delete and recreate to guarantee clean state
-          gh release delete continuous --yes 2>/dev/null || true
+          # Try to delete the release
+          gh release delete continuous --yes 2>&1 || echo "Release delete failed or didn't exist"
+          # Also delete the tag if it exists
+          git push origin :refs/tags/continuous 2>&1 || echo "Tag delete failed or didn't exist"
+          echo "Cleanup complete"
 
       - name: Publish Continuous Release
         if: steps.rel.outputs.is_release == 'false'
