@@ -65,7 +65,7 @@
                 :climate-noise-selected-idxs [0]
                 ;; Default Dataset presets
                 :rain-dirstr                 nil
-                :region-key                  :krabi-root-2 ;; default region
+                :region-key                  :krabi-region ;; default region
                 :bin-size                    1
                 :cycle-length                12
                 :cycle-phase                 0
