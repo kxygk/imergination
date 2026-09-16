@@ -659,8 +659,8 @@
                              :sv-strs
                              (fn generate-sv-strs
                                [num-of-svs]
-                               (let [svs        (-> num-of-svs
-                                                    range)
+                               (let [svs        (range 1
+                                                       (inc num-of-svs))
                                      max-digits (-> num-of-svs
                                                     clojure.math/log10
                                                     clojure.math/ceil
