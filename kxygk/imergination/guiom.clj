@@ -846,8 +846,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                                                                                                            :ended-lon new-value }] ;;new
                                                                                                                            (update-region! new-bounds)))}}]}]}]}))}]})
 
-(defn
-  inputdir
+(defn inputdir
   "Where we select the data to read in..
   We can inspect how it looks in our region"
   [{:keys [state]}]
@@ -892,7 +891,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                       :editable         false
                                       :text             (if (some? dirstr)
                                                           dirstr
-                                                          "NONE")
+                                                          "NONE Click to Change (Default: 10 year monthly data)")
                                       :on-mouse-clicked (fn [^javafx.scene.input.MouseEvent event]
                                                           (let [node    (.getSource event)
                                                                 window  (-> node .getScene .getWindow)
@@ -908,8 +907,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                                      :rain-dirstr
                                                                      (.getPath dir)))))}))}]})
 
-(defn
-  outputdir
+(defn outputdir
   "Where we select the data to read in..
   We can inspect how it looks in our region"
   [{:keys [state]}]
@@ -936,7 +934,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                       :editable         false
                                       :text             (if (some? dirstr)
                                                           dirstr
-                                                          "NONE")
+                                                          "NONE Click to Change (Write plots and index table to disk)")
                                       :on-mouse-clicked (fn [^javafx.scene.input.MouseEvent event]
                                                           (let [node    (.getSource event)
                                                                 window  (-> node .getScene .getWindow)
@@ -951,6 +949,8 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                                      assoc
                                                                      :output-dirstr
                                                                      (.getPath dir)))))}))}]})
+
+
 (defn file-loading-progress-bar
   [{:keys [value]}]
   (let [{:keys [total-num-files
@@ -1071,7 +1071,10 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                     :text                  "EXTRA: Error Analysis Details"
                                                     :grid-pane/column-span 2}]
                                                   [{:fx/type               section-title
-                                                    :text                  "Observation Noise (SV1 SV2 Removed)"
+                                                    :text                  "Observation Noise"
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type               section-title
+                                                    :text                  "ie. observations with their SV1 SV2 component removed"
                                                     :grid-pane/column-span 2}]
                                                   [{:fx/type noiselist
                                                     :state   state}
@@ -1086,19 +1089,25 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                    {:fx/type climatenoisepreview
                                                     :state   state}]
                                                   [{:fx/type               section-title
-                                                    :text                  "SV1 [X] SV2 [Y] Observation Projections w/ Error Bounds"
+                                                    :text                  "SV1 [X] SV2 [Y] Observation Projections"
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type               section-title
+                                                    :text                  "+ Projection Error Bounds (error ellipse axis) + Angular Error Bounds (red)"
                                                     :grid-pane/column-span 2}]
                                                   [{:fx/type               sv-projections-with-errors
                                                     :state                 state
                                                     :grid-pane/column-span 2}]
                                                   [{:fx/type               section-title
-                                                    :text                  "Noise Index"
+                                                    :text                  "Relative to observations' classification average (black dotten line)"
                                                     :grid-pane/column-span 2}]
                                                   [{:fx/type               noise-index
                                                     :state                 state
                                                     :grid-pane/column-span 2}]
                                                   [{:fx/type               section-title
-                                                    :text                  "Climate Index with Error Bounds"
+                                                    :text                  "Climate Index + Error Bounds"
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type               section-title
+                                                    :text                  "relative to observations' respective classification average (black dotten lines)"
                                                     :grid-pane/column-span 2}]
                                                   [{:fx/type               climate-index-with-errors
                                                     :state                 state
