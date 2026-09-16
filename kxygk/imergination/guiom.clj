@@ -853,24 +853,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   {:fx/type    :h-box
    :min-height :use-pref-size
    :children   [{:fx/type :label
-                 :text    (str "In RAM: ")
-                 :style   {:-fx-font-size   16
-                           :-fx-font-weight "bold"}}
-                {:fx/type        pathprom/now
-                 :env            pathom-env
-                 :inputmap       state
-                 :tx             [:is-in-ram]
-                 :realized-ui-fn (fn [pathom-map]
-                                   {:fx/type             :check-box
-                                    :selected            (-> pathom-map
-                                                             :is-in-ram)
-                                    :on-selected-changed (fn flip-is-in-ram-bit
-                                                           [_]
-                                                           (swap! stateom/*selections
-                                                                  update
-                                                                  :is-in-ram
-                                                                  not))})}
-                {:fx/type :label
                  :text    (str " Input: ")
                  :style   {:-fx-font-size   16
                            :-fx-font-weight "bold"}}
@@ -950,7 +932,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                                      :output-dirstr
                                                                      (.getPath dir)))))}))}]})
 
-
 (defn file-loading-progress-bar
   [{:keys [value]}]
   (let [{:keys [total-num-files
@@ -964,6 +945,119 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                   1.0
                                   (/ file-number
                                      total-num-files))}]}))
+
+(defn other-options
+  "Where we select the data to read in..
+  We can inspect how it looks in our region"
+  [{:keys [state]}]
+  {:fx/type    :h-box
+   :min-height :use-pref-size
+   :children   [{:fx/type    :h-box
+                :min-height :use-pref-size
+                :children   [{:fx/type :label
+                              :text    (str "Keep Global Maps In RAM: ")
+                              :tooltip {:fx/type :tooltip
+                                        :text (str "Makes selecting new regions much faster!"
+                                                   \newline
+                                                   "When disabled global maps are re-read for every selected region"
+                                                   \newline
+                                                   "However, you can input much larger amounts of data without running out of RAM")}
+                              :style   {:-fx-font-size   16
+                                        :-fx-font-weight "bold"}}
+                             {:fx/type        pathprom/now
+                              :env            pathom-env
+                              :inputmap       state
+                              :tx             [:is-in-ram]
+                              :realized-ui-fn (fn [pathom-map]
+                                                {:fx/type             :check-box
+                                                 :selected            (-> pathom-map
+                                                                          :is-in-ram)
+                                                 :on-selected-changed (fn flip-is-in-ram-bit
+                                                                        [_]
+                                                                        (swap! stateom/*selections
+                                                                               update
+                                                                               :is-in-ram
+                                                                               not))})}
+                             {:fx/type :label
+                              :text    (str " Bin Data In Groups of: ")
+                              :tooltip {:fx/type :tooltip
+                                        :text (str "For instance if you want pentads,"
+                                                    "you'd input daily data and bin data in groups of 5")}
+                              :style   {:-fx-font-size   16
+                                        :-fx-font-weight "bold"}}
+                             {:fx/type        pathprom/now
+                              :env            pathom-env
+                              :inputmap       state
+                              :tx             [:bin-size]
+                              :realized-ui-fn (fn [pathom-map]
+                                                {:fx/type           :text-field
+                                                 :pref-column-count 2
+                                                 :text-formatter    {:fx/type          :text-formatter
+                                                                     :value-converter  :long ;; disallows letters n stuff
+                                                                     :value            (-> pathom-map
+                                                                                           :bin-size)
+                                                                     :on-value-changed (fn [new-value]
+                                                                                         (swap! stateom/*selections
+                                                                                                assoc
+                                                                                                :bin-size
+                                                                                                new-value))}})}
+                             {:fx/type :label
+                              :text    (str " Cycle Length: ")
+                              :tooltip {:fx/type :tooltip
+                                        :text    (str "This is purely cosmetic for the SV1 SV2 plot's colors"
+                                                   \newline
+                                                   "Default Annual cycle is 12 observations"
+                                                   \newline
+                                                   "(daily 365 and pentad 73)")}
+                              :style   {:-fx-font-size   16
+                                        :-fx-font-weight "bold"}}
+                             {:fx/type        pathprom/now
+                              :env            pathom-env
+                              :inputmap       state
+                              :tx             [:cycle-length]
+                              :realized-ui-fn (fn [pathom-map]
+                                                {:fx/type           :text-field
+                                                 :pref-column-count 2
+                                                 :text-formatter    {:fx/type          :text-formatter
+                                                                     :value-converter  :long ;; disallows letters n stuff
+                                                                     :value            (-> pathom-map
+                                                                                           :cycle-length)
+                                                                     :on-value-changed (fn [new-value]
+                                                                                         (swap! stateom/*selections
+                                                                                                assoc
+                                                                                                :cycle-length
+                                                                                                new-value))}})}
+                             {:fx/type :label
+                              :text    (str " Cycle Phase: ")
+                              :tooltip {:fx/type :tooltip
+                                        :text (str "This is purely cosmetic for the SV1 SV2 plot's colors"
+                                                   \newline
+                                                    "Shifts where the color wheel starts")}
+                              :style   {:-fx-font-size   16
+                                        :-fx-font-weight "bold"}}
+                             {:fx/type        pathprom/now
+                              :env            pathom-env
+                              :inputmap       state
+                              :tx             [:cycle-phase]
+                              :realized-ui-fn (fn [pathom-map]
+                                                {:fx/type           :text-field
+                                                 :pref-column-count 2
+                                                 :text-formatter    {:fx/type          :text-formatter
+                                                                     :value-converter  :long ;; disallows letters n stuff
+                                                                     :value            (-> pathom-map
+                                                                                           :cycle-phase)
+                                                                     :on-value-changed (fn [new-value]
+                                                                                         (swap! stateom/*selections
+                                                                                                assoc
+                                                                                                :cycle-phase
+                                                                                                new-value))}})}]}]})
+
+(swap! stateom/*selections
+       assoc
+       :region-key
+       :krabi-region)
+#_
+(-main)
 
 (defn
   main-vertical-display
@@ -1016,6 +1110,9 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                   [{:fx/type               fx/ext-watcher
                                                     :ref                   stateom/*file-loading
                                                     :desc                  {:fx/type file-loading-progress-bar}
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type other-options
+                                                    :state   state
                                                     :grid-pane/column-span 2}]
                                                   [{:fx/type               section-title
                                                     :text                  "Observations"
