@@ -1097,6 +1097,10 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                   [{:fx/type               sv-projections-with-errors
                                                     :state                 state
                                                     :grid-pane/column-span 2}]
+                                                  #_#_#_
+                                                  [{:fx/type               section-title
+                                                    :text                  "Climate Projection Error Bounds"
+                                                    :grid-pane/column-span 2}]
                                                   [{:fx/type               section-title
                                                     :text                  "Relative to observations' classification average (black dotten line)"
                                                     :grid-pane/column-span 2}]
