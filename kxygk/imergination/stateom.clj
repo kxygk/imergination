@@ -59,7 +59,7 @@
                 :elevation-filestr           "./data/World_e-Atlas-UCSD_SRTM30-plus_v8.tif"
                 :is-in-ram                   true
                 :mouse-click                 nil
-                :datafile-idxs               [0]
+                :observation-selected-idxs   [0]
                 :sv-selected-idxs            [0]
                 :noise-selected-idxs         [0]
                 :climate-noise-selected-idxs [0]
@@ -434,21 +434,6 @@
 #_
 (check :datafile-strs)
 
-(def $datafile-strs-formatted
-  (pbir/single-attr-resolver :datafile-strs
-                             :datafile-strs-formatted
-                             #(->> %
-                                   (map-indexed (fn append-index
-                                                  [index
-                                                   file-str]
-                                                  (str "["
-                                                       index
-                                                       "]"
-                                                       file-str)))
-                                   vec)))
-#_
-(check :datafile-strs-formatted)
-
 (pco/defresolver $data-locations
   [{:keys [data-dirstr
            default-data-dirstr
@@ -647,12 +632,61 @@
                   @*selections
                   [:region-geogrid-params])
 
+(def $num-observations
+  (pbir/single-attr-resolver :region-matrix
+                             :num-observations
+                             #(matrix/ncols (:matrix %))))
+#_
+(check :num-observations)
+
+(def $observation-strs
+  (pbir/single-attr-resolver :num-observations
+                             :observation-strs
+                             (fn [num-observ]
+                               (->> num-observ
+                                    inc
+                                    (range 1)
+                                    (mapv #(str "Observation "
+                                                %))))))
+#_
+(check :observation-strs)
+
+#_
+(pco/defresolver $$observation-svg
+  [{:keys [observation-index
+           region
+           region-matrix
+           contour-svg
+           cycle-length
+           output-dirstr]}]
+  {::pco/output [:hiccup]}
+  {:hiccup (->  region-matrix
+                datamats/to-geogrid-vec
+                (get observation-index)
+                (plot/grid-map region
+                               contour-svg
+                               {:label-top-right (str (inc observation-index))
+                                #_#_
+                                :max-val         (->  context
+                                                      (fx/sub-ctx region-min-max)
+                                                      second)
+                                :label-attribs   {#_#_:font-size 0.7}
+                                :axis-visible?   false
+                                :cycle-frac      (/ observation-index
+                                                    cycle-length)})
+                (spitsvgstream (str output-dirstr
+                                    "observation-"
+                                    observation-index
+                                    ".svg")))})
+#_(check :hiccup
+         {:observation-index 0})
 
 (def $num-svs
   (pbir/single-attr-resolver :region-matrix
                              :num-svs
                              datamats/num-svs))
-;;(check :num-svs)
+#_
+(check :num-svs)
 
 (def $sv-strs
   (pbir/single-attr-resolver :num-svs
@@ -687,11 +721,11 @@
 #_(check :region-min-max)
 
 
-(def $first-datafile-idx
-  (pbir/single-attr-resolver :datafile-idxs
-                             :first-datafile-idx
+(def $first-selected-observation-idx
+  (pbir/single-attr-resolver :observation-selected-idxs
+                             :first-selected-observation-idx
                              first))
-#_(check :first-datafile-idx)
+#_(check :first-selected-observation-idx)
 
 
 (def $first-svec-selected-idx
@@ -703,16 +737,16 @@
 
 ;;;;;;;;;; FOR OBSERVATION
 
-(pco/defresolver $$datafile-geogrid
-  [{:keys [datafile-id
+(pco/defresolver $$observation-geogrid
+  [{:keys [observation-id
            region-matrix]}]
   {:inject-cache :lru4}
-  {:datafile-geogrid (datamats/extract-grid region-matrix
-                                            datafile-id)})
+  {:observation-geogrid (datamats/extract-grid region-matrix
+                                            observation-id)})
 
 #_
 (defn-
-  datafile-geogrid
+  observation-geogrid
   [region-matrix
    id]
   (datamats/extract-grid region-matrix
@@ -720,36 +754,36 @@
 
 ;; TODO This could be read in before all the data is injested
 ;; to speed things up..
-(pco/defresolver $first-datafile-geogrid
+(pco/defresolver $first-selected-observation-geogrid
   [{:keys [region-matrix]}]
   {::pco/input  [:region-matrix]
-   ::pco/output [{:first-datafile-geogrid [:region-matrix
+   ::pco/output [{:first-selected-observation-geogrid [:region-matrix
                                            :id]}]}
-  {:first-datafile-geogrid {:region-matrix region-matrix
+  {:first-selected-observation-geogrid {:region-matrix region-matrix
                             :id            0}})
 
-#_(-> (check {:first-datafile-geogrid [:datafile-geogrid]})
-      :first-datafile-geogrid
-      :datafile-geogrid
+#_(-> (check {:first-selected-observation-geogrid [:observation-geogrid]})
+      :first-selected-observation-geogrid
+      :observation-geogrid
       keys)
 
 (def $zero-point-mask
-  (pbir/single-attr-resolver :first-datafile-geogrid
+  (pbir/single-attr-resolver :first-selected-observation-geogrid
                              :zero-point-mask
-                             (fn [first-datafile-geogrid]
+                             (fn [first-selected-observation-geogrid]
                                (mapv zero?
-                                     (:data-array first-datafile-geogrid)))))
+                                     (:data-array first-selected-observation-geogrid)))))
 #_(check :zero-point-mask)
 
-(pco/defresolver $$datafile-svg
-  [{:keys [datafile-id
-           datafile-geogrid
+(pco/defresolver $$observation-svg
+  [{:keys [observation-id
+           observation-geogrid
            region
            contour-svg
            region-min-max
            output-dirstr]}]
-  {::pco/input   [:datafile-id
-                  :datafile-geogrid
+  {::pco/input   [:observation-id
+                  :observation-geogrid
                   :region
                   {:contour-svg [:hiccup]}
                   :region-min-max
@@ -757,37 +791,36 @@
    ::pco/output  [:hiccup]
    #_#_ ;; prolly can regenerate each time you look at a new data
    :inject-cache :lru1}
-  (if (nil? datafile-id)
+  (if (nil? observation-id)
     contour-svg
-    {:hiccup (-> datafile-geogrid
+    {:hiccup (-> observation-geogrid
                  (plot/grid-map region
                                 contour-svg
                                 {:max-val (second region-min-max)})
                  (spitsvgstream output-dirstr
                                 (str "data-file-"
-                                     datafile-id
+                                     observation-id
                                      ".svg")))}))
 #_(check :hiccup
-         {:datafile-id 0})
+         {:observation-id 0})
 
-(pco/defresolver $first-datafile-svg
+(pco/defresolver $first-selected-observation-svg
   [inputs]
   {::pco/input  [:region
                  :region-matrix
                  {:contour-svg [:hiccup]}
                  :region-min-max
-                 :first-datafile-idx
+                 :first-selected-observation-idx
                  :output-dirstr]
-   ::pco/output [{:first-datafile-svg [:datafile-id
-                                       :region
-                                       :region-matrix
-                                       {:contour-svg [:hiccup]}
-                                       :region-min-max
-                                       :first-datafile-idx
-                                       :output-dirstr]}]}
-  {:first-datafile-svg (merge inputs
-                              {:datafile-id (:first-datafile-idx inputs)})})
-#_(check {:first-datafile-svg [:hiccup]})
+   ::pco/output [{:first-selected-observation-svg [:observation-id
+                                                   :region
+                                                   :region-matrix
+                                                   {:contour-svg [:hiccup]}
+                                                   :region-min-max
+                                                   :output-dirstr]}]}
+  {:first-selected-observation-svg (merge inputs
+                              {:observation-id (:first-selected-observation-idx inputs)})})
+#_(check {:first-selected-observation-svg [:hiccup]})
 
 ;; FLAT MODEL
 ;; Just a fun experiment
@@ -888,20 +921,18 @@
 
 (pco/defresolver $$singular-vector-svg
   [{:keys [sv-index
-           datafile-strs
            region
            contour-svg
            singular-vector-geogrid
            output-dirstr]}]
   {::pco/input   [:sv-index
-                  :datafile-strs
                   :region
                   {:contour-svg [:hiccup]}
                   :singular-vector-geogrid
                   :output-dirstr]
    ::pco/output  [:hiccup]
    :inject-cache :lru4}
-  {:hiccup (if (empty? datafile-strs)
+  {:hiccup (if (nil? sv-index)
              contour-svg
              (-> singular-vector-geogrid
                  (plot/grid-map region
@@ -920,15 +951,13 @@
 
 (pco/defresolver $first-svec-svg
   [inputs]
-  {::pco/input  [:datafile-strs
-                 :region
+  {::pco/input  [:region
                  {:contour-svg [:hiccup]}
                  :region-svd
                  :region-geogrid-params
                  :contour-svg
                  :output-dirstr]
    ::pco/output [{:first-svec-svg [:sv-index
-                                   :datafile-strs
                                    :region
                                    {:contour-svg [:hiccup]}
                                    :region-svd
@@ -941,15 +970,13 @@
 
 (pco/defresolver $second-svec-svg
   [inputs]
-  {::pco/input  [:datafile-strs
-                 :region
+  {::pco/input  [:region
                  {:contour-svg [:hiccup]}
                  :region-svd
                  :region-geogrid-params
                  :contour-svg
                  :output-dirstr]
-   ::pco/output [{:second-svec-svg [:datafile-strs
-                                    :region
+   ::pco/output [{:second-svec-svg [:region
                                     {:contour-svg [:hiccup]}
                                     :region-svd
                                     :region-geogrid-params
@@ -968,13 +995,11 @@
                  {:contour-svg [:hiccup]}
                  :region-matrix
                  :region
-                 :datafile-strs
                  :output-dirstr]
    ::pco/output [{:first-svec-selected-svg [:sv-index
                                             {:contour-svg [:hiccup]}
                                             :region-matrix
                                             :region
-                                            :datafile-strs
                                             :output-dirstr]}]}
   {:first-svec-selected-svg (if (nil? first-svec-selected-idx)
                               contour-svg ;; BROKEN ; doesn't match output keys. Unclear how to fix
@@ -1923,41 +1948,11 @@
                                                     "singular-values.svg"))}})
 #_(check :singular-values-svg)
 
-(pco/defresolver $$observation-svg
-  [{:keys [observation-index
-           region
-           region-matrix
-           contour-svg
-           cycle-length
-           output-dirstr]}]
-  {::pco/output [:hiccup]}
-  {:hiccup (->  region-matrix
-                datamats/to-geogrid-vec
-                (get observation-index)
-                (plot/grid-map region
-                               contour-svg
-                               {:label-top-right (str (inc observation-index))
-                                #_#_
-                                :max-val         (->  context
-                                                      (fx/sub-ctx region-min-max)
-                                                      second)
-                                :label-attribs   {#_#_:font-size 0.7}
-                                :axis-visible?   false
-                                :cycle-frac      (/ observation-index
-                                                    cycle-length)})
-                (spitsvgstream (str output-dirstr
-                                    "observation-"
-                                    observation-index
-                                    ".svg")))})
-#_(check :hiccup
-         {:observation-index 0})
-
 ;;;
 (def input-env
   (-> (pci/register {::p.a.eql/parallel? true}
                     [$data-dirstr
                      $datafile-strs
-                     $datafile-strs-formatted
                      $data-locations
                      $world-geogrid-vec
                      $region-geogrid-vec
@@ -1981,17 +1976,19 @@
                      $contour-svg
                      input-env ;; stuff related to reading in the data.. this is slow
                      $region-geogrid-params
+                     $num-observations
+                     $observation-strs
                      $num-svs
                      $sv-strs
                      $region-svd
                      $region-min-max
-                     $first-datafile-idx
+                     $first-selected-observation-idx
                      $first-svec-selected-idx
-                     $$datafile-geogrid
-                     $first-datafile-geogrid
+                     $$observation-geogrid
+                     $first-selected-observation-geogrid
                      $zero-point-mask
-                     $$datafile-svg
-                     $first-datafile-svg
+                     $$observation-svg
+                     $first-selected-observation-svg
                      $$singular-vector
                      $first-svec
                      $second-svec
@@ -2045,8 +2042,7 @@
                      $pattern-proj-with-errors-svg
                      $sv-proj-with-errors-svg
                      $singular-values-stats
-                     $singular-values-svg
-                     $$observation-svg])
+                     $singular-values-svg])
       (pcp/with-plan-cache pathom-plan-cache*)
       kxygk.pathmore.cache/inject-for-all-resolvers
       kxygk.pathmore.async/wrap-all-resolvers-async))
@@ -2063,8 +2059,8 @@
                      (merge @*selections
                             extra-state)
                      [some-key])))
-#_(check [:first-datafile-svg [:datafile-svg]])
-#_(check {:first-datafile-svg [:datafile-svg]})
+#_(check [:first-selected-observation-svg [:datafile-svg]])
+#_(check {:first-selected-observation-svg [:datafile-svg]})
 
 (defn gensummary
   []
@@ -2127,6 +2123,6 @@
                                [some-key]))))
 
 #_(fetch @*selections
-         [:first-datafile-svg [:datafile-svg]])
+         [:first-selected-observation-svg [:datafile-svg]])
 #_(fetch @*selections
          :datafile-strs-formatted)

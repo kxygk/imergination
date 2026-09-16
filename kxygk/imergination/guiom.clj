@@ -99,7 +99,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
       kxygk.pathmore.async/wrap-all-resolvers-async))
 
 #_
-(time (p.a.eql/process pathom-env @stateom/*selections [:first-datafile-svg]))
+(time (p.a.eql/process pathom-env @stateom/*selections [:first-selected-observation-svg]))
 
 (defn world-loading-ui
   [{:keys [state]}]
@@ -315,7 +315,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   {:fx/type        pathprom/later
    :env            pathom-env
    :inputmap       state
-   :tx             [:datafile-strs-formatted]
+   :tx             [:observation-strs]
    :loading-ui     {:fx/type     :list-view
                     :min-height  0
                     :pref-height 0
@@ -324,16 +324,16 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                      {:fx/type fx.ext.list-view/with-selection-props
                       :props   {:selection-mode              :multiple
                                 ;;:style      {:-fx-background-color :red}
-                                :on-selected-indices-changed (fn update-datafile-selections
+                                :on-selected-indices-changed (fn update-observation-selections
                                                                [selected-indices]
                                                                (swap! stateom/*selections
                                                                       assoc
-                                                                      :datafile-idxs
+                                                                      :observation-selected-idxs
                                                                       selected-indices))}
                       :desc    {:fx/type     :list-view
                                 :min-height  0
                                 :pref-height 0
-                                :items       (:datafile-strs-formatted pathom-map)}})})
+                                :items       (:observation-strs pathom-map)}})})
 
 (defn
   datapreview
@@ -347,18 +347,18 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
    :children   [{:fx/type        pathprom/later
                  :env            pathom-env
                  :inputmap       state
-                 :tx             [{:first-datafile-svg [:imagebuf]}]
+                 :tx             [{:first-selected-observation-svg [:imagebuf]}]
                  :loading-ui     {:fx/type contour-loading-ui
                                   :state   state}
                  :realized-ui-fn (fn [pathom-map]
                                    {:fx/type  imagepane/imagebuf
                                     :imagebuf (-> pathom-map
-                                                  :first-datafile-svg
+                                                  :first-selected-observation-svg
                                                   :imagebuf)})}]})
 #_
 @(p.a.eql/process pathom-env
                   @stateom/*selections
-                  [{:first-datafile-svg [:imagebuf]}])
+                  [{:first-selected-observation-svg [:imagebuf]}])
 
 
 (defn
@@ -413,7 +413,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
    :realized-ui-fn (fn [pathom-map]
                      {:fx/type fx.ext.list-view/with-selection-props
                       :props   {:selection-mode              :multiple
-                                :on-selected-indices-changed (fn update-datafile-selections
+                                :on-selected-indices-changed (fn update-svlist-selections
                                                                [selected-indices]
                                                                (swap! stateom/*selections
                                                                       assoc
@@ -524,7 +524,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   {:fx/type        pathprom/later
    :env            pathom-env
    :inputmap       state
-   :tx             [:datafile-strs-formatted]
+   :tx             [:observation-strs]
    :loading-ui     {:fx/type     :list-view
                     :min-height  0
                     :pref-height 0
@@ -532,7 +532,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
    :realized-ui-fn (fn [pathom-map]
                      {:fx/type fx.ext.list-view/with-selection-props
                       :props   {:selection-mode              :multiple
-                                :on-selected-indices-changed (fn update-datafile-selections
+                                :on-selected-indices-changed (fn update-noiselist-selections
                                                                [selected-indices]
                                                                (swap! stateom/*selections
                                                                       assoc
@@ -541,7 +541,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                       :desc    {:fx/type     :list-view
                                 :min-height  0
                                 :pref-height 0
-                                :items       (:datafile-strs-formatted pathom-map)}})})
+                                :items       (:observation-strs pathom-map)}})})
 
 (defn
   noisepreview
@@ -568,7 +568,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   {:fx/type        pathprom/later
    :env            pathom-env
    :inputmap       state
-   :tx             [:datafile-strs-formatted]
+   :tx             [:observation-strs]
    :loading-ui     {:fx/type     :list-view
                     :min-height  0
                     :pref-height 0
@@ -576,7 +576,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
    :realized-ui-fn (fn [pathom-map]
                      {:fx/type fx.ext.list-view/with-selection-props
                       :props   {:selection-mode              :multiple
-                                :on-selected-indices-changed (fn update-datafile-selections
+                                :on-selected-indices-changed (fn update-climatenoiselist-selections
                                                                [selected-indices]
                                                                (swap! stateom/*selections
                                                                       assoc
@@ -585,7 +585,7 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                       :desc    {:fx/type     :list-view
                                 :min-height  0
                                 :pref-height 0
-                                :items       (:datafile-strs-formatted pathom-map)}})})
+                                :items       (:observation-strs pathom-map)}})})
 
 (defn
   climatenoisepreview
