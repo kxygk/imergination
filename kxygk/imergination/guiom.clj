@@ -1026,6 +1026,12 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                    {:fx/type datapreview
                                                     :state   state}]
                                                   [{:fx/type               section-title
+                                                    :text                  "Singular Values (first 20)"
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type               singular-values
+                                                    :state                 state
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type               section-title
                                                     :text                  "EOF1 + EOF2 (i.e. SV1 + SV2)"
                                                     :grid-pane/column-span 2}]
                                                   [{:fx/type firstsv
@@ -1039,12 +1045,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                     :state   state}
                                                    {:fx/type svpreview
                                                     :state   state}]
-                                                  [{:fx/type               section-title
-                                                    :text                  "Singular Values (first 20)"
-                                                    :grid-pane/column-span 2}]
-                                                  [{:fx/type               singular-values
-                                                    :state                 state
-                                                    :grid-pane/column-span 2}]
                                                   [{:fx/type               section-title
                                                     :text                  "SV1 [X] SV2 [Y] Observation Projections"
                                                     :grid-pane/column-span 2}]
@@ -1065,12 +1065,19 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
                                                     :state                 state
                                                     :grid-pane/column-span 2}]
                                                   [{:fx/type               section-title
+                                                    :text                  "--------------------------------------------"
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type               section-title
+                                                    :text                  "EXTRA: Error Analysis Details"
+                                                    :grid-pane/column-span 2}]
+                                                  [{:fx/type               section-title
                                                     :text                  "Observation Noise (SV1 SV2 Removed)"
                                                     :grid-pane/column-span 2}]
                                                   [{:fx/type noiselist
                                                     :state   state}
                                                    {:fx/type noisepreview
                                                     :state   state}]
+                                                  #_#_ ;; diagnostic and unused
                                                   [{:fx/type               section-title
                                                     :text                  "Climate Pattern Adjusted Noise"
                                                     :grid-pane/column-span 2}]
