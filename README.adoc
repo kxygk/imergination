@@ -9,18 +9,73 @@
 
 A GUI for interactively extracting climate patterns from IMERG precipitation data
 
-The first release of Imergination comes in two bundles. One for Windows and one for Linux. The bundle includes a baked in monthly dataset `imerg-late-v06b-10yrs-2011-through-2021`. At the moment it launches displaying only the default region (Southern Thailand). Alternate regions can only be selected by click + drag on the top "World Map"
+The program includes a baked in monthly dataset:
+`imerg-late-v06b-10yrs-2011-through-2021`.
 
-Do note:
+At the moment it launches displaying a default region (Southern Thailand). Alternate regions can be selected by click + drag on the top World Map at the top.
 
-- The application takes a little while to launch (~1-2 minutes) b/c there is a lot of data to read in
-- Similarly it takes a while to recompute a result for a new region
-- More sophisticated way to specify regions and datasources will be added over time.
+The application takes a little while to launch (~1-2 minutes) b/c there is a lot of data to read in
 
-Feel free to get in touch at:
+GeoTIFF files from IMERG should work immediately.
+Single channel GeoTIFFs from other sources may work,
+but I can't guarantee it.
+But feel free to get in touch at:
 
 image:../email-small.svg[]
 
+== Installation
 
-Old AGU poster: 
-image:https://raw.githubusercontent.com/wiki/kxygk/imergination/agu2023-poster.svg[]
+Download the installer for your operating system from the
+https://github.com/kxygk/imergination/releases[Releases page].
+
+== Available settings
+
+- The region is specified with two pairs of `Lat`/`Long` coordinates. These can be adjusted below the map.
+
+- The `Input` can be specified to point to a directory of GeoTIFF files - to use instead of the default monthly precipitation data.
+
+- The `Output` can be specified if you'd like to output the images and a table with the resulting climate index.
+
+- `Keep Global Maps in RAM` specifies if the files are kept in RAM after read-in.
+The default dataset is about ~700 MB of data and will fit in RAM on most modern machines.
+This is data for the whole globe.
+When the data is in RAM, selecting new regions is relatively fast.
+(internally this is cutting out the selected region from all the global maps)
+However,
+larger datasets
+(such as multi-year daily precipitation)
+will not fit in RAM.
+*This will cause the program to crash*.
+In this case,
+uncheck this box.
+This will cause all the data files to be re-read each time the region is adjusted.
+But files are streamed in and cut,
+one by one,
+resulting in a very small memory footprint.
+
+- `Bin Data In Groups of` allows one to aggregate data.
+This allows one to minimize noise and high frequency variability due to tertiary climate systems.
+For instance one may want to load in daily data,
+but do an analysis on pentads.
+In that case input `5`.
+Every `5` measurements will be averaged into one "Observation"
+Do note:
+
+- `Cycle Length` and `Cycle Phase` are *purely visual adjustments*
+The algorithm has no concept of time.
+Data can be provided in any order.
+The result patterns will be identical.
+However,
+to interpret the results it is convenient to have a concept of time.
+The final resulting climate index is ordered by the file-order.
+Furthermore,
+the data is colored by the cyclicity.
+Data is colored according to a color wheel/cycle.
+It is meant to visually suggest the seasons:
+It goes: blue -> green -> yellow -> orange -> purple -> blue.
+The default cycle is the 12 months of the year.
+If you load daily data you will need to adjust the `Cycle Length` to `365`.
+If you bin to pentads
+(with 5 data points to an observation)
+then the `Cycle Length` should be `73`.
+If your data does not start `January 1st` then you can adjust the `Cycle Phase`.
