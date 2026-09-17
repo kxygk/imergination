@@ -42,18 +42,18 @@
                           .size)
         width         (-> doc-size
                           .width
-                          int)
+                          double)
         height        (-> doc-size
                           .height
-                          int)
+                          double)
         target-width  (target-render-width)
-        zoom          (max 1
+        zoom          (max 1.0
                            (int (/ target-width
                                    width)))
-        imgbuf        (BufferedImage. (* width
-                                         zoom)
-                                      (* height
-                                         zoom)
+        imgbuf        (BufferedImage. (long (Math/ceil (* width
+                                                          zoom)))
+                                      (long (Math/ceil(* height
+                                                         zoom)))
                                       java.awt.image.BufferedImage/TYPE_INT_RGB)
         graphics2d    (.createGraphics imgbuf)
         ;; output-file   (File. "test" #_file-str)
