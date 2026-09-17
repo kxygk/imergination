@@ -738,11 +738,11 @@
 ;;;;;;;;;; FOR OBSERVATION
 
 (pco/defresolver $$observation-geogrid
-  [{:keys [observation-id
+  [{:keys [observation-idx
            region-matrix]}]
   {:inject-cache :lru4}
   {:observation-geogrid (datamats/extract-grid region-matrix
-                                            observation-id)})
+                                            observation-idx)})
 
 #_
 (defn-
@@ -776,13 +776,15 @@
 #_(check :zero-point-mask)
 
 (pco/defresolver $$observation-svg
-  [{:keys [observation-id
+  [{:keys [observation-idx
+           cycle-length
            observation-geogrid
            region
            contour-svg
            region-min-max
            output-dirstr]}]
-  {::pco/input   [:observation-id
+  {::pco/input   [:observation-idx
+                  :cycle-length
                   :observation-geogrid
                   :region
                   {:contour-svg [:hiccup]}
@@ -791,35 +793,42 @@
    ::pco/output  [:hiccup]
    #_#_ ;; prolly can regenerate each time you look at a new data
    :inject-cache :lru1}
-  (if (nil? observation-id)
+  (if (nil? observation-idx)
     contour-svg
     {:hiccup (-> observation-geogrid
                  (plot/grid-map region
                                 contour-svg
-                                {:max-val (second region-min-max)})
+                                {:max-val (second region-min-max)
+                                 :label-top-right (str (inc observation-idx))
+                                 :label-attribs   {#_#_:font-size 0.7}
+                                 :axis-visible?   true
+                                 :cycle-frac      (/ observation-idx
+                                                    cycle-length)})
                  (spitsvgstream output-dirstr
-                                (str "data-file-"
-                                     observation-id
+                                (str "observation-"
+                                     (inc observation-idx)
                                      ".svg")))}))
 #_(check :hiccup
-         {:observation-id 0})
+         {:observation-idx 0})
 
 (pco/defresolver $first-selected-observation-svg
   [inputs]
   {::pco/input  [:region
+                 :cycle-length
                  :region-matrix
                  {:contour-svg [:hiccup]}
                  :region-min-max
                  :first-selected-observation-idx
                  :output-dirstr]
-   ::pco/output [{:first-selected-observation-svg [:observation-id
+   ::pco/output [{:first-selected-observation-svg [:observation-idx
+                                                   :cycle-length
                                                    :region
                                                    :region-matrix
                                                    {:contour-svg [:hiccup]}
                                                    :region-min-max
                                                    :output-dirstr]}]}
   {:first-selected-observation-svg (merge inputs
-                              {:observation-id (:first-selected-observation-idx inputs)})})
+                              {:observation-idx (:first-selected-observation-idx inputs)})})
 #_(check {:first-selected-observation-svg [:hiccup]})
 
 ;; FLAT MODEL
