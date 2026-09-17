@@ -358,7 +358,6 @@
 #_
 (check :world-svg)
 
-
 (pco/defresolver $world-with-region-highlight-svg
   [{:keys [shoreline
            region
@@ -372,7 +371,6 @@
                                                                 "world-with-region.svg"))}})
 #_
 (check :world-svg)
-
 
 (pco/defresolver $contour-bare-svg
   "A bare contour of the region. No legends or axis"
@@ -491,7 +489,6 @@
                         nil)})
 #_
 (check :world-geogrid-vec)
-
 
 ;; TODO: The lazyness is probably broken right now
 (pco/defresolver $region-geogrid-vec
@@ -651,36 +648,6 @@
 #_
 (check :observation-strs)
 
-#_
-(pco/defresolver $$observation-svg
-  [{:keys [observation-index
-           region
-           region-matrix
-           contour-svg
-           cycle-length
-           output-dirstr]}]
-  {::pco/output [:hiccup]}
-  {:hiccup (->  region-matrix
-                datamats/to-geogrid-vec
-                (get observation-index)
-                (plot/grid-map region
-                               contour-svg
-                               {:label-top-right (str (inc observation-index))
-                                #_#_
-                                :max-val         (->  context
-                                                      (fx/sub-ctx region-min-max)
-                                                      second)
-                                :label-attribs   {#_#_:font-size 0.7}
-                                :axis-visible?   false
-                                :cycle-frac      (/ observation-index
-                                                    cycle-length)})
-                (spitsvgstream (str output-dirstr
-                                    "observation-"
-                                    observation-index
-                                    ".svg")))})
-#_(check :hiccup
-         {:observation-index 0})
-
 (def $num-svs
   (pbir/single-attr-resolver :region-matrix
                              :num-svs
@@ -742,7 +709,7 @@
            region-matrix]}]
   {:inject-cache :lru4}
   {:observation-geogrid (datamats/extract-grid region-matrix
-                                            observation-idx)})
+                                               observation-idx)})
 
 #_
 (defn-
@@ -758,9 +725,9 @@
   [{:keys [region-matrix]}]
   {::pco/input  [:region-matrix]
    ::pco/output [{:first-selected-observation-geogrid [:region-matrix
-                                           :id]}]}
+                                                       :id]}]}
   {:first-selected-observation-geogrid {:region-matrix region-matrix
-                            :id            0}})
+                                        :id            0}})
 
 #_(-> (check {:first-selected-observation-geogrid [:observation-geogrid]})
       :first-selected-observation-geogrid
@@ -798,12 +765,12 @@
     {:hiccup (-> observation-geogrid
                  (plot/grid-map region
                                 contour-svg
-                                {:max-val (second region-min-max)
+                                {:max-val         (second region-min-max)
                                  :label-top-right (str (inc observation-idx))
                                  :label-attribs   {#_#_:font-size 0.7}
                                  :axis-visible?   true
                                  :cycle-frac      (/ observation-idx
-                                                    cycle-length)})
+                                                     cycle-length)})
                  (spitsvgstream output-dirstr
                                 (str "observation-"
                                      (inc observation-idx)
@@ -828,7 +795,7 @@
                                                    :region-min-max
                                                    :output-dirstr]}]}
   {:first-selected-observation-svg (merge inputs
-                              {:observation-idx (:first-selected-observation-idx inputs)})})
+                                          {:observation-idx (:first-selected-observation-idx inputs)})})
 #_(check {:first-selected-observation-svg [:hiccup]})
 
 ;; FLAT MODEL
@@ -1792,7 +1759,6 @@
                              :climate-noise-vars
                              datamats/colvars))
 #_(check :climate-noise-vars)
-
 
 ;; Should let the GUI resize and keep the same SVG/Render
 (pco/defresolver $climate-noise-var-svg
