@@ -1249,7 +1249,6 @@ TODO: Make this somehow use the `$svg2imagebuf` resolver.."
   @(p.a.eql/process pathom-env
                     @stateom/*selections
                     [:contour-imagebuf])
-  (javafx.application.Platform/setImplicitExit false)
   (-> {:fx/type root-state-watcher
        :state   stateom/*selections}
       fx/create-component
